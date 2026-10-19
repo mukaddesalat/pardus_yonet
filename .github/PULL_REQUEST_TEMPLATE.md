@@ -5,7 +5,7 @@
 ## Nasıl test edildi?
 
 - [ ] `python -m pytest -q testler` geçiyor
-- [ ] Arayüz değiştiyse: `python araclar/onizleme_yap.py` çalıştırıldı ve `docs/demo/` ile `arayuz-onizleme.html` güncellendi
+- [ ] Arayüz değiştiyse: `python araclar/onizleme_yap.py` çalıştırıldı ve `arayuz-onizleme.html` güncellendi
 - [ ] Yeni düğme/sayfa varsa: `uygulama/arayuz/referans.js` içinde kodu var (emekli kodlar yeniden kullanılmadı); `python araclar/referans_haritasi.py` çalıştırıldı
 - [ ] Renk/boşluk değiştiyse: `DESIGN.md` ve `python araclar/belirtec_css.py` güncel
 - [ ] Öğrenci PC'de çalışan yeni bir betik varsa: `uygulama/uzak/__init__.py` izin listesinde ve root olarak ne yaptığı belgelendi

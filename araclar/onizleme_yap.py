@@ -17,8 +17,6 @@ KOK = Path(__file__).resolve().parent.parent
 ARAYUZ = KOK / "uygulama" / "arayuz"
 DEMO = Path(__file__).resolve().parent / "onizleme" / "demo.js"
 HEDEF = KOK / "arayuz-onizleme.html"
-# GitHub Pages (docs/ kaynağı) aynı önizlemeyi /demo/ adresinde de sunar
-YAYIN = KOK / "docs" / "demo" / "index.html"
 
 BETIK_SIRASI = ["referans.js", "@demo", "ortak.js", "envanter.js", "veyon.js", "islemler.js", "guc.js", "odevler.js",
                 "kayitlar.js", "baslat.js"]
@@ -80,13 +78,12 @@ def ana():
         akis.reconfigure(encoding="utf-8", errors="replace")
     html = uret()
     if "--denetle" in sys.argv:
-        guncel = all(yol.exists() and yol.read_text(encoding="utf-8") == html for yol in (HEDEF, YAYIN))
+        guncel = HEDEF.exists() and HEDEF.read_text(encoding="utf-8") == html
         print("güncel" if guncel else "GÜNCEL DEĞİL: python araclar/onizleme_yap.py çalıştırın")
         sys.exit(0 if guncel else 1)
-    for yol in (HEDEF, YAYIN):
-        yol.parent.mkdir(parents=True, exist_ok=True)
-        yol.write_text(html, encoding="utf-8", newline="\n")
-        print(f"yazıldı: {yol.relative_to(KOK).as_posix()} ({len(html.encode('utf-8')) // 1024} KB)")
+    HEDEF.parent.mkdir(parents=True, exist_ok=True)
+    HEDEF.write_text(html, encoding="utf-8", newline="\n")
+    print(f"yazıldı: {HEDEF.relative_to(KOK).as_posix()} ({len(html.encode('utf-8')) // 1024} KB)")
 
 
 if __name__ == "__main__":

@@ -24,7 +24,6 @@ jobs:
       - name: Üretilen dosyalar güncel mi?
         run: |
           python araclar/belirtec_css.py --denetle
-          python araclar/referans_haritasi.py --denetle
           python araclar/onizleme_yap.py --denetle
 
       - name: Birim ve bütünleşik testler

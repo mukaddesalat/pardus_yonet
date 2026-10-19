@@ -74,13 +74,10 @@ SISTEM_DOSYALARI = {
     "paketleme/dosyalar/pardus-sinif-yonetimi.svg":
         (f"usr/share/icons/hicolor/scalable/apps/{PAKET}.svg", 0o644),
     "README.md": (f"usr/share/doc/{PAKET}/README.md", 0o644),
-    "belgeler/ilk_kullanim_101.md": (f"usr/share/doc/{PAKET}/ilk_kullanim_101.md", 0o644),
+    "belgeler/kullanim_kilavuzu.md": (f"usr/share/doc/{PAKET}/kullanim_kilavuzu.md", 0o644),
     "belgeler/yonetici_kilavuzu.md": (f"usr/share/doc/{PAKET}/yonetici_kilavuzu.md", 0o644),
-    "belgeler/odev_ogretmen_kilavuzu.md": (f"usr/share/doc/{PAKET}/odev_ogretmen_kilavuzu.md", 0o644),
-    "belgeler/odev_ogrenci_kilavuzu.md": (f"usr/share/doc/{PAKET}/odev_ogrenci_kilavuzu.md", 0o644),
+    "belgeler/odev_kilavuzu.md": (f"usr/share/doc/{PAKET}/odev_kilavuzu.md", 0o644),
     "belgeler/ornek_sinif_listesi.csv": (f"usr/share/doc/{PAKET}/ornek_sinif_listesi.csv", 0o644),
-    "belgeler/arayuz_referans_haritasi.md":
-        (f"usr/share/doc/{PAKET}/arayuz_referans_haritasi.md", 0o644),
     "DESIGN.md": (f"usr/share/doc/{PAKET}/DESIGN.md", 0o644),
     "arayuz-onizleme.html": (f"usr/share/doc/{PAKET}/arayuz-onizleme.html", 0o644),
 }

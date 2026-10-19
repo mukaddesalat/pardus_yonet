@@ -3,6 +3,27 @@
 Bu dosya [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) biçimini izler ve
 sürüm numaraları [Anlamsal Sürümleme](https://semver.org/lang/tr/) ile verilir.
 
+## [0.7.0] — 2026-10-19
+
+### Eklenen
+- **Canlı Sınıf Masası Araçları:**
+  - Bana Bakın (Ekran Kilitle): Öğrenci ekranlarını dikkat uyarısıyla anında kilitleme ve klavye/fareyi geçici olarak engelleme.
+  - Ekran Kilitlerini Aç: Kilitli ekranları tek tıkla serbest bırakma.
+  - Sınıfa Duyuru Gönder: Öğrenci masaüstünde anlık duyuru/mesaj penceresi açma.
+  - İnterneti Kısıtla / Aç: Dış internet erişimini kesip yerel laboratuvar ağı ve ödev portalını açık tutma.
+- **Cihaz Detay Özeti:** Monitör kutucuğuna veya bilgisayar adına tıklandığında açılan açılır özet bilgi penceresi (IP, bağlantı durumu, Veyon sürümü, RAM, disk ve çalışma durumu).
+- **Okul Kimliği ve Öğretmen Yönetimi:**
+  - Okul adı ve logo yükleme desteği (Varsayılan: Şehit Cengiz Polat Fen ve Teknoloji AİHL).
+  - Standart Öğretmen hesapları ve rol tabanlı yetki şablonu (Admin: Mukaddes ALAT).
+  - Sol alt menüde aktif öğretmen, yetki rolü ve Ekran/Ağ durum kutucuğu.
+- **SSH Komut Merkezi:** Tüm sınıfa aynı anda Bash/Shell komutu gönderme, canlı çıktı izleme, tek tıkla `/etc/hosts` yerel alan adı tanımlama.
+- **Masaüstüne Materyal Dağıtımı:** Öğrenci masaüstüne çalışma kağıdı, dosya veya web bağlantısı gönderme.
+
+### Değişen
+- Belgelendirme tamamen yenilendi; tüm kılavuzlara güncel ve gerçek arayüz ekran alıntıları eklendi.
+- Arayüzden teknik referans kodları emekliye ayrıldı; sade, Türkçe ve sezgisel menü yapısına geçildi.
+- Uzak SSH komut çalıştırma altyapısı `stdin` akışı ve `systemd-run` ile güçlendirildi.
+
 ## [0.6.0] — 2026-10-05
 
 ### Eklenen

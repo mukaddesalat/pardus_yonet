@@ -28,15 +28,13 @@ test makinenizde yapın.
 - **Öğrenci PC'de çalışan kod** `uygulama/uzak/` altındadır ve yalnızca
   `uygulama/uzak/__init__.py` içindeki izin listesinden gönderilir. Serbest komut
   girişi eklemeyin.
-- **Üretilen dosyalar:** `belgeler/arayuz_referans_haritasi.md`, `arayuz-onizleme.html`
-  ve `docs/demo/index.html` elle düzenlenmez. Kaynak değişince yeniden üretin:
+- **Üretilen dosyalar:** `arayuz-onizleme.html` elle düzenlenmez. Kaynak değişince yeniden üretin:
 
   ```bash
-  python araclar/referans_haritasi.py
   python araclar/onizleme_yap.py
   ```
 
-  CI bu dosyaların güncel olup olmadığını `--denetle` ile kontrol eder.
+  CI bu dosyanın güncel olup olmadığını `--denetle` ile kontrol eder.
 
 ## Gizli bilgi kuralı
 

@@ -1,166 +1,143 @@
 <p align="center">
-  <img src="docs/logo.svg" width="112" alt="Lab Kaptanı logosu">
+  <img src="belgeler/gorseller/logo.svg" width="96" alt="Lab Kaptanı logosu">
 </p>
 
 <h1 align="center">Lab Kaptanı</h1>
 
 <p align="center">
-  <strong>Pardus Sınıf Yönetimi</strong> — Pardus kullanan okul laboratuvarları için teknik bilgi
-  gerektirmeyen, Türkçe merkezi yönetim uygulaması.
+  <strong>Pardus Sınıf Yönetimi (Sürüm 0.7.0)</strong><br>
+  Pardus ve Debian tabanlı okul bilgisayar laboratuvarları için teknik bilgi gerektirmeyen, Türkçe ve modern merkezi yönetim uygulaması.
 </p>
 
 <p align="center">
   <img alt="Lisans: GPL-3.0-or-later" src="https://img.shields.io/badge/lisans-GPL--3.0--or--later-blue">
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
-  <img alt="Pardus 23" src="https://img.shields.io/badge/Pardus-23-1B5FC1">
+  <img alt="Pardus 23 EDU" src="https://img.shields.io/badge/Pardus-23%20EDU-1B5FC1">
+  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.7.0-brightgreen">
 </p>
 
-Öğretmen bilgisayarına tek bir `.deb` paketiyle kurulur. Öğrenci bilgisayarlarına ajan
-kurulmaz; yönetim SSH anahtarıyla yapılır ve günlük işlerde parola sorulmaz.
+---
 
-<table>
-  <tr>
-    <td><img src="docs/ekran/m1s1-ekranlar.png" alt="Bilgisayarlar ekranı: her bilgisayar durum rengiyle gösterilir"></td>
-    <td><img src="docs/ekran/m1s2-hazirlik.png" alt="Bilgisayarları Hazırla: üç adımlı kurulum"></td>
-  </tr>
-  <tr>
-    <td><img src="docs/ekran/m2s4-guc.png" alt="Güç ve Uyku: bilgisayarların uykuya geçmesini önleyen ayar"></td>
-    <td><img src="docs/ekran/m2s5-zamanli-kapatma.png" alt="Zamanlı Kapatma: bir kez veya her hafta plan"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="belgeler/gorseller/01_sinif_masasi.png" alt="Lab Kaptanı Sınıf Masası" width="100%">
+</p>
 
-<sub>Görüntüler DEMO verisiyle alınmıştır; gerçek bir bilgisayar bilgisi içermez.
-Arayüzün tamamını sunucusuz denemek için `arayuz-onizleme.html` dosyasını tarayıcıda açın.</sub>
+<p align="center">
+  <sub>Öğretmen paneli Sınıf Masası: tek ekrandan tüm laboratuvar durumu, canlı kontrol araçları ve bilgisayar filtreleri.</sub>
+</p>
 
-## Neler yapar?
+---
 
-- **Envanter:** bilgisayarları elle, Ansible envanterinden veya CSV'den ekleyin; her birinin
-  durumu renk ve simgeyle görünür (hazır, kapalı, anahtar yok, yetki yok…).
-- **Hazırlık:** bir kez parola girilir; her bilgisayara uygulama anahtarı ve doğrulanmış
-  parolasız yetki kurulur. Fazla yönetici hesabı (pardus/hp) güvenle tekilleştirilir.
-- **Ağda bul:** kendi ağınızdaki SSH açık bilgisayarları bulur; eklemek onaylı bir adımdır.
-- **Toplu işlemler:** seçilen bilgisayarlarda profil temizliği, yedekleme ve yedekten dönüş,
-  yerel `.deb` kurulumu, giriş ekranı ve görünüm ayarları. Her işlem önce önizlenir ve
-  kesin hedef listesiyle onaylanır.
-- **Güç:** yeniden başlatma ve kapatma; bilgisayarların boşta uykuya geçmesini önleyen ayar;
-  bir kez (`at` gibi) veya her hafta (`cron` gibi) zamanlı kapatma.
-- **Veyon:** Veyon Configurator kullanmadan Veyon paketini ve public key'i yükler, seçili
-  bilgisayarlara kurar ve anahtar dosyasıyla yapılandırır.
-- **Ödev teslimi:** öğrenciler sınıf kodlarıyla ödevlerini yükler; öğretmen takip eder ve ZIP
-  olarak indirir (ayrı bir öğrenci portalı üzerinden).
+## 🌟 Neler Yapar?
 
-## Hızlı başlangıç (öğretmen bilgisayarı)
+Lab Kaptanı, öğretmenlerin teknik detaylarla vakit kaybetmeden dersi verimli şekilde yürütmelerini sağlar. Öğretmen bilgisayarına tek bir `.deb` paketiyle kurulur; **öğrenci bilgisayarlarına hiçbir ajan veya istemci yazılımı kurulması gerekmez**. Tüm işlemler güvenli SSH anahtarı üzerinden gerçekleştirilir.
 
-1. Pardus 23 yüklü öğretmen bilgisayarında `.deb` dosyasını edinin (aşağıdaki
-   [paket üretme](#paket-üretme) bölümü ya da sürüm sayfası).
-2. Kurun:
+* 🖥️ **Canlı Sınıf Masası:**
+  * **Bana Bakın (Ekran Kilitle):** Öğrenci ekranlarını tek tıkla kilitler, dikkat çekici görsel uyarı gösterir ve klavye/fareyi kilitler.
+  * **Ekran Kilitlerini Aç:** Kilitli ekranları anında serbest bırakır.
+  * **Sınıfa Anlık Duyuru:** Öğrenci ekranlarında öğretmenin yazdığı mesajı pencere olarak açar.
+  * **İnterneti Kısıtla / Aç:** Öğrencilerin dış internet erişimini tek tıkla engeller; yerel ağ ve ödev portalını açık tutar.
+* 🔍 **Bilgisayar Durumları ve Cihaz Detay Özeti:**
+  * Bilgisayarlar durum renkleriyle izlenir (Hazır, Öğrenci Çalışıyor, Kapalı, Anahtar Gerekli, Yönetim Yetkisi Yok vb.).
+  * Herhangi bir bilgisayar kutucuğuna veya adına tıklandığında IP adresi, bağlantı durumu, donanım bilgisi ve Veyon sürümü açılır özet penceresinde görüntülenir.
+* 🔑 **Tek Adımda Hazırlık (Parolasız Yönetim):**
+  * Öğrenci bilgisayarlarının parolası yalnızca ilk kurulumda bir kez girilir.
+  * Güvenli Ed25519 SSH anahtarı kurulur; günlük ders yönetiminde **asla parola sorulmaz**.
+  * Fazla yönetici hesapları (`pardus`/`hp`) yedeklenerek güvenle tekilleştirilir.
+* 🧹 **Ders Sonu Temizliği ve Profil Yönetimi:**
+  * Ders bitiminde Masaüstü ve İndirilenler klasörleri tek tıkla temizlenir.
+  * Silinen dosyalar öğrenci bilgisayarında karantinaya alınır; yanlışlıkla silinen ödev veya projeler geri kurtarılabilir.
+* ⚡ **Güç ve Uyku Yönetimi:**
+  * Bilgisayarların ders esnasında boşta uykuya geçmesi veya kapanması tek tıkla önlenir (yalnızca ekran kararır).
+  * Ders çıkış saatine özel bir kezlik veya haftalık zamanlı kapatma planı oluşturulabilir.
+* 📚 **Ödev ve Materyal Dağıtımı:**
+  * Öğrenci bilgisayarlarının masaüstüne ders materyali veya web bağlantısı gönderilebilir.
+  * Öğrenciler `http://ogretmen.lab:8090` adresinden sınıf kodlarıyla ödevlerini tarayıcıdan teslim eder.
+  * Öğretmen tüm teslimleri tek tıkla düzenli bir ZIP arşivi olarak indirebilir.
+* 💻 **SSH Komut Merkezi:**
+  * Kayıtlı kütüphaneden veya özel olarak yazılan Bash komutları tüm sınıfa aynı anda gönderilir; çıktılar canlı olarak izlenir.
+  * Tek tıkla `/etc/hosts` dosyasında yerel alan adı eşleştirmesi yapılır.
+* 🏫 **Okul Kimliği ve Öğretmen Hesapları:**
+  * Okul adı ve okul logosu özelleştirilebilir (Varsayılan: Şehit Cengiz Polat Fen ve Teknoloji AİHL).
+  * Laboratuvarı kullanan diğer öğretmenler için Standart Öğretmen hesapları tanımlanabilir; yetkiler sınırlandırılabilir.
 
-   ```bash
-   sudo dpkg -i pardus-sinif-yonetimi_0.6.0_amd64.deb
-   ```
+---
 
-3. Masaüstündeki **Lab Kaptanı** simgesiyle açın; ilk açılışta uygulama giriş parolanızı
-   belirleyin. Bu parola yalnızca bu uygulamaya girmek içindir.
-4. Bilgisayarları ekleyin ve **Bilgisayarları Hazırla** sayfasındaki üç adımı izleyin.
+## 🚀 Hızlı Başlangıç (Öğretmen Bilgisayarı)
 
-Kullanım adımları için: [İlk kullanım kılavuzu](belgeler/ilk_kullanim_101.md).
+### 1. Paketi İndirin ve Kurun
 
-## Belgeler
-
-- [İlk kullanım kılavuzu](belgeler/ilk_kullanim_101.md) — öğretmenler için
-- [Yönetici kılavuzu](belgeler/yonetici_kilavuzu.md) — kurulum, mimari, veri konumları, kurtarma
-- [Ödev Teslim kılavuzları](belgeler/odev_ogretmen_kilavuzu.md) ·
-  [öğrenci kılavuzu](belgeler/odev_ogrenci_kilavuzu.md)
-- [Arayüz referans haritası](belgeler/arayuz_referans_haritasi.md) — her menü, sayfa ve düğmenin
-  sabit M/S/B kodu
-- [Tasarım belirteçleri](DESIGN.md) · [Değişiklik günlüğü](CHANGELOG.md)
-- [Geliştirme istemleri](belgeler/gelistirme/) — gereksinimler ve karar kayıtları
-
-## Geliştirme
+Öğretmen bilgisayarında (Pardus 23 EDU) terminal açarak paketi kurun:
 
 ```bash
-pip install -r paketleme/requirements.txt pytest
-python -m uygulama.ana                 # http://127.0.0.1:8080 (ilk açılışta kurulum kodu günlüğe yazılır)
-python -m pytest -q testler            # testler
-python araclar/onizleme_yap.py         # arayuz-onizleme.html ve docs/demo/ üretilir
-python araclar/referans_haritasi.py    # belgeler/arayuz_referans_haritasi.md üretilir
+sudo dpkg -i pardus-sinif-yonetimi_0.7.0_amd64.deb
 ```
 
-Öğrenci portalı ayrı bir süreçtir: `python -m uygulama.odev.portal` (varsayılan port 8090).
+> **Not:** Paket, kendi gömülü Python çalışma ortamını ve gerekli tüm kütüphaneleri taşır. Kurulum için internet bağlantısı gerekmez.
 
-Dizinler:
+### 2. Uygulamayı Açın
 
-| Dizin | İçerik |
+1. Masaüstünde veya uygulama menüsünde bulunan **Lab Kaptanı** simgesine tıklayın.
+2. İlk açılışta terminalde verilen kurulum kodunu girerek kendi yönetici giriş parolanızı belirleyin.
+3. Giriş yaptıktan sonra **Kurulum, Okul & Öğretmen** menüsünden okul adınızı ve varsa logonuzu kontrol edin.
+4. **İlk Hazırlık (SSH & Sudo)** ekranından laboratuvarınızdaki bilgisayarları seçip tek tıkla yönetime bağlayın.
+
+Detaylı rehber için: [Öğretmenler İçin Kullanım Kılavuzu](belgeler/kullanim_kilavuzu.md)
+
+---
+
+## 📖 Belgelendirme
+
+| Belge | Açıklama |
 | --- | --- |
-| `uygulama/` | Python (FastAPI) arka ucu ve Türkçe web arayüzü |
-| `uygulama/uzak/` | Öğrenci PC'de çalışan, izin listeli uzak betikler |
-| `uygulama/odev/` | Ödev Teslim: öğrenci portalı (ayrı süreç) ve öğretmen uçları |
-| `araclar/` | Üretici betikler (belirteç CSS, referans haritası, önizleme) ve geliştirme sunucusu |
-| `paketleme/` | `.deb` üreticisi, sabit bağımlılıklar, servis ve bakım betikleri |
-| `testler/` | Otomatik testler |
-| `belgeler/` | Kılavuzlar, referans haritası ve geliştirme istemleri |
-| `docs/` | GitHub Pages sayfası ve canlı önizleme (`docs/demo/`) |
+| 📘 [Kullanım Kılavuzu](belgeler/kullanim_kilavuzu.md) | Öğretmenler için adım adım, ekran alıntılarıyla hazırlanmış sade rehber. |
+| 🛠️ [Yönetici Kılavuzu](belgeler/yonetici_kilavuzu.md) | Sistem yöneticileri için mimari, servisler, veri konumları, portlar ve güvenlik modeli. |
+| 📚 [Ödev Kılavuzu](belgeler/odev_kilavuzu.md) | Ödev teslim portalı, sınıf listeleri, öğrenci kartları ve dosya toplama akışı. |
+| 📊 [Örnek Sınıf Listesi (CSV)](belgeler/ornek_sinif_listesi.csv) | Öğrenci listelerini içeri aktarmak için şablon dosya (`sınıf;numara;ad soyad`). |
 
-## Paket üretme
+---
 
-`.deb` dosyası saf Python ile üretilir (`dpkg-deb` gerekmez); Pardus 23 üzerinde derlemek
-en tekrarlanabilir sonucu verir:
+## 💻 Geliştirme ve Test
 
 ```bash
+# Bağımlılıkları yükleyin
+pip install -r paketleme/requirements.txt pytest
+
+# Yerel geliştirme sunucusunu başlatın (http://127.0.0.1:8080)
+python -m uygulama.ana
+
+# Ödev teslim portalını başlatın (http://0.0.0.0:8090)
+python -m uygulama.odev.portal
+
+# Birim ve entegrasyon testlerini çalıştırın
+python -m pytest -q testler
+
+# Bağımsız tek dosyalı önizlemeyi güncelleyin
+python araclar/onizleme_yap.py
+
+# Belge ekran görüntülerini yeniden üretin
+python araclar/belge_gorselleri_uret.py
+
+# Debian kurulum paketi (.deb) üretin
 python paketleme/deb_yap.py
 ```
 
-Çıktı: `cikti/pardus-sinif-yonetimi_<sürüm>_amd64.deb` (+ `.sha256`). Gömülü Python ve
-kütüphane tekerlekleri her derlemede sabit SHA-256 değerleriyle doğrulanır. Ayrıntılar:
-[yönetici kılavuzu](belgeler/yonetici_kilavuzu.md).
+### Proje Dizin Yapısı
 
-Kaldırma: `sudo apt remove pardus-sinif-yonetimi` (veriler korunur);
-tam silme: `sudo apt purge pardus-sinif-yonetimi`.
+```text
+├── uygulama/              # FastAPI arka uç servisleri ve arayüz dosyaları
+│   ├── arayuz/            # HTML5, CSS3, modern Vanilla JS arayüz
+│   ├── uzak/              # Öğrenci makinelerinde çalışan ajan gerektirmeyen SSH betikleri
+│   └── odev/              # Öğrenci ödev teslim portalı ve depolama motoru
+├── belgeler/              # Güncel kullanım kılavuzları ve ekran görüntüleri
+│   └── gorseller/         # Arayüze ait yüksek çözünürlüklü ekran alıntıları
+├── araclar/               # Önizleme ve görsel üretici geliştirme araçları
+├── paketleme/             # Saf Python ile yazılmış Debian (.deb) paketleyicisi
+└── testler/               # 200+ birim ve entegrasyon testleri
+```
 
-## Güvenlik
+---
 
-Bu uygulamanın güvenlik modelini ve bilinen sınırlarını **[SECURITY.md](SECURITY.md)**
-dosyasında bulabilirsiniz. Özet:
+## 📄 Lisans
 
-- Yönetim hesaplarına parolasız sudo (`NOPASSWD: ALL`) verilir; bu, anahtara sahip olanın
-  öğrenci bilgisayarlarında **root eşdeğeri** yetkiye sahip olması demektir. Öğretmen
-  bilgisayarının güvenliği laboratuvarın güvenliğidir.
-- Hazırlık parolaları yalnızca işlem sırasında bellekte tutulur; kaydedilmez.
-- Yönetim arayüzü yalnızca `127.0.0.1` üzerinde dinler. Ağa açık tek bileşen öğrenci
-  portalıdır ve düz HTTP kullanır (laboratuvar ağında şifresiz; belgelenmiş bir karardır).
-
-Güvenlik açığı bulursanız lütfen herkese açık issue açmak yerine SECURITY.md'deki özel
-bildirim yolunu kullanın.
-
-## Katkıda bulunma
-
-Katkılar memnuniyetle karşılanır. Geliştirme ortamı, test ve referans kodu kuralları için
-**[CONTRIBUTING.md](CONTRIBUTING.md)**; davranış kuralları için
-**[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** dosyasına bakın.
-
-## Yol haritası ve bilinen sınırlar
-
-- XFCE bilgisayarlar için GNOME geçişi uygulanmaz; yalnızca tespit edilip kapsam dışı gösterilir.
-- Ödev Teslim 2. aşaması: öğrenci PC'lerine `ogretmen.lab` ad kaydı ve kısayol dağıtımı,
-  aktif yükleme sırasında profil sıfırlama uyarısı, 40 eşzamanlı öğrenci yük testi.
-- Giriş ekranında yönetim hesabının gizlenmesi AccountsService üzerinden doğrulanır; gerçek
-  giriş ekranı görsel olarak henüz doğrulanmadı.
-- Veyon'da gerçek anahtarlı oturum yalnızca Veyon Master'da denenebilir; bu uygulama
-  private key'i bilerek tutmaz.
-- LightDM ve XFCE desteklenmiyor.
-
-## Lisans
-
-Bu proje [GNU Genel Kamu Lisansı sürüm 3 veya sonrası](LICENSE) (GPL-3.0-or-later) ile
-lisanslanmıştır. Kullandığı üçüncü taraf bileşenlerin (FastAPI, Paramiko, Pydantic,
-cryptography, Uvicorn ve diğerleri) lisansları kendi dağıtımlarında geçerlidir.
-Pardus ve Veyon bu depoya dahil değildir; uygulama onlarla birlikte çalışır.
-
-## English summary
-
-**Lab Kaptanı** (package `pardus-sinif-yonetimi`) is a Turkish-language management tool for
-school computer labs running Pardus 23. The teacher's computer runs the app from a single
-`.deb`; student computers get no agent, and management happens over SSH with a key that is
-set up once. It covers inventory with status colors, one-time setup, Veyon deployment,
-power and sleep settings, scheduled shutdowns, cleaning and restore, and homework submissions.
-The UI and documentation are in Turkish. Licensed under GPL-3.0-or-later.
+Bu proje **GNU General Public License v3.0 or later (GPL-3.0-or-later)** ile lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakabilirsiniz.

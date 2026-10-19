@@ -1,15 +1,14 @@
 # Lab Kaptanı (Pardus Sınıf Yönetimi) — Yönetici Kılavuzu
 
 Sistem yöneticileri için kurulum, mimari, veri konumları, güvenlik modeli ve kurtarma.
-Sürüm 0.6.0. Arayüzdeki her menü, sayfa ve düğmenin sabit kodu vardır (M = menü,
-S = sayfa, B = düğme); tam liste: [arayuz_referans_haritasi.md](arayuz_referans_haritasi.md).
+Sürüm 0.7.0.
 
 ## Kurulum
 
 Öğretmen bilgisayarında (Pardus 23 EDU) tek komut yeterlidir:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.6.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.7.0_amd64.deb
 ```
 
 Paket kendi Python çalışma ortamını ve tüm kütüphaneleri içerir; kurulum
@@ -535,9 +534,9 @@ için ayrıca `sudo rm -rf /var/lib/pardus-sinif-odev && sudo userdel pardus-ode
 Paket saf Python ile üretilir; Windows, Linux veya macOS'ta çalışır:
 
 ```bash
-python araclar/belirtec_css.py     # DESIGN.md -> uygulama/arayuz/belirtecler.css
-python araclar/referans_haritasi.py # referans.js -> belgeler/arayuz_referans_haritasi.md
-python araclar/onizleme_yap.py      # tek dosyalık arayuz-onizleme.html
+python araclar/belirtec_css.py          # DESIGN.md -> uygulama/arayuz/belirtecler.css
+python araclar/onizleme_yap.py           # tek dosyalık arayuz-onizleme.html
+python araclar/belge_gorselleri_uret.py  # belgeler için ekran görüntüleri
 python paketleme/deb_yap.py
 ```
 
