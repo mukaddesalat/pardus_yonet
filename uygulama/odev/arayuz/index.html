@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ödev Teslim</title>
+<link rel="stylesheet" href="/statik/portal.css">
+</head>
+<body>
+<header class="ust">
+  <h1>Ödev Teslim</h1>
+  <div id="kimlik" class="kimlik gizli">
+    <span id="kimlik-metin"></span>
+    <button id="cikis" class="ikincil">Çıkış</button>
+  </div>
+</header>
+
+<main>
+  <!-- Giriş -->
+  <section id="giris" class="kart dar gizli" aria-labelledby="giris-baslik">
+    <h2 id="giris-baslik">Giriş</h2>
+    <p>Öğretmeninizin verdiği <strong>teslim kodu</strong> ile giriş yapın.</p>
+    <form id="giris-formu">
+      <label for="g-sinif">Sınıf</label>
+      <select id="g-sinif" required></select>
+      <label for="g-numara">Öğrenci numarası</label>
+      <input id="g-numara" type="text" inputmode="numeric" autocomplete="off" required maxlength="12">
+      <label for="g-kod">Teslim kodu</label>
+      <input id="g-kod" type="text" autocomplete="off" autocapitalize="characters"
+             spellcheck="false" placeholder="ABCD-2345" required maxlength="12">
+      <button class="birincil" type="submit">Giriş yap</button>
+    </form>
+    <p id="giris-hata" class="hata" role="alert"></p>
+  </section>
+
+  <!-- Ödev listesi -->
+  <section id="liste" class="gizli" aria-labelledby="liste-baslik">
+    <h2 id="liste-baslik">Ödevlerim</h2>
+    <p id="liste-bos" class="ipucu gizli">Şu anda teslime açık ödeviniz yok.</p>
+    <div id="odev-kartlari" class="kart-listesi"></div>
+  </section>
+
+  <!-- Ödev ve yükleme -->
+  <section id="odev" class="gizli">
+    <button id="geri" class="ikincil">← Ödevlerim</button>
+    <div class="kart">
+      <h2 id="o-baslik"></h2>
+      <p id="o-sure" class="sure"></p>
+      <div id="o-yonerge" class="yonerge"></div>
+      <p id="o-kurallar" class="ipucu"></p>
+    </div>
+
+    <div id="yukleme-karti" class="kart">
+      <h3>Dosyalarınız</h3>
+      <div id="birak" class="birak-alani" tabindex="0" role="button"
+           aria-describedby="birak-metin">
+        <span id="birak-metin">Yüklemek istediğiniz dosyaları veya klasörü seçin ya da
+          buraya sürükleyip bırakın.</span>
+      </div>
+      <input type="file" id="dosya-sec" multiple hidden>
+      <input type="file" id="klasor-sec" webkitdirectory multiple hidden>
+      <div class="dugmeler">
+        <button id="dosya-dugme" class="ikincil">Dosya seç</button>
+        <button id="klasor-dugme" class="ikincil">Klasör seç</button>
+        <button id="temizle" class="ikincil">Seçimi temizle</button>
+      </div>
+      <p id="klasor-uyari" class="ipucu gizli">Bu tarayıcı klasör seçmeyi desteklemiyor.
+        Klasörünüzü ZIP dosyası yapıp <strong>Dosya seç</strong> ile yükleyin.</p>
+      <p class="ipucu">Boş klasörler yüklenmez.</p>
+
+      <p id="secim-ozet" class="ozet" aria-live="polite"></p>
+      <div class="tablo-kaydir">
+        <table id="secim-tablo" class="gizli">
+          <thead><tr><th scope="col">Dosya</th><th scope="col">Boyut</th>
+            <th scope="col">Durum</th><th scope="col"><span class="gorunmez">İşlem</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div id="ilerleme" class="ilerleme gizli">
+        <p id="asama" class="asama" aria-live="polite"></p>
+        <progress id="cubuk" max="100" value="0"></progress>
+        <p id="ilerleme-metin" class="ipucu"></p>
+      </div>
+      <p id="yukleme-hata" class="hata" role="alert"></p>
+
+      <div class="dugmeler">
+        <button id="gonder" class="birincil" disabled>Gönder</button>
+        <button id="iptal" class="ikincil gizli">İptal</button>
+        <button id="yeniden" class="birincil gizli">Yeniden dene</button>
+      </div>
+    </div>
+
+    <div id="makbuz" class="kart basari gizli" role="status" tabindex="-1">
+      <h3>✓ Ödeviniz teslim alındı</h3>
+      <dl id="makbuz-bilgi"></dl>
+      <p class="ipucu">Bu ekranın fotoğrafını çekebilir veya teslim numarasını not
+        alabilirsiniz. Yeniden gönderirseniz yeni bir sürüm oluşur; bu teslim korunur.</p>
+      <button id="yeni-gonderim" class="ikincil">Yeni sürüm gönder</button>
+    </div>
+
+    <div class="kart">
+      <h3>Önceki teslimlerim</h3>
+      <div id="gecmis"><p class="ipucu">Henüz teslim yok.</p></div>
+    </div>
+  </section>
+
+  <p id="bilgi" class="bilgi gizli" role="status"></p>
+</main>
+
+<script src="/statik/portal.js"></script>
+</body>
+</html>

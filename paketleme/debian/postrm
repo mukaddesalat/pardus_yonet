@@ -1,0 +1,66 @@
+#!/bin/sh
+# Pardus Sınıf Yönetimi — kaldırma sonrası (dpkg postrm)
+#   apt remove / dpkg -r : uygulama kaldırılır; envanter, anahtar ve ayarlar KORUNUR.
+#   apt purge  / dpkg -P : yönetim verisi de silinir (istem §11: ayrı ve açık işlem).
+# Öğrenci ödev teslimleri (/var/lib/pardus-sinif-odev) ve pardus-odev kullanıcısı
+# purge'da da KORUNUR (proje sahibi kararı); yalnız uygulama içinden açık onayla
+# silinir. Öğrenci bilgisayarlarındaki anahtar kayıtları ve yedekler de silinmez.
+set -e
+
+UYG=pardus-sinif-yonetimi
+KULLANICI=pardus-sinif
+VERI=/var/lib/$UYG
+AYAR=/etc/$UYG
+
+# Satır biçimi "kullanıcı:yol". Silme o kullanıcının yetkisiyle yapılır; ev
+# dizinindeki bir sembolik bağlantı root'a başka bir dosya sildiremez.
+masaustu_kisayollarini_kaldir() {
+    if [ ! -f "$AYAR/kisayollar" ]; then
+        return 0
+    fi
+    while IFS= read -r satir; do
+        kullanici=${satir%%:*}
+        yol=${satir#*:}
+        case "$yol" in
+            */$UYG.desktop)
+                if getent passwd "$kullanici" >/dev/null; then
+                    runuser -u "$kullanici" -- rm -f "$yol" >/dev/null 2>&1 || true
+                fi
+                ;;
+        esac
+    done < "$AYAR/kisayollar"
+    rm -f "$AYAR/kisayollar"
+}
+
+case "$1" in
+    remove)
+        masaustu_kisayollarini_kaldir
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        echo "Pardus Sınıf Yönetimi kaldırıldı; verileriniz korundu: $VERI"
+        echo "Verileri de silmek için: sudo dpkg --purge $UYG"
+        ;;
+    purge)
+        # dpkg, purge'dan önce "remove" adımını da çalıştırır; son durumu açıkça yaz.
+        masaustu_kisayollarini_kaldir
+        rm -rf "$VERI" "$AYAR"
+        echo "Pardus Sınıf Yönetimi verileri (envanter, anahtar, ayarlar) de silindi."
+        if [ -d /var/lib/pardus-sinif-odev ]; then
+            echo "Öğrenci ödev teslimleri KORUNDU: /var/lib/pardus-sinif-odev"
+            echo "Bunları da kalıcı olarak silmek için (geri alınamaz):"
+            echo "  sudo rm -rf /var/lib/pardus-sinif-odev && sudo userdel pardus-odev"
+        fi
+        if getent passwd "$KULLANICI" >/dev/null; then
+            userdel "$KULLANICI" >/dev/null 2>&1 || true
+        fi
+        if getent group "$KULLANICI" >/dev/null; then
+            groupdel "$KULLANICI" >/dev/null 2>&1 || true
+        fi
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        ;;
+esac
+
+exit 0

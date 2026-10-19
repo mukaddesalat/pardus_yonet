@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Lab Kaptanı
+GenericName=Pardus Sınıf Yönetimi
+Comment=Laboratuvar bilgisayarlarını yönetin (Pardus Sınıf Yönetimi)
+Exec=/usr/bin/pardus-sinif-yonetimi
+Icon=pardus-sinif-yonetimi
+Terminal=false
+Categories=Education;
+Keywords=laboratuvar;sınıf;öğrenci;yedek;temizlik;veyon;kaptan;pardus;
+StartupNotify=false

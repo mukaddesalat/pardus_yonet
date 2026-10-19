@@ -1,0 +1,46 @@
+/* OTOMATİK ÜRETİLDİ — elle düzenlemeyin.
+   Kaynak: DESIGN.md; üretici: araclar/belirtec_css.py */
+:root {
+  --c-primary: #1B5FC1;
+  --c-primary-hover: #154C9C;
+  --c-on-primary: #FFFFFF;
+  --c-secondary: #4E5D6C;
+  --c-neutral: #F3F5F8;
+  --c-surface: #FFFFFF;
+  --c-surface-alt: #EDF1F5;
+  --c-on-surface: #16212C;
+  --c-border: #D3DBE3;
+  --c-focus: #1B5FC1;
+  --c-success: #1B7340;
+  --c-success-bg: #E5F3EA;
+  --c-warning: #8A5300;
+  --c-warning-bg: #FFF1D6;
+  --c-error: #B42318;
+  --c-error-bg: #FCE9E7;
+  --c-info-bg: #E6EFFB;
+  --c-ref: #5B2C99;
+  --c-ref-bg: #EFE7FA;
+  --c-demo: #6B4100;
+  --c-demo-bg: #FFE7A8;
+  --c-sidebar: #16212C;
+  --c-on-sidebar: #E8EEF4;
+  --c-sidebar-active: #24364A;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-full: 9999px;
+  --s-xs: 4px;
+  --s-sm: 8px;
+  --s-md: 12px;
+  --s-lg: 16px;
+  --s-xl: 24px;
+  --s-sidebar: 232px;
+  --s-content-max: 1180px;
+  --t-headline-lg: 600 20px/1.3 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
+  --t-headline-md: 600 16px/1.35 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
+  --t-body-md: 400 14px/1.5 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
+  --t-body-sm: 400 13px/1.45 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
+  --t-label-md: 600 13px/1.3 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
+  --t-label-sm: 600 11px/1.2 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
+  --t-code-sm: 400 12px/1.3 "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+}

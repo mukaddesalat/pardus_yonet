@@ -1,0 +1,25 @@
+#!/bin/sh
+# Pardus Sınıf Yönetimi — kaldırma/güncelleme öncesi (dpkg prerm)
+set -e
+
+UYG=pardus-sinif-yonetimi
+OPT=/opt/$UYG
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        if [ -d /run/systemd/system ]; then
+            systemctl stop "$UYG.service" pardus-sinif-odev.service >/dev/null 2>&1 || true
+            if [ "$1" = "remove" ]; then
+                systemctl disable "$UYG.service" pardus-sinif-odev.service >/dev/null 2>&1 || true
+            fi
+        fi
+        # postinst'in ürettiği bayt kodu dpkg tarafından izlenmez; burada temizlenir
+        for dizin in "$OPT/uygulama" "$OPT/python/lib/python3.12"; do
+            if [ -d "$dizin" ]; then
+                find "$dizin" -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
+            fi
+        done
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,31 @@
+name: Testler
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıklar
+        run: pip install -r paketleme/requirements.txt pytest
+
+      - name: Üretilen dosyalar güncel mi?
+        run: |
+          python araclar/belirtec_css.py --denetle
+          python araclar/referans_haritasi.py --denetle
+          python araclar/onizleme_yap.py --denetle
+
+      - name: Birim ve bütünleşik testler
+        run: python -m pytest -q testler

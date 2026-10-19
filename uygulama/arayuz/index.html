@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Kaptanı — Pardus Sınıf Yönetimi</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E %3Crect x='2' y='2' width='60' height='60' rx='15' fill='%231B5FC1'/%3E %3Crect x='2' y='32' width='60' height='30' rx='15' fill='%23164E9F'/%3E %3Crect x='2' y='32' width='60' height='14' fill='%23164E9F'/%3E %3Crect x='11' y='13' width='42' height='29' rx='4.5' fill='%23FFFFFF'/%3E %3Crect x='14.5' y='16.5' width='35' height='22' rx='2.5' fill='%230F3566'/%3E %3Cpath d='M27 42h10l2.2 6.5H24.8z' fill='%23FFFFFF'/%3E %3Crect x='20' y='47.5' width='24' height='3.6' rx='1.8' fill='%23FFFFFF'/%3E %3Cg transform='translate(32 27.5)' fill='none' stroke='%23F6C445' stroke-width='2' stroke-linecap='round'%3E %3Ccircle r='5.6'/%3E %3Cpath d='M0-9.2v3.6M0 5.6v3.6M-9.2 0h3.6M5.6 0h3.6M-6.5-6.5l2.5 2.5M4 4l2.5 2.5M-6.5 6.5l2.5-2.5M4-4l2.5-2.5'/%3E %3Ccircle r='1.7' fill='%23F6C445' stroke='none'/%3E %3C/g%3E %3C/svg%3E">
+<link rel="stylesheet" href="/statik/belirtecler.css">
+<link rel="stylesheet" href="/statik/stil.css">
+</head>
+<body>
+<!--ONIZLEME-SERIT-->
+
+<!-- Giriş / ilk kurulum ekranı -->
+<div id="giris-ekrani" class="giris-kapsayici" hidden>
+  <div class="giris-kart">
+    <div id="giris-okul-banner" class="giris-okul-banner">
+      <img id="giris-okul-logo" class="okul-logo-buyuk" alt="Okul logosu" hidden>
+      <div>
+        <strong id="giris-okul-ad" class="okul-ust-ad">Atatürk Mesleki ve Teknik Anadolu Lisesi</strong>
+        <span id="giris-okul-alt" class="okul-ust-alt">Bilişim Teknolojileri Laboratuvarı</span>
+      </div>
+    </div>
+    <div class="giris-marka"><svg class="logo buyuk" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <rect x="2" y="2" width="60" height="60" rx="15" fill="#1B5FC1"/>
+    <rect x="2" y="32" width="60" height="30" rx="15" fill="#164E9F"/><rect x="2" y="32" width="60" height="14" fill="#164E9F"/>
+    <rect x="11" y="13" width="42" height="29" rx="4.5" fill="#FFFFFF"/>
+    <rect x="14.5" y="16.5" width="35" height="22" rx="2.5" fill="#0F3566"/>
+    <path d="M27 42h10l2.2 6.5H24.8z" fill="#FFFFFF"/><rect x="20" y="47.5" width="24" height="3.6" rx="1.8" fill="#FFFFFF"/>
+    <g transform="translate(32 27.5)" fill="none" stroke="#F6C445" stroke-width="2" stroke-linecap="round"><circle r="5.6"/>
+      <path d="M0-9.2v3.6M0 5.6v3.6M-9.2 0h3.6M5.6 0h3.6M-6.5-6.5l2.5 2.5M4 4l2.5 2.5M-6.5 6.5l2.5-2.5M4-4l2.5-2.5"/>
+      <circle r="1.7" fill="#F6C445" stroke="none"/></g>
+  </svg>
+      <div><h1>Lab Kaptanı</h1><p class="marka-alt">Pardus Sınıf Yönetimi</p></div>
+    </div>
+    <p id="giris-aciklama">Devam etmek için öğretmen kullanıcı adınızı ve şifrenizi yazın.</p>
+    <form id="kurulum-formu" hidden>
+      <label for="kurulum-okul">Okul adı</label>
+      <input id="kurulum-okul" type="text" maxlength="120" placeholder="örn. Atatürk MTAL">
+      <label for="kurulum-kullanici">Yönetici (Admin) öğretmen kullanıcı adı</label>
+      <input id="kurulum-kullanici" type="text" maxlength="40" value="admin" autocomplete="username">
+      <label for="kurulum-ad">Ad soyad</label>
+      <input id="kurulum-ad" type="text" maxlength="80" value="Mukaddes ALAT" autocomplete="name">
+      <label for="kurulum-kodu">Kurulum kodu</label>
+      <input id="kurulum-kodu" type="text" autocomplete="off" placeholder="Kurulumun sonunda gösterilen kod">
+      <label for="kurulum-parola">Yeni giriş parolası (en az 8 karakter)</label>
+      <input id="kurulum-parola" type="password" autocomplete="new-password">
+      <label for="kurulum-parola2">Parolayı tekrar yazın</label>
+      <input id="kurulum-parola2" type="password" autocomplete="new-password">
+      <button type="submit" class="birincil">Kurulumu tamamla</button>
+    </form>
+    <form id="giris-formu" hidden>
+      <div id="giris-ogretmen-cipler" class="ogretmen-secim-cipler" hidden></div>
+      <label for="giris-kullanici">Öğretmen kullanıcı adı veya ad soyad</label>
+      <input id="giris-kullanici" type="text" value="admin" autocomplete="username" placeholder="örn. admin veya Mukaddes ALAT">
+      <label for="giris-parola">Öğretmen giriş parolası</label>
+      <input id="giris-parola" type="password" autocomplete="current-password">
+      <button type="submit" class="birincil">Giriş yap</button>
+      <p class="ipucu">Standart öğretmenler sınıf yönetimi ve ödev araçlarını kullanır; sistem ayarları Admin öğretmene açıktır.</p>
+    </form>
+    <p id="giris-hata" class="hata" role="alert" hidden></p>
+  </div>
+</div>
+
+<!-- Ana uygulama -->
+<div id="uygulama" class="kabuk" hidden>
+  <aside class="yan-menu" aria-label="Menü">
+    <div class="marka">
+      <div class="marka-logo-kutu">
+        <img id="yan-okul-logo" class="okul-logo-kucuk" alt="Okul logosu" hidden>
+        <svg id="yan-varsayilan-logo" class="logo" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <rect x="2" y="2" width="60" height="60" rx="15" fill="#1B5FC1"/>
+          <rect x="2" y="32" width="60" height="30" rx="15" fill="#164E9F"/><rect x="2" y="32" width="60" height="14" fill="#164E9F"/>
+          <rect x="11" y="13" width="42" height="29" rx="4.5" fill="#FFFFFF"/>
+          <rect x="14.5" y="16.5" width="35" height="22" rx="2.5" fill="#0F3566"/>
+          <path d="M27 42h10l2.2 6.5H24.8z" fill="#FFFFFF"/><rect x="20" y="47.5" width="24" height="3.6" rx="1.8" fill="#FFFFFF"/>
+          <g transform="translate(32 27.5)" fill="none" stroke="#F6C445" stroke-width="2" stroke-linecap="round"><circle r="5.6"/>
+            <path d="M0-9.2v3.6M0 5.6v3.6M-9.2 0h3.6M5.6 0h3.6M-6.5-6.5l2.5 2.5M4 4l2.5 2.5M-6.5 6.5l2.5-2.5M4-4l2.5-2.5"/>
+            <circle r="1.7" fill="#F6C445" stroke="none"/></g>
+        </svg>
+      </div>
+      <div class="marka-metin">
+        <span id="yan-okul-ad" class="marka-okul"></span>
+        <span class="marka-ad">Lab Kaptanı</span>
+        <span id="yan-okul-alt" class="marka-alt">Pardus Sınıf Yönetimi</span>
+        <span id="surum" class="surum"></span>
+      </div>
+    </div>
+    <nav id="menu"></nav>
+    <div id="yan-ogretmen-kutu" class="sidebar-status" hidden>
+      <div class="status-row">
+        <span>Aktif Öğretmen:</span>
+        <strong id="yan-ogr-ad">Mukaddes ALAT</strong>
+      </div>
+      <div class="status-row">
+        <span>Yetki Rolü:</span>
+        <strong id="yan-ogr-rol" class="yan-ogr-rol-etiket">🛡️ Admin Öğretmen</strong>
+      </div>
+      <div class="status-row">
+        <span>Ekran / Ağ:</span>
+        <strong id="yan-durum-ozet">🔓 Serbest · 🌐 Açık</strong>
+      </div>
+    </div>
+  </aside>
+
+  <div class="icerik">
+    <header class="ust-cubuk" data-ui-id="M0-S1">
+      <div id="ust-baslik" class="ust-baslik"></div>
+      <span id="aktif-ogretmen-cip" class="ogretmen-cip" hidden></span>
+      <button id="secim-cipi" class="secim-cipi" type="button" data-ui-id="M0-S1-B3">0 bilgisayar seçili</button>
+      <span id="is-gostergesi" class="is-gostergesi" hidden></span>
+      <button id="kod-dugmesi" type="button" class="ikincil kucuk" data-ui-id="M0-S1-B1"
+              aria-pressed="false" hidden>Kodları gizle</button>
+      <button id="cikis" type="button" class="ikincil kucuk" data-ui-id="M0-S1-B2">🚪 Çıkış</button>
+    </header>
+
+    <main id="sayfalar">
+
+      <!-- ================================================= M1-S1 Sınıf Masası -->
+      <section id="sayfa-M1-S1" class="sayfa" data-ui-id="M1-S1" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M1 · S1</span>
+          <h1>🖥️ Sınıf Masası</h1>
+          <p class="sayfa-aciklama">Öğrenci bilgisayarlarını tek ekrandan izleyin; ekran kilitleme, duyuru, internet kısıtlama ve materyal dağıtımını tek tıkla uygulayın.</p>
+        </header>
+        <div id="m1s1-kartlar" class="ozet-kartlar"></div>
+        <div class="secim-yeri" data-islem="durum"></div>
+
+        <!-- Sezgisel Hızlı Ders Kontrolleri Kart Izgarası -->
+        <div class="sezgisel-eylem-izgara" aria-label="Hızlı ders kontrolleri">
+          <button id="m1s1-ekran-kilitle" type="button" class="sezgisel-eylem-kart vurgu-mavi" data-ui-id="M1-S1-B21">
+            <span class="eylem-ikon" aria-hidden="true">🔒</span>
+            <span class="eylem-metin">
+              <strong class="eylem-baslik">Bana Bakın (Ekran Kilitle)</strong>
+              <small class="eylem-alt">Öğrenci ekranlarını kilitler ve uyarı gösterir</small>
+            </span>
+          </button>
+          <button id="m1s1-ekran-ac" type="button" class="sezgisel-eylem-kart vurgu-yesil" data-ui-id="M1-S1-B22">
+            <span class="eylem-ikon" aria-hidden="true">🔓</span>
+            <span class="eylem-metin">
+              <strong class="eylem-baslik">Ekran Kilitlerini Aç</strong>
+              <small class="eylem-alt">Kilitli öğrenci ekranlarını serbest bırakır</small>
+            </span>
+          </button>
+          <button id="m1s1-duyuru" type="button" class="sezgisel-eylem-kart vurgu-turuncu" data-ui-id="M1-S1-B23">
+            <span class="eylem-ikon" aria-hidden="true">📢</span>
+            <span class="eylem-metin">
+              <strong class="eylem-baslik">Sınıfa Duyuru Gönder</strong>
+              <small class="eylem-alt">Öğrenci ekranlarında mesaj penceresi açar</small>
+            </span>
+          </button>
+          <button id="m1s1-internet" type="button" class="sezgisel-eylem-kart vurgu-mor" data-ui-id="M1-S1-B24" data-kisitli="0">
+            <span class="eylem-ikon" aria-hidden="true">🌐</span>
+            <span class="eylem-metin">
+              <strong id="m1s1-internet-baslik" class="eylem-baslik">İnterneti Kısıtla</strong>
+              <small class="eylem-alt">Dış ağı kapatır; yalnız yerel ağ ve ödev açık kalır</small>
+            </span>
+          </button>
+          <button id="m1s1-hizli-dosya" type="button" class="sezgisel-eylem-kart">
+            <span class="eylem-ikon" aria-hidden="true">📚</span>
+            <span class="eylem-metin">
+              <strong class="eylem-baslik">Ödev &amp; Masaüstüne Dosya</strong>
+              <small class="eylem-alt">Çalışma kağıdı, web bağlantısı veya ödev</small>
+            </span>
+          </button>
+          <button id="m1s1-hizli-temizlik" type="button" class="sezgisel-eylem-kart">
+            <span class="eylem-ikon" aria-hidden="true">🧹</span>
+            <span class="eylem-metin">
+              <strong class="eylem-baslik">Ders Sonu Temizliği</strong>
+              <small class="eylem-alt">Masaüstü ve İndirilenler klasörlerini temizler</small>
+            </span>
+          </button>
+        </div>
+
+        <div class="arac-cubugu">
+          <button id="m1s1-durum" type="button" class="birincil" data-ui-id="M1-S1-B3">🔄 Bilgisayar Durumlarını Yenile</button>
+          <details class="envanter-cekmece">
+            <summary class="dugme ikincil">⚙️ Envanter &amp; Bilgisayar Ekle / Çıkar</summary>
+            <div class="arac-cubugu envanter-cekmece-ici">
+              <button id="m1s1-ekle" type="button" class="birincil kucuk" data-ui-id="M1-S1-B1">➕ Bilgisayar ekle</button>
+              <button id="m1s1-ice" type="button" class="ikincil kucuk" data-ui-id="M1-S1-B2">📥 Dosyadan içe aktar</button>
+              <button id="m1s1-cikar" type="button" class="tehlikeli kucuk" data-ui-id="M1-S1-B4">🗑️ Envanterden çıkar</button>
+              <a id="m1s1-ansible" class="dugme ikincil kucuk" href="/api/envanter/ansible" download="envanter.ini"
+                 data-ui-id="M1-S1-B5">📄 Ansible indir</a>
+            </div>
+          </details>
+          <span class="bosluk"></span>
+          <div class="gorunum-secimi" role="group" aria-label="Görünüm">
+            <button id="m1s1-kip-kutucuk" type="button" class="kucuk" data-ui-id="M1-S1-B18" aria-pressed="true">🖥️ Ekran Kutucukları</button>
+            <button id="m1s1-kip-tablo" type="button" class="kucuk" data-ui-id="M1-S1-B19" aria-pressed="false">📋 Liste</button>
+          </div>
+        </div>
+        <div id="m1s1-gosterge" class="durum-gostergesi" aria-label="Durum renkleri (tıklayınca süzer)"></div>
+        <div id="m1s1-filtreler" hidden>
+          <label class="satir-ici" for="m1s1-filtre">Durum</label>
+          <select id="m1s1-filtre" data-ui-id="M1-S1-B16">
+            <option value="">Tümü</option>
+            <option value="hazir">Hazır</option>
+            <option value="hazirlik">Hazırlık gerekli</option>
+            <option value="erisilemiyor">Erişilemiyor</option>
+            <option value="oturum">Öğrenci oturumu açık</option>
+            <option value="korunan">Korunan (EBA/ETAP)</option>
+          </select>
+          <label class="satir-ici" for="m1s1-veyon-filtre">Veyon</label>
+          <select id="m1s1-veyon-filtre" data-ui-id="M1-S1-B17"></select>
+          <button id="m1s1-filtre-temizle" type="button" class="ikincil kucuk" data-ui-id="M1-S1-B6">Filtreleri temizle</button>
+        </div>
+        <div id="m1s1-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M1-S2 Bilgisayarları Hazırla -->
+      <section id="sayfa-M1-S2" class="sayfa" data-ui-id="M1-S2" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M1 · S2</span>
+          <h1>Bilgisayarları Hazırla</h1>
+          <p class="sayfa-aciklama">Her bilgisayar <strong>bir kez</strong> hazırlanır; sonra günlük işlerde hiç parola
+            sorulmaz. Bilgisayarları seçin ve adımları sırayla izleyin. Hazır olanlar kendiliğinden atlanır.</p>
+        </header>
+        <div class="secim-yeri" data-islem="hazirlik"></div>
+        <ol class="adim-kartlari">
+          <li class="kart adim-karti">
+            <div class="adim-ust"><span class="adim-no">1</span><h2>Bilgisayarı tanıt</h2></div>
+            <p>Uygulama her bilgisayarın kimliğini okur; siz de bunun kendi laboratuvarınızdaki bilgisayar
+              olduğunu onaylarsınız. Parola gönderilmez.</p>
+            <p id="m1s2-adim1" class="adim-sayaci" role="status"></p>
+            <div class="arac-cubugu">
+              <button id="m1s2-kimlik-oku" type="button" class="ikincil" data-ui-id="M1-S2-B1">Kimlikleri oku</button>
+              <button id="m1s2-kimlik-onayla" type="button" class="ikincil" data-ui-id="M1-S2-B2">Onayla</button>
+            </div>
+            <details class="teknik"><summary>Teknik ayrıntı</summary>
+              <p>SSH sunucusunun parmak izi (SHA256) okunur ve kaydedilir. Klon imajlarda aynı parmak izi birden çok
+                bilgisayarda görünebilir; uygulama bunu “klon kimlik” diye uyarır.</p></details>
+          </li>
+          <li class="kart adim-karti">
+            <div class="adim-ust"><span class="adim-no">2</span><h2>Yönetime bağla</h2></div>
+            <p>Öğrenci bilgisayarlarındaki yönetici hesabının (pardus veya hp) parolasını <strong>bir kez</strong>
+              yazarsınız. Uygulama güvenli bir bağlantı anahtarı kurar; parola saklanmaz.</p>
+            <p id="m1s2-adim2" class="adim-sayaci" role="status"></p>
+            <div class="arac-cubugu">
+              <button id="m1s2-hazirla" type="button" class="birincil" data-ui-id="M1-S2-B3">Yönetime bağla</button>
+            </div>
+            <details class="teknik"><summary>Teknik ayrıntı</summary>
+              <p>Uygulamanın SSH anahtarı yönetim hesabına eklenir; <code>/etc/sudoers.d/pardus-sinif-yonetimi</code>
+                ile o hesaba <strong>NOPASSWD: ALL</strong> verilir (visudo ile doğrulanır). Bu, yönetim hesabına
+                <strong>root eşdeğeri</strong> yetkidir: öğretmen bilgisayarını ve uygulama girişini koruyun.
+                ogrenci hesabı yoksa oluşturulur (sudo verilmez). Sonunda yeni bir oturumda yalnız anahtarla
+                bağlanıp yetki denenir.</p></details>
+          </li>
+          <li class="kart adim-karti">
+            <div class="adim-ust"><span class="adim-no">3</span><h2>Fazla yönetici hesabını temizle</h2></div>
+            <p>Bir bilgisayarda hem <strong>pardus</strong> hem <strong>hp</strong> varsa birini bırakırız
+              (öneri: pardus). Silinecek hesap önce yedeklenir. Gerekmiyorsa bu adımı geçin.</p>
+            <p id="m1s2-adim3" class="adim-sayaci" role="status"></p>
+            <div class="arac-cubugu">
+              <button id="m1s2-tek-onizle" type="button" class="ikincil" data-ui-id="M1-S2-B4">Önce göster</button>
+              <button id="m1s2-tek-uygula" type="button" class="tehlikeli" data-ui-id="M1-S2-B5" disabled>Temizle</button>
+            </div>
+            <details class="teknik"><summary>Teknik ayrıntı</summary>
+              <p>Korunacak hesabın anahtarı ve parolasız yetkisi yeni bir oturumda doğrulanmadan silme yapılmaz;
+                uygulamanın o anki bağlantısını sağlayan hesap silinmez. Silinen hesabın ev dizini ve
+                passwd/shadow/group satırları öğrenci PC'de <code>hesap-yedekleri</code> altına yedeklenir.</p></details>
+          </li>
+        </ol>
+        <div id="m1s2-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M1-S3 Ağda Bul -->
+      <section id="sayfa-M1-S3" class="sayfa" data-ui-id="M1-S3" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M1 · S3</span>
+          <h1>Ağda Bul</h1>
+          <p class="sayfa-aciklama">Kendi ağınızda SSH'ı açık bilgisayarları bulur. Tarama parola
+            göndermez ve envantere kayıt eklemez; eklemek ve hazırlamak ayrı, onaylı adımlardır.</p>
+        </header>
+        <div class="kart">
+          <form id="m1s3-form" class="satir-form">
+            <label for="m1s3-aralik">Adres aralığı</label>
+            <input id="m1s3-aralik" type="text" placeholder="örn. 192.168.10.0/24 veya 192.168.10.130-160">
+            <button id="m1s3-oneri" type="button" class="ikincil kucuk" data-ui-id="M1-S3-B7">Önerilen ağı kullan</button>
+            <label for="m1s3-haric">Hariç (virgülle)</label>
+            <input id="m1s3-haric" type="text" placeholder="örn. 192.168.10.1">
+            <button id="m1s3-tara" type="submit" class="birincil" data-ui-id="M1-S3-B1">Taramayı başlat</button>
+          </form>
+          <p id="m1s3-oneri-metin" class="ipucu"></p>
+        </div>
+        <div class="arac-cubugu">
+          <label for="m1s3-lab" class="satir-ici">Eklenecek laboratuvar</label>
+          <input id="m1s3-lab" type="text" maxlength="40" value="Laboratuvar">
+          <button id="m1s3-ekle" type="button" class="ikincil" data-ui-id="M1-S3-B2">Envantere ekle</button>
+          <button id="m1s3-ekle-hazirla" type="button" class="birincil" data-ui-id="M1-S3-B3">Envantere ekle ve hazırla</button>
+          <button id="m1s3-temizle" type="button" class="ikincil" data-ui-id="M1-S3-B4">Bulunanları temizle</button>
+        </div>
+        <div id="m1s3-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M1-S4 Veyon Ayarları -->
+      <section id="sayfa-M1-S4" class="sayfa" data-ui-id="M1-S4" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M1 · S4</span>
+          <h1>Veyon Ayarları</h1>
+          <p class="sayfa-aciklama">Veyon Configurator gerekmez: paketi ve public key'i buraya yükleyin, bilgisayarları
+            seçin, önizleyip onaylayın. Veyon yalnız sizin yüklediğiniz .deb dosyasından kurulur. SSH anahtarı bakım
+            erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
+        </header>
+        <div class="adimlar" aria-label="Kullanım sırası">
+          <span class="adim"><b>1</b> Veyon paketini yükle</span>
+          <span class="adim"><b>2</b> Public key yükle</span>
+          <span class="adim"><b>3</b> Bilgisayarları seç</span>
+          <span class="adim"><b>4</b> Önizle ve onayla</span>
+          <span class="adim"><b>5</b> Bağlantıyı doğrula</span>
+        </div>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>Veyon paketi</h2>
+            <p class="ipucu">veyon.io'dan veya okulunuzun verdiği <code>veyon_&lt;sürüm&gt;_amd64.deb</code> dosyası.
+              Yükleme kurulum başlatmaz; paket adı ve içeriği doğrulanır. Diğer uygulamalar M2-S2'den kurulur.</p>
+            <div class="arac-cubugu">
+              <label class="dugme ikincil" for="m1s4-dosya" data-ui-id="M1-S4-B1">Veyon paketini yükle (.deb)</label>
+              <input id="m1s4-dosya" type="file" accept=".deb,application/vnd.debian.binary-package" class="gizli-giris">
+            </div>
+            <p id="m1s4-paket-durum" class="ipucu" role="status"></p>
+            <div id="m1s4-paketler" class="tablo-kap"></div>
+          </div>
+          <div class="kart">
+            <h2>Public key</h2>
+            <p class="ipucu">Öğretmen bilgisayarındaki Veyon anahtar çiftinin <strong>public</strong> parçası
+              (<code>…_public_key.pem</code>). Ad, private key'in adıyla aynı olmalıdır. Private key istenmez ve yüklenmez.</p>
+            <div class="arac-cubugu">
+              <label for="m1s4-anahtar-adi" class="satir-ici">Anahtar adı</label>
+              <input id="m1s4-anahtar-adi" type="text" maxlength="32" value="teacher" data-ui-id="M1-S4-B5"
+                     pattern="[A-Za-z][A-Za-z0-9]*" autocomplete="off">
+              <label class="dugme ikincil" for="m1s4-anahtar-dosya" data-ui-id="M1-S4-B4">Public key yükle</label>
+              <input id="m1s4-anahtar-dosya" type="file" accept=".pem,.pub,.key,.txt,application/x-pem-file" class="gizli-giris">
+            </div>
+            <p id="m1s4-anahtar-durum" class="ipucu" role="status"></p>
+            <dl id="m1s4-anahtar" class="paket-bilgi"></dl>
+            <div class="arac-cubugu">
+              <button id="m1s4-ogretmen" type="button" class="ikincil kucuk" data-ui-id="M1-S4-B7">Öğretmen PC'yi denetle</button>
+              <button id="m1s4-anahtar-sil" type="button" class="ikincil kucuk" data-ui-id="M1-S4-B6">Public key'i kaldır</button>
+            </div>
+            <div id="m1s4-ogretmen-sonuc"></div>
+          </div>
+        </div>
+
+        <div class="kart">
+          <h2>Bilgisayarlar</h2>
+          <div class="secim-yeri" data-islem="veyon"></div>
+          <div class="arac-cubugu">
+            <button id="m1s4-kontrol" type="button" class="ikincil" data-ui-id="M1-S4-B8">Hazırlığı kontrol et</button>
+            <button id="m1s4-surumler" type="button" class="ikincil" data-ui-id="M1-S4-B13">Sürümleri yenile</button>
+            <span class="ayrac"></span>
+            <button id="m1s4-kur" type="button" class="ikincil" data-ui-id="M1-S4-B9">Seçililere Veyon kur/güncelle</button>
+            <button id="m1s4-yapilandir" type="button" class="ikincil" data-ui-id="M1-S4-B10">Seçililerde Veyon'u yapılandır</button>
+            <button id="m1s4-ikisi" type="button" class="birincil" data-ui-id="M1-S4-B11">Kur ve yapılandır</button>
+            <span class="ayrac"></span>
+            <button id="m1s4-dogrula" type="button" class="ikincil" data-ui-id="M1-S4-B12">Bağlantıyı doğrula</button>
+            <button id="m1s4-geri" type="button" class="tehlikeli" data-ui-id="M1-S4-B14">Önceki ayarları geri yükle</button>
+          </div>
+          <div id="m1s4-kartlar" class="ozet-kartlar"></div>
+          <div id="m1s4-filtreler" hidden>
+            <label class="satir-ici" for="m1s4-filtre">Sürüm</label>
+            <select id="m1s4-filtre" data-ui-id="M1-S4-B15"></select>
+          </div>
+          <div id="m1s4-tablo" class="tablo-kap"></div>
+        </div>
+
+        <div class="kart">
+          <h2>İşlem sonuçları</h2>
+          <p id="m1s4-sonuc-baslik" class="ipucu">Henüz bu oturumda Veyon işlemi yapılmadı. Tüm geçmiş: M4-S1.</p>
+          <div id="m1s4-sonuclar" class="tablo-kap"></div>
+        </div>
+      </section>
+
+      <!-- ================================================= M2-S1 Profil Temizliği -->
+      <section id="sayfa-M2-S1" class="sayfa" data-ui-id="M2-S1" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M2 · S1</span>
+          <h1>Profil Temizliği</h1>
+          <p class="sayfa-aciklama">Önce önizleyin: her bilgisayar için tek satırda kapsam, oturum,
+            tahmini açılacak alan ve yedek durumu. Yedekler öğrenci bilgisayarında tutulur (karar 18);
+            ödev teslim arşivi bu işleme hiçbir zaman dahil değildir.</p>
+        </header>
+        <div class="secim-yeri" data-islem="temizlik"></div>
+        <div class="kapsam-secimi" role="radiogroup" aria-label="Temizlik kapsamı">
+          <button type="button" class="kapsam" data-kapsam="alanlar" role="radio" data-ui-id="M2-S1-B1">Ders sonu temizliği</button>
+          <button type="button" class="kapsam" data-kapsam="ayarlar" role="radio" data-ui-id="M2-S1-B2">Profil ayarlarını sıfırla</button>
+          <button type="button" class="kapsam" data-kapsam="tam" role="radio" data-ui-id="M2-S1-B3">Ev dizininin tamamını sıfırla</button>
+        </div>
+        <fieldset id="m2s1-alanlar" class="alan-secimi" data-ui-id="M2-S1-B14">
+          <legend>Tüm seçili bilgisayarlarda temizlenecek alanlar</legend>
+          <div id="m2s1-alan-kutulari" class="onay-izgara"></div>
+        </fieldset>
+        <p id="m2s1-kapsam-uyari" class="uyari-kutusu" role="note"></p>
+        <div class="arac-cubugu">
+          <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle</button>
+          <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7" disabled>Temizliği başlat</button>
+          <span class="ayrac"></span>
+          <button id="m2s1-oturumlar" type="button" class="tehlikeli" data-ui-id="M2-S1-B5">Tüm öğrenci oturumlarını kapat</button>
+          <button id="m2s1-yedek" type="button" class="ikincil" data-ui-id="M2-S1-B9">Yalnız yedek al</button>
+          <button id="m2s1-geri" type="button" class="ikincil" data-ui-id="M2-S1-B10">Yedekten dön…</button>
+        </div>
+        <div id="m2s1-kartlar" class="ozet-kartlar"></div>
+        <div id="m2s1-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M2-S2 Paket Kurulumu -->
+      <section id="sayfa-M2-S2" class="sayfa" data-ui-id="M2-S2" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M2 · S2</span>
+          <h1>Paket Kurulumu</h1>
+          <p class="sayfa-aciklama">Dosyayı seç → hedefleri göster → planı hazırla (aktarım, SHA-256,
+            sürüm/mimari/boş alan/kilit/bağımlılık) → planı onayla → kur → kurulu sürümü doğrula.
+            Kaldırma ve sürüm düşürme gerektiren kurulum engellenir; sudo parolası sorulmaz.</p>
+        </header>
+        <div class="kart paket-karti">
+          <div class="arac-cubugu">
+            <label class="dugme ikincil" for="m2s2-dosya" data-ui-id="M2-S2-B1">.deb dosyası seç</label>
+            <input id="m2s2-dosya" type="file" accept=".deb,application/vnd.debian.binary-package" class="gizli-giris">
+            <label for="m2s2-paket" class="satir-ici">Yüklü paket</label>
+            <select id="m2s2-paket" data-ui-id="M2-S2-B6"></select>
+            <button id="m2s2-sil" type="button" class="ikincil kucuk" data-ui-id="M2-S2-B4">Paketi öğretmen PC'den sil</button>
+          </div>
+          <p id="m2s2-yukleme" class="ipucu" role="status"></p>
+          <dl id="m2s2-bilgi" class="paket-bilgi"></dl>
+        </div>
+        <div class="secim-yeri" data-islem="paket"></div>
+        <div class="arac-cubugu">
+          <button id="m2s2-plan" type="button" class="ikincil" data-ui-id="M2-S2-B2">Kurulum planını hazırla</button>
+          <button id="m2s2-kur" type="button" class="birincil" data-ui-id="M2-S2-B3" disabled>Planı onayla ve kur</button>
+        </div>
+        <div id="m2s2-kartlar" class="ozet-kartlar"></div>
+        <div id="m2s2-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M2-S3 Görünüm ve Giriş -->
+      <section id="sayfa-M2-S3" class="sayfa" data-ui-id="M2-S3" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M2 · S3</span>
+          <h1>Görünüm ve Giriş</h1>
+          <p class="sayfa-aciklama">Pardus Karşılayıcı'daki Windows 10 benzeri düzeni hedefler; ayarlar
+            her bilgisayarın kendi kurulu şemasına göre denetlenir. Masaüstü ortamı ve açık oturum
+            sessizce değiştirilmez; XFCE bilgisayarlar ayrı geçiş planı ister.</p>
+        </header>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>Uygulanacaklar</h2>
+            <label class="satir-ici" for="m2s3-yon">İşlem yönü</label>
+            <select id="m2s3-yon" data-ui-id="M2-S3-B10">
+              <option value="uygula">Uygula</option>
+              <option value="kaldir">Daha önce uygulananı kaldır</option>
+            </select>
+            <div class="secenek-listesi">
+              <label class="onay-kutusu"><input type="checkbox" id="m2s3-duzen" checked data-ui-id="M2-S3-B1">
+                Windows 10 benzeri düzen <span class="ipucu">(alt görev çubuğu + uygulama menüsü; dash-to-panel + ArcMenu)</span></label>
+              <label class="onay-kutusu"><input type="checkbox" id="m2s3-duvar" data-ui-id="M2-S3-B2">
+                Standart duvar kâğıdı</label>
+              <div class="alt-secenek">
+                <label class="dugme ikincil kucuk" for="m2s3-gorsel" data-ui-id="M2-S3-B3">Görsel seç</label>
+                <input id="m2s3-gorsel" type="file" accept=".png,.jpg,.jpeg" class="gizli-giris">
+                <span id="m2s3-gorsel-bilgi" class="ipucu"></span>
+              </div>
+              <label class="onay-kutusu"><input type="checkbox" id="m2s3-kilit-ekran" checked data-ui-id="M2-S3-B4">
+                Öğrenci ekran kilidini kapat</label>
+              <label class="onay-kutusu"><input type="checkbox" id="m2s3-otomatik" checked data-ui-id="M2-S3-B5">
+                ogrenci otomatik girişi (GDM)</label>
+              <label class="onay-kutusu"><input type="checkbox" id="m2s3-gizle" checked data-ui-id="M2-S3-B6">
+                Yönetim hesabını (hp/pardus) giriş ekranında gizle <span class="ipucu">(hesap ve SSH erişimi korunur)</span></label>
+              <label class="onay-kutusu"><input type="checkbox" id="m2s3-kilitle" checked data-ui-id="M2-S3-B7">
+                Duvar kâğıdı ve düzen ayarlarını kilitle</label>
+            </div>
+          </div>
+          <div class="kart">
+            <h2>Hedef görünüm <span class="rozet notr">Temsili çizim</span></h2>
+            <div id="m2s3-temsili" class="temsili"></div>
+            <p class="ipucu">Bu bir çizimdir, gerçek Pardus ekran görüntüsü değildir. Gerçek düzen her
+              bilgisayardaki Pardus Karşılayıcı tanımından (“10” düzeni) okunur.</p>
+          </div>
+        </div>
+        <div class="secim-yeri" data-islem="gorunum"></div>
+        <div class="arac-cubugu">
+          <button id="m2s3-onizle" type="button" class="ikincil" data-ui-id="M2-S3-B8">Önizle</button>
+          <button id="m2s3-uygula" type="button" class="birincil" data-ui-id="M2-S3-B9" disabled>Uygula</button>
+        </div>
+        <div id="m2s3-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M2-S4 Güç -->
+      <section id="sayfa-M2-S4" class="sayfa" data-ui-id="M2-S4" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M2 · S4</span>
+          <h1>Güç ve Uyku</h1>
+          <p class="sayfa-aciklama">Bilgisayarları şimdi yeniden başlatın veya kapatın; uyku ayarıyla da boşta kalan
+            bilgisayarların uykuya geçip erişilemez olmasını önleyin. Kapanma zamanı planlamak için M2-S5.</p>
+        </header>
+        <div class="secim-yeri" data-islem="guc"></div>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>Şimdi</h2>
+            <p class="ipucu">“Komut gönderildi” ile “kapandı / yeniden açıldı” ayrı raporlanır. Kaydedilmemiş
+              çalışmalar kaybolabilir.</p>
+            <div class="arac-cubugu">
+              <button id="m2s4-yeniden" type="button" class="ikincil" data-ui-id="M2-S4-B1">Yeniden başlat</button>
+              <button id="m2s4-kapat" type="button" class="tehlikeli" data-ui-id="M2-S4-B2">Kapat</button>
+            </div>
+          </div>
+          <div class="kart">
+            <h2>Uyku ve ekran koruyucu</h2>
+            <p class="ipucu">Bilgisayarlar boşta <strong>uykuya geçmez ve kendiliğinden kapanmaz</strong>; böylece
+              yönetim için her zaman erişilebilir kalır. Boşta kalan ekran yalnız kararır (ekran koruyucu).</p>
+            <div class="arac-cubugu">
+              <label for="m2s4-ekran" class="satir-ici">Ekran koruyucu</label>
+              <select id="m2s4-ekran" data-ui-id="M2-S4-B3">
+                <option value="5">5 dakika boşta kalınca</option>
+                <option value="10" selected>10 dakika boşta kalınca</option>
+                <option value="15">15 dakika boşta kalınca</option>
+                <option value="30">30 dakika boşta kalınca</option>
+                <option value="60">1 saat boşta kalınca</option>
+                <option value="0">Hiç (ekran açık kalır)</option>
+              </select>
+            </div>
+            <div class="arac-cubugu">
+              <button id="m2s4-uyku-onizle" type="button" class="ikincil" data-ui-id="M2-S4-B4">Önizle</button>
+              <button id="m2s4-uyku-uygula" type="button" class="birincil" data-ui-id="M2-S4-B5">Uyku modunu kapat</button>
+              <button id="m2s4-uyku-kaldir" type="button" class="ikincil" data-ui-id="M2-S4-B6">Varsayılana dön</button>
+            </div>
+            <details class="teknik"><summary>Teknik ayrıntı</summary>
+              <p>sleep/suspend/hibernate hedefleri maskelenir (<code>systemctl mask</code>): oturum, giriş ekranı veya güç
+                tuşu uyku başlatamaz. GNOME güç ayarları dconf'ta kilitlenir (<code>sleep-inactive-*-type='nothing'</code>,
+                <code>idle-delay</code>); logind boşta eylemi yok sayar. Zamanlı kapatma (M2-S5) bundan etkilenmez.</p></details>
+          </div>
+        </div>
+        <div id="m2s4-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M2-S5 Zamanlı Kapatma -->
+      <section id="sayfa-M2-S5" class="sayfa" data-ui-id="M2-S5" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M2 · S5</span>
+          <h1>Zamanlı Kapatma</h1>
+          <p class="sayfa-aciklama">Bilgisayarlar seçtiğiniz zamanda kendiliğinden kapanır: <strong>bir kez</strong>
+            (belirli bir tarihte) ya da <strong>her hafta</strong> seçtiğiniz günlerde. Saat gelince öğrencilere uyarı
+            çıkar, uyarı süresi sonunda kapanır. Bilgisayar o saatte kapalıysa kapatma atlanır.</p>
+        </header>
+        <div class="secim-yeri" data-islem="guc"></div>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>Yeni plan</h2>
+            <div class="kapsam-secimi" role="radiogroup" aria-label="Plan türü">
+              <button id="m2s5-tek" type="button" class="kapsam" role="radio" aria-checked="false" data-ui-id="M2-S5-B1">Bir kez</button>
+              <button id="m2s5-hafta" type="button" class="kapsam" role="radio" aria-checked="true" data-ui-id="M2-S5-B2">Her hafta</button>
+            </div>
+            <div class="form-izgara">
+              <div id="m2s5-tarih-kap" class="kapsayici-yok">
+                <label for="m2s5-tarih" id="m2s5-tarih-etiket">Tarih</label>
+                <input id="m2s5-tarih" type="date" data-ui-id="M2-S5-B3">
+              </div>
+              <div id="m2s5-gun-kap" class="kapsayici-yok">
+                <span id="m2s5-gun-etiket" class="satir-ici">Günler</span>
+                <div id="m2s5-gunler" class="gun-secimi" role="group" aria-label="Günler" data-ui-id="M2-S5-B4"></div>
+              </div>
+              <label for="m2s5-saat">Saat</label>
+              <input id="m2s5-saat" type="time" value="17:30" data-ui-id="M2-S5-B5">
+              <label for="m2s5-uyari">Uyarı süresi</label>
+              <select id="m2s5-uyari" data-ui-id="M2-S5-B6">
+                <option value="0">Uyarmadan kapat</option>
+                <option value="1">1 dakika önce uyar</option>
+                <option value="2">2 dakika önce uyar</option>
+                <option value="5" selected>5 dakika önce uyar</option>
+                <option value="10">10 dakika önce uyar</option>
+                <option value="15">15 dakika önce uyar</option>
+              </select>
+              <label for="m2s5-aciklama">Açıklama</label>
+              <input id="m2s5-aciklama" type="text" maxlength="80" placeholder="örn. Gün sonu kapatma" data-ui-id="M2-S5-B7">
+            </div>
+            <p id="m2s5-ozet" class="adim-sayaci" role="status"></p>
+            <button id="m2s5-ekle" type="button" class="birincil" data-ui-id="M2-S5-B8">Seçili bilgisayarlara ekle</button>
+          </div>
+          <div class="kart">
+            <h2>Kurulu planlar</h2>
+            <div class="arac-cubugu">
+              <button id="m2s5-oku" type="button" class="ikincil" data-ui-id="M2-S5-B9">Planları oku</button>
+              <button id="m2s5-iptal" type="button" class="ikincil" data-ui-id="M2-S5-B12">Bekleyen kapatmayı iptal et</button>
+              <button id="m2s5-hepsini-sil" type="button" class="tehlikeli" data-ui-id="M2-S5-B11">Seçililerdeki tüm planları kaldır</button>
+            </div>
+            <div id="m2s5-planlar"></div>
+          </div>
+        </div>
+        <div id="m2s5-tablo" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M2-S6 Komut Gönder -->
+      <section id="sayfa-M2-S6" class="sayfa" data-ui-id="M2-S6" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M2 · S6</span>
+          <h1>Komut Gönder</h1>
+          <p class="sayfa-aciklama">Kayıtlı veya özel bash/shell komutunu SSH ile seçili bilgisayarlara gönderin.
+            Her bilgisayarın dönüş kodu (RC), standart çıktısı ve hata çıktısı aşağıdaki canlı log tablosunda
+            ve özet sayaçlarında anlık olarak izlenir.</p>
+        </header>
+        <div class="secim-yeri" data-islem="komut"></div>
+        <div class="iki-sutun">
+          <div>
+            <div class="kart">
+              <h2>Kayıtlı Komut Kütüphanesi</h2>
+              <p class="ipucu">Hazır komutlardan birini düzenleyiciye yükleyin veya kendi kaydettiğiniz komutları yönetin.</p>
+              <div id="m2s6-kutuphane" class="komut-kutuphane"></div>
+            </div>
+            <div class="kart ust-bosluk">
+              <h2>Hızlı <code>/etc/hosts</code> Adres Ekleme</h2>
+              <p class="ipucu">Öğrenci bilgisayarlarında yerel alan adını (örn. <code>abc.local</code> → <code>192.168.23.142</code>)
+                <code>/etc/hosts</code> dosyasına idempotent olarak yazar veya günceller.</p>
+              <div class="form-izgara">
+                <label for="m2s6-hosts-ip">Hedef IP adresi</label>
+                <input id="m2s6-hosts-ip" type="text" value="192.168.23.142" placeholder="192.168.23.142">
+                <label for="m2s6-hosts-ad">Alan adı (Hostname)</label>
+                <input id="m2s6-hosts-ad" type="text" value="abc.local" placeholder="abc.local">
+              </div>
+              <div class="arac-cubugu ust-bosluk">
+                <button id="m2s6-hosts-ekle" type="button" class="birincil" data-ui-id="M2-S6-B5">Hosts Kaydını Dağıt</button>
+              </div>
+            </div>
+          </div>
+          <div class="kart">
+            <h2>Bash / Shell Komut Düzenleyici</h2>
+            <div class="form-izgara">
+              <label for="m2s6-ad">Komut başlığı</label>
+              <input id="m2s6-ad" type="text" maxlength="80" value="abc kullanıcısını sil (userdel)" placeholder="örn. abc kullanıcısını sil">
+              <label for="m2s6-kategori">Kategori</label>
+              <select id="m2s6-kategori">
+                <option value="Kullanıcı">Kullanıcı</option>
+                <option value="Ağ / DNS">Ağ / DNS</option>
+                <option value="Sistem">Sistem</option>
+                <option value="Paket">Paket</option>
+                <option value="Genel">Genel</option>
+              </select>
+            </div>
+            <label for="m2s6-komut" class="ust-bosluk">Çalıştırılacak Bash komutu</label>
+            <textarea id="m2s6-komut" class="komut-editor" rows="5" spellcheck="false">id -u abc &gt;/dev/null 2&gt;&amp;1 &amp;&amp; userdel -r abc &amp;&amp; echo "abc kullanicisi ve ev dizini silindi." || echo "abc kullanicisi bulunamadi."</textarea>
+            <label class="onay-kutusu"><input id="m2s6-sudo" type="checkbox" checked data-ui-id="M2-S6-B6">
+              Parolasız <code>sudo</code> (root yetkisi) ile çalıştır</label>
+            <div class="arac-cubugu">
+              <button id="m2s6-kaydet" type="button" class="ikincil" data-ui-id="M2-S6-B2">Kütüphaneye Kaydet</button>
+              <button id="m2s6-calistir" type="button" class="birincil" data-ui-id="M2-S6-B1">Seçili Bilgisayarlara Gönder</button>
+            </div>
+          </div>
+        </div>
+        <div class="kart ust-bosluk">
+          <div class="arac-cubugu">
+            <h2 class="sifir-alt">Canlı Komut Çıktı (Log) Tablosu ve Özet</h2>
+            <span class="bosluk"></span>
+            <span id="m2s6-ozet-metin" class="komut-ozet-etiket">Henüz komut çalıştırılmadı</span>
+          </div>
+          <div id="m2s6-sayaclar" class="ozet-kartlar"></div>
+          <div id="m2s6-log-tablo" class="tablo-kap"></div>
+        </div>
+      </section>
+
+      <!-- ================================================= M3-S1 Teslimler -->
+      <section id="sayfa-M3-S1" class="sayfa" data-ui-id="M3-S1" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M3 · S1</span>
+          <h1>Teslimler</h1>
+          <p class="sayfa-aciklama">Öğrenci adresi: <strong id="portal-adres" class="adres"></strong>
+            <span id="portal-durum"></span></p>
+        </header>
+        <div class="kart alt-bosluk">
+          <h2>Öğrenci Masaüstüne Ders Materyali veya Bağlantı Dağıt</h2>
+          <p class="ipucu">Seçili öğrenci bilgisayarlarının <code>/home/ogrenci/Masaüstü</code> klasörüne çalışma dosyası veya tıklanabilir web kısayolu gönderir.</p>
+          <div class="iki-sutun">
+            <div class="arac-cubugu">
+              <input id="m3s1-url-baslik" type="text" maxlength="60" placeholder="Kısayol adı (örn. Ders Notları)" aria-label="Kısayol adı">
+              <input id="m3s1-url-adres" type="url" maxlength="500" placeholder="https://..." aria-label="Web adresi">
+              <button id="m3s1-url-gonder" type="button" class="ikincil kucuk" data-ui-id="M3-S1-B22">Masaüstüne Bağlantı Gönder</button>
+            </div>
+            <div class="arac-cubugu">
+              <input id="m3s1-dosya-sec" type="file" aria-label="Dağıtılacak dosya">
+              <button id="m3s1-dosya-gonder" type="button" class="ikincil kucuk" data-ui-id="M3-S1-B23">Masaüstüne Dosya Dağıt</button>
+            </div>
+          </div>
+        </div>
+        <div id="alt-odev-liste" class="alt-bolum">
+          <div class="arac-cubugu">
+            <button id="btn-yeni-odev" type="button" class="birincil" data-ui-id="M3-S1-B1">Yeni ödev</button>
+            <button id="btn-odev-yenile" type="button" class="ikincil" data-ui-id="M3-S1-B2">Yenile</button>
+          </div>
+          <div id="odev-tablosu" class="tablo-kap"></div>
+        </div>
+        <div id="alt-odev-takip" class="alt-bolum" hidden>
+          <button id="btn-takip-geri" type="button" class="ikincil" data-ui-id="M3-S1-B7">← Ödev listesi</button>
+          <div class="kart ust-bosluk">
+            <h2 id="takip-baslik"></h2>
+            <p id="takip-bilgi" class="ipucu"></p>
+            <p id="takip-tamam" class="tamam-metni" hidden>✓ Sınıfın tamamı teslim etti.</p>
+            <div id="takip-ozet" class="ozet-kartlar"></div>
+            <div id="takip-eylemler" class="arac-cubugu"></div>
+          </div>
+          <div class="arac-cubugu">
+            <button id="btn-zip-tum" type="button" class="birincil" data-ui-id="M3-S1-B4">Tüm teslimleri indir (ZIP)</button>
+            <button id="btn-zip-secili" type="button" class="ikincil" data-ui-id="M3-S1-B5">Seçili teslimleri indir (ZIP)</button>
+            <label class="onay-kutusu satir-ici"><input type="checkbox" id="zip-tum-surum" data-ui-id="M3-S1-B14">
+              Önceki sürümleri de dahil et</label>
+          </div>
+          <div id="takip-tablosu" class="tablo-kap"></div>
+        </div>
+      </section>
+
+      <!-- ================================================= M3-S2 Sınıflar ve Kodlar -->
+      <section id="sayfa-M3-S2" class="sayfa" data-ui-id="M3-S2" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M3 · S2</span>
+          <h1>Sınıflar ve Kodlar</h1>
+          <p class="sayfa-aciklama">Kodlar yalnız üretildiği anda gösterilir ve yazdırılabilir. Kaybolan
+            kod geri getirilemez; yeni kod üretin (eskisi hemen geçersiz olur).</p>
+        </header>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>Sınıf listesini içe aktar (CSV)</h2>
+            <p class="ipucu">Sütunlar: <strong>sınıf; öğrenci numarası; ad soyad</strong>. Başlık satırı
+              isteğe bağlıdır. Var olan öğrencinin adı güncellenir, kodu korunur.</p>
+            <div class="arac-cubugu">
+              <label class="dugme ikincil" for="csv-dosya" data-ui-id="M3-S2-B1">CSV dosyası seç</label>
+              <input type="file" id="csv-dosya" accept=".csv,.txt" class="gizli-giris">
+              <span id="csv-ad" class="ipucu"></span>
+              <button id="btn-csv-aktar" type="button" class="birincil" data-ui-id="M3-S2-B2">İçe aktar</button>
+            </div>
+            <p id="csv-sonuc" class="ipucu" role="status"></p>
+          </div>
+          <div class="kart">
+            <h2>Öğrenci portalı</h2>
+            <p id="portal-bilgi" class="ipucu"></p>
+            <form id="portal-ayar-formu" class="satir-form">
+              <label for="portal-ad">Adres adı</label>
+              <input id="portal-ad" type="text" maxlength="63" placeholder="ogretmen.lab">
+              <label for="portal-aglar">Laboratuvar ağları (virgülle)</label>
+              <input id="portal-aglar" type="text" placeholder="örn. 192.168.10.0/24">
+              <button type="submit" class="ikincil" data-ui-id="M3-S2-B14">Portal ayarlarını kaydet</button>
+            </form>
+            <p class="ipucu">Portal yalnız bu ağlardan gelen bağlantıları kabul eder. Bağlantı şifresizdir
+              (HTTP): kodlar ve dosyalar laboratuvar ağında şifrelenmeden taşınır.</p>
+          </div>
+        </div>
+        <div class="arac-cubugu">
+          <label for="sinif-sec" class="satir-ici"><strong>Sınıf</strong></label>
+          <select id="sinif-sec" data-ui-id="M3-S2-B3"></select>
+          <a id="sinif-csv-indir" class="dugme ikincil" href="#" download data-ui-id="M3-S2-B4">Listeyi CSV indir</a>
+          <button id="btn-sinif-sil" type="button" class="tehlikeli" data-ui-id="M3-S2-B5">Sınıfı sil</button>
+          <form id="sinif-ekle-formu" class="satir-ici-form">
+            <input id="yeni-sinif" type="text" maxlength="20" placeholder="Yeni sınıf (örn. 9-A)" aria-label="Yeni sınıf adı">
+            <button type="submit" class="ikincil" data-ui-id="M3-S2-B6">Sınıf ekle</button>
+          </form>
+        </div>
+        <div class="arac-cubugu">
+          <form id="ogrenci-ekle-formu" class="satir-ici-form">
+            <input id="yeni-numara" type="text" maxlength="12" placeholder="Numara" aria-label="Öğrenci numarası">
+            <input id="yeni-ad" type="text" maxlength="80" placeholder="Ad soyad" aria-label="Ad soyad">
+            <button type="submit" class="ikincil" data-ui-id="M3-S2-B7">Öğrenci ekle</button>
+          </form>
+          <span class="ayrac"></span>
+          <button id="btn-kod-eksik" type="button" class="birincil" data-ui-id="M3-S2-B8">Kodu olmayanlara kod üret</button>
+          <button id="btn-kod-secili" type="button" class="ikincil" data-ui-id="M3-S2-B9">Seçililere yeni kod üret</button>
+        </div>
+        <div id="ogrenci-tablosu" class="tablo-kap"></div>
+      </section>
+
+      <!-- ================================================= M4-S1 İşlem Geçmişi -->
+      <section id="sayfa-M4-S1" class="sayfa" data-ui-id="M4-S1" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M4 · S1</span>
+          <h1>İşlem Geçmişi</h1>
+          <p class="sayfa-aciklama">Her iş, işlemi başlatan öğretmeni, başladığı andaki kesin hedef listesini ve
+            bilgisayar bazında sonuçları saklar. Parolalar hiçbir kayda yazılmaz.</p>
+        </header>
+        <div class="arac-cubugu">
+          <button id="m4s1-yenile" type="button" class="ikincil" data-ui-id="M4-S1-B1">Yenile</button>
+          <label for="m4s1-tur" class="satir-ici">İşlem türü</label>
+          <select id="m4s1-tur" data-ui-id="M4-S1-B5"><option value="">Tümü</option></select>
+        </div>
+        <div class="iki-sutun genis-sag">
+          <div id="m4s1-liste" class="tablo-kap"></div>
+          <div id="m4s1-ayrinti" class="kart"><p class="ipucu">Ayrıntısını görmek için listeden bir iş seçin.</p></div>
+        </div>
+      </section>
+
+      <!-- ================================================= M5-S1 Sistem ve Saklama Ayarları -->
+      <section id="sayfa-M5-S1" class="sayfa" data-ui-id="M5-S1" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M5 · S1</span>
+          <h1>🛠️ Sistem ve Saklama Ayarları</h1>
+          <p class="sayfa-aciklama">Öğrenci bilgisayarlarında tutulan profil yedeklerinin ve ders sonu temizlik karantinalarının saklama sayısını yapılandırın.</p>
+        </header>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>Yedek ve Karantina Saklama Sınırı</h2>
+            <form id="m5s1-saklama-formu" class="satir-form">
+              <label for="m5s1-saklama">Her bilgisayarda tutulacak yedek / karantina sayısı</label>
+              <input id="m5s1-saklama" type="number" min="1" max="30" required>
+              <button type="submit" class="birincil" data-ui-id="M5-S1-B1">Kaydet</button>
+            </form>
+            <p class="ipucu">Profil yedekleri ve temizlik karantinası öğrenci bilgisayarında tutulur; en eski yedekler belirlenen sınırı aşınca kendiliğinden silinir.</p>
+            <p id="m5s1-surum" class="ipucu"></p>
+          </div>
+          <div class="kart" hidden>
+            <h2>Referans kodları</h2>
+            <div class="arac-cubugu">
+              <button id="m5s1-kodlar" type="button" class="ikincil" data-ui-id="M5-S1-B2">Referans kodlarını göster/gizle</button>
+              <button id="m5s1-indir" type="button" class="ikincil" data-ui-id="M5-S1-B4">Referans haritasını indir</button>
+            </div>
+          </div>
+        </div>
+        <div class="arac-cubugu" hidden>
+          <input id="m5s1-ara" type="search" placeholder="Ara"
+                 data-ui-id="M5-S1-B3" aria-label="Rehberde ara">
+        </div>
+        <div id="m5s1-rehber" class="tablo-kap" hidden></div>
+      </section>
+
+      <!-- ================================================= M5-S2 Okul ve Öğretmenler -->
+      <section id="sayfa-M5-S2" class="sayfa" data-ui-id="M5-S2" hidden>
+        <header class="sayfa-baslik">
+          <span class="kod-cip">M5 · S2</span>
+          <h1>🏫 Okul Kimliği ve Öğretmen Hesapları</h1>
+          <p class="sayfa-aciklama">Okul adını ve logosunu özelleştirin; laboratuvarı kullanan öğretmenler için
+            <strong>🛡️ Admin Öğretmen</strong> veya <strong>👨‍🏫 Standart Öğretmen</strong> hesapları tanımlayın.</p>
+        </header>
+        <div class="iki-sutun">
+          <div class="kart">
+            <h2>🏫 Okul Adı ve Logo Gösterimi</h2>
+            <p class="ipucu">Sol menüde, giriş ekranında ve yazdırılan öğrenci kod kartlarında görünür.</p>
+            <div class="form-izgara">
+              <label for="m5s2-okul-ad">Okul adı</label>
+              <input id="m5s2-okul-ad" type="text" maxlength="120" placeholder="örn. Atatürk Mesleki ve Teknik Anadolu Lisesi">
+              <label for="m5s2-okul-alt">Laboratuvar / birim başlığı</label>
+              <input id="m5s2-okul-alt" type="text" maxlength="120" placeholder="örn. Bilişim Teknolojileri Laboratuvarı">
+            </div>
+            <div class="arac-cubugu ust-bosluk">
+              <img id="m5s2-logo-onizleme" class="okul-logo-buyuk" alt="Okul logosu önizleme" hidden>
+              <button id="m5s2-arma-meb" type="button" class="ikincil kucuk">🏛️ Okul Arması 1</button>
+              <button id="m5s2-arma-pardus" type="button" class="ikincil kucuk">🐾 Pardus Arması 2</button>
+              <label class="dugme ikincil kucuk" for="m5s2-logo-dosya" data-ui-id="M5-S2-B2">📁 Bilgisayardan Logo Seç</label>
+              <input id="m5s2-logo-dosya" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="gizli-giris">
+              <button id="m5s2-okul-kaydet" type="button" class="birincil" data-ui-id="M5-S2-B1">💾 Okul Bilgilerini Kaydet</button>
+            </div>
+          </div>
+          <div class="kart">
+            <h2>🎛️ Standart Öğretmen Yetki Şablonu</h2>
+            <p class="ipucu">Standart öğretmenler teknik detaylarla karşılaşmaz; dilerseniz öğretmen bazında ek yetki açabilirsiniz:</p>
+            <ul class="yetki-ozet-liste">
+              <li>✅ <strong>Sınıf Masası:</strong> Ekran Kilidi ("Bana Bakın"), Duyuru, İnternet Kısıtı, Güç/Kapatma <em>(Varsayılan Açık)</em></li>
+              <li>✅ <strong>Ödev &amp; Dosya Dağıtımı:</strong> Teslimler, ZIP İndir, Masaüstüne Dosya/Link Gönder <em>(Varsayılan Açık)</em></li>
+              <li>✅ <strong>Ders Sonu Hızlı Temizliği &amp; Uyku Kilidi</strong> <em>(Varsayılan Açık)</em></li>
+              <li>➕ <strong>İsteğe Bağlı Ek Yetkiler:</strong> <em>.deb Paket Kurulumu &amp; Görünüm</em> ve <em>💻 Komut Gönder (SSH Bash)</em></li>
+            </ul>
+          </div>
+        </div>
+        <div class="kart ust-bosluk">
+          <div class="arac-cubugu">
+            <h2 class="sifir-alt">👥 Tanımlı Öğretmen Hesapları</h2>
+            <span class="bosluk"></span>
+            <button id="m5s2-ogretmen-ekle" type="button" class="birincil" data-ui-id="M5-S2-B3">➕ Yeni Öğretmen Ekle</button>
+          </div>
+          <div id="m5s2-ogretmen-tablo" class="tablo-kap"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- M0-S4 İş durumu paneli -->
+    <aside id="is-paneli" class="is-paneli" data-ui-id="M0-S4" hidden aria-live="polite">
+      <div class="is-paneli-ust">
+        <strong id="is-paneli-baslik"></strong>
+        <span id="is-paneli-sayac" class="ipucu"></span>
+        <span class="bosluk"></span>
+        <button id="is-paneli-ayrinti" type="button" class="ikincil kucuk" data-ui-id="M0-S4-B1">Ayrıntılar</button>
+        <button id="is-paneli-iptal" type="button" class="ikincil kucuk" data-ui-id="M0-S4-B2">İşi iptal et</button>
+        <button id="is-paneli-kapat" type="button" class="ikincil kucuk" data-ui-id="M0-S4-B3">Kapat</button>
+      </div>
+      <div class="ilerleme"><div id="is-paneli-cubuk"></div></div>
+      <ul id="is-paneli-liste" class="is-hedef-listesi"></ul>
+    </aside>
+  </div>
+
+  <div id="bildirim" class="bildirim" role="status" hidden></div>
+</div>
+
+<!-- ================================================= M0-S3 Onay penceresi -->
+<dialog id="onay-penceresi" class="genis" data-ui-id="M0-S3">
+  <form method="dialog">
+    <h2 id="onay-baslik"></h2>
+    <p id="onay-aciklama"></p>
+    <div id="onay-ek"></div>
+    <h3 id="onay-hedef-baslik"></h3>
+    <div id="onay-hedefler" class="tablo-kap kisa"></div>
+    <div id="onay-disarida-kap" hidden>
+      <h3 id="onay-disarida-baslik"></h3>
+      <div id="onay-disarida" class="tablo-kap kisa"></div>
+    </div>
+    <ul id="onay-uyarilar" class="uyari-listesi"></ul>
+    <label id="onay-kutu-etiket" class="onay-kutusu"><input type="checkbox" id="onay-kutu" data-ui-id="M0-S3-B3">
+      <span id="onay-kutu-metin">Yukarıdakileri okudum; işlemi onaylıyorum</span></label>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M0-S3-B2">Vazgeç</button>
+      <button id="onay-baslat" value="baslat" class="birincil" data-ui-id="M0-S3-B1">Onayla ve başlat</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M0-S5 Seçim listesi -->
+<dialog id="secim-penceresi" data-ui-id="M0-S5">
+  <form method="dialog">
+    <h2>Seçili bilgisayarlar</h2>
+    <p id="secim-penceresi-ozet" class="ipucu"></p>
+    <div id="secim-penceresi-liste" class="tablo-kap kisa"></div>
+    <div class="pencere-butonlar">
+      <button value="kapat" class="ikincil" data-ui-id="M0-S5-B1">Kapat</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M1-S1 pencereleri -->
+<dialog id="cihaz-penceresi">
+  <form id="cihaz-formu" method="dialog">
+    <h2 id="cihaz-pencere-baslik">Bilgisayar ekle</h2>
+    <p id="cihaz-kimlik" class="ipucu"></p>
+    <div class="form-izgara">
+      <label for="cf-ip">IP adresi</label>
+      <input id="cf-ip" type="text" required placeholder="örn. 192.168.10.140">
+      <label for="cf-port">SSH portu</label>
+      <input id="cf-port" type="number" value="22" min="1" max="65535">
+      <label for="cf-ad">Görünen ad</label>
+      <input id="cf-ad" type="text" maxlength="40" placeholder="örn. LAB05">
+      <label for="cf-lab">Laboratuvar</label>
+      <input id="cf-lab" type="text" maxlength="40" value="Laboratuvar" list="lab-listesi">
+      <label for="cf-hesap">Yönetim hesabı</label>
+      <select id="cf-hesap">
+        <option value="">Hazırlıkta belirlensin (pardus, sonra hp)</option>
+        <option value="pardus">pardus</option>
+        <option value="hp">hp</option>
+      </select>
+    </div>
+    <label class="onay-kutusu"><input id="cf-korunan" type="checkbox">
+      Korunan cihaz (EBA/ETAP): hiçbir işleme dahil edilmez</label>
+    <p id="cf-hesap-uyari" class="uyari-kutusu" hidden>Yönetim hesabı değişirse anahtar yeni hesapta
+      kurulu olmayacağından bilgisayar M1-S2'den yeniden hazırlanmalıdır.</p>
+    <p class="ipucu">Kaydetmek bağlantı kurmaz, hesap değiştirmez ve paket kurmaz.</p>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S1-B10">Vazgeç</button>
+      <button id="cf-kaydet" value="kaydet" class="birincil" data-ui-id="M1-S1-B9">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+<datalist id="lab-listesi"></datalist>
+
+<!-- Bilgisayar Özellikleri ve Durum Özeti Açılır Penceresi -->
+<dialog id="cihaz-ozet-penceresi" class="cihaz-ozet-diyalog">
+  <form method="dialog" class="cihaz-ozet-kart">
+    <div class="cihaz-ozet-baslik-alani">
+      <div id="co-ekran-ikon" class="co-ekran-ikon">🖥️</div>
+      <div class="co-baslik-metin">
+        <h2 id="co-ad" class="co-ad">LAB01</h2>
+        <span id="co-ip" class="mono co-ip">192.168.1.100</span>
+      </div>
+      <button type="submit" class="kapat-x" aria-label="Kapat" value="kapat">✕</button>
+    </div>
+
+    <div class="cihaz-ozet-izgara">
+      <div class="co-oge">
+        <span class="co-etiket">Çalışma Durumu</span>
+        <div id="co-durum" class="co-deger">Hazır</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">Sınıf / Laboratuvar</span>
+        <div id="co-lab" class="co-deger">Laboratuvar</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">Yönetim Hesabı</span>
+        <div id="co-hesap" class="co-deger mono">pardus</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">SSH Portu</span>
+        <div id="co-port" class="co-deger mono">22</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">İşletim Sistemi / Masaüstü</span>
+        <div id="co-surum" class="co-deger">Pardus 23 (GNOME)</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">Veyon Durumu</span>
+        <div id="co-veyon" class="co-deger">Kurulu değil</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">Öğrenci Oturumu</span>
+        <div id="co-oturum" class="co-deger">Kapalı</div>
+      </div>
+      <div class="co-oge">
+        <span class="co-etiket">Güç / Uyku Durumu</span>
+        <div id="co-guc" class="co-deger">Uyku kapalı</div>
+      </div>
+      <div class="co-oge genis">
+        <span class="co-etiket">Ayrıntılı Durum Açıklaması</span>
+        <div id="co-aciklama" class="co-deger ipucu-yazi">—</div>
+      </div>
+      <div class="co-oge genis" id="co-uyari-kutu" hidden>
+        <span class="co-etiket">Özel Durumlar</span>
+        <div id="co-uyari" class="co-deger"></div>
+      </div>
+    </div>
+
+    <div class="pencere-butonlar">
+      <button id="co-sec-dugme" type="button" class="ikincil">Bu Bilgisayarı Seç</button>
+      <button id="co-duzenle-dugme" type="button" class="ikincil">Bilgisayarı Düzenle</button>
+      <button type="submit" value="kapat" class="birincil">Kapat</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="ice-penceresi" class="genis">
+  <form method="dialog">
+    <h2>Dosyadan içe aktar</h2>
+    <p class="ipucu">Ansible INI envanteri (<code>[grup]</code>, <code>ansible_host</code>,
+      <code>ansible_user</code>) veya CSV (<code>ad;ip;hesap;laboratuvar</code>). Önce önizlenir;
+      yalnız “eklenecek” satırlar eklenir. Bağlantı kurulmaz.</p>
+    <div class="arac-cubugu">
+      <label class="dugme ikincil" for="ice-dosya" data-ui-id="M1-S1-B11">Dosya seç</label>
+      <input id="ice-dosya" type="file" accept=".ini,.csv,.txt,.cfg,text/plain" class="gizli-giris">
+      <label for="ice-lab" class="satir-ici">Laboratuvar (dosyada yoksa)</label>
+      <input id="ice-lab" type="text" maxlength="40" value="Laboratuvar">
+    </div>
+    <p id="ice-ozet" class="ipucu" role="status"></p>
+    <div id="ice-onizleme" class="tablo-kap kisa"></div>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S1-B13">Vazgeç</button>
+      <button id="ice-aktar" type="button" class="birincil" data-ui-id="M1-S1-B12" disabled>İçe aktar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="cikar-penceresi">
+  <form method="dialog">
+    <h2>Envanterden çıkar</h2>
+    <p id="cikar-hedefler"></p>
+    <fieldset>
+      <legend>Nasıl çıkarılsın?</legend>
+      <label class="onay-kutusu"><input type="radio" name="cikar-tur" value="liste" checked>
+        Yalnızca listeden çıkar (bilgisayardaki yönetim anahtarı kalır)</label>
+      <label class="onay-kutusu"><input type="radio" name="cikar-tur" value="anahtar">
+        Önce bilgisayardaki uygulama anahtarını kaldır, sonra listeden çıkar (bilgisayar açık olmalı)</label>
+    </fieldset>
+    <p class="ipucu">Öğrenci bilgisayarındaki yedeklere ve dosyalara dokunulmaz.</p>
+    <label class="onay-kutusu"><input id="cikar-onay" type="checkbox"> Çıkarmayı onaylıyorum</label>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S1-B15">Vazgeç</button>
+      <button value="cikar" class="tehlikeli" data-ui-id="M1-S1-B14">Çıkar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M1-S4 pencereleri -->
+<dialog id="veyon-onizleme" class="genis">
+  <form method="dialog">
+    <h2 id="vo-baslik">Veyon önizlemesi</h2>
+    <p id="vo-aciklama" class="ipucu"></p>
+    <dl id="vo-ayarlar" class="paket-bilgi"></dl>
+    <h3 id="vo-hedef-baslik"></h3>
+    <div id="vo-hedefler" class="tablo-kap kisa"></div>
+    <div id="vo-disarida-kap" hidden>
+      <h3 id="vo-disarida-baslik"></h3>
+      <div id="vo-disarida" class="tablo-kap kisa"></div>
+    </div>
+    <ul id="vo-uyarilar" class="uyari-listesi"></ul>
+    <label id="vo-ogretmen-etiket" class="onay-kutusu" hidden><input type="checkbox" id="vo-ogretmen" data-ui-id="M1-S4-B18">
+      <span>Öğretmen PC'deki sorunu biliyorum; Veyon Master başka bilgisayarda çalışıyor, yine de yapılandır</span></label>
+    <label class="onay-kutusu"><input type="checkbox" id="vo-onay">
+      <span>Önizlemeyi okudum; yalnız “hazır” bilgisayarlarda uygulansın</span></label>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S4-B17">Vazgeç</button>
+      <button id="vo-uygula" value="uygula" class="birincil" data-ui-id="M1-S4-B16" disabled>Onayla ve uygula</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="veyon-anahtar-degisim">
+  <form method="dialog">
+    <h2>Aynı adlı farklı anahtar</h2>
+    <p id="vad-metin"></p>
+    <p class="ipucu">Mevcut anahtar öğretmen PC'de yedeklenir. Öğrenci bilgisayarları, yeniden yapılandırılana kadar
+      eski anahtarla çalışmaya devam eder; yapılandırma sırasında oradaki eski anahtar da yedeklenir.</p>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S4-B20">Vazgeç</button>
+      <button value="degistir" class="tehlikeli" data-ui-id="M1-S4-B19">Yedekle ve değiştir</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M1-S2 parola penceresi -->
+<dialog id="parola-penceresi">
+  <form id="parola-formu" method="dialog">
+    <h2>Yönetime bağla — parola bir kez</h2>
+    <p class="ipucu">Öğrenci bilgisayarlarındaki yönetici hesabının parolasını yazın (pardus, hp ya da ikisi).
+      Parola yalnız bu işlem sırasında kullanılır ve <strong>kaydedilmez</strong>. Bu, uygulamaya giriş
+      parolanız değildir. Her bilgisayar ve hesap için en çok 3 deneme yapılır.</p>
+    <div class="form-izgara">
+      <label for="pp-pardus">pardus parolası</label>
+      <input id="pp-pardus" type="password" autocomplete="off">
+      <label for="pp-hp">hp parolası</label>
+      <input id="pp-hp" type="password" autocomplete="off">
+    </div>
+    <label class="onay-kutusu"><input id="pp-ogrenci" type="checkbox" checked data-ui-id="M1-S2-B9">
+      ogrenci hesabı yoksa oluştur (sudo verilmez; giriş ekranında parolasız)</label>
+    <p class="ipucu">Anahtarı zaten kurulu ve parolasız sudo'su hazır bilgisayarlar için parola gerekmez.</p>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S2-B8">Vazgeç</button>
+      <button id="pp-devam" value="devam" class="birincil" data-ui-id="M1-S2-B7">Devam et</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M2-S1 pencereleri -->
+<dialog id="istisna-penceresi">
+  <form method="dialog">
+    <h2 id="istisna-baslik">İstisna</h2>
+    <p class="ipucu">Yalnız bu temizlik için geçerlidir; kaydedilmez. Bir sonraki temizlikte genel seçim kullanılır.</p>
+    <div id="istisna-kutulari" class="onay-izgara"></div>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M2-S1-B17">Vazgeç</button>
+      <button value="genel" class="ikincil" data-ui-id="M2-S1-B16">Genel seçime döndür</button>
+      <button value="kaydet" class="birincil" data-ui-id="M2-S1-B15">Kaydet (yalnız bu temizlik)</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="yedek-penceresi" class="genis">
+  <form method="dialog">
+    <h2>Yedekten dön</h2>
+    <p class="ipucu">Yedekler yalnız öğrenci bilgisayarında durur; liste her seferinde oradan okunur.
+      Aynı adlı dosya aynıysa üzerine yazılır, farklıysa ikisi de tutulur. Hiçbir dosya silinmez.</p>
+    <div class="arac-cubugu">
+      <label for="yedek-cihaz" class="satir-ici">Bilgisayar</label>
+      <select id="yedek-cihaz"></select>
+      <button id="yedek-listele" type="button" class="ikincil" data-ui-id="M2-S1-B11">Yedekleri listele</button>
+    </div>
+    <p id="yedek-durum" class="ipucu" role="status"></p>
+    <div id="yedek-listesi" class="tablo-kap kisa"></div>
+    <label class="onay-kutusu" id="yedek-zorla-etiket" hidden><input id="yedek-zorla" type="checkbox">
+      Öğrenci oturumu açıksa kapat (profil yedeği açık oturuma yazılmaz)</label>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M2-S1-B13">Vazgeç</button>
+      <button id="yedek-geri" type="button" class="birincil" data-ui-id="M2-S1-B12" disabled>Seçili yedeğe geri dön</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M2-S2 plan ayrıntısı -->
+<dialog id="plan-penceresi" class="genis">
+  <form method="dialog">
+    <h2 id="plan-baslik">Plan ayrıntısı</h2>
+    <div id="plan-icerik"></div>
+    <div class="pencere-butonlar">
+      <button value="kapat" class="ikincil" data-ui-id="M2-S2-B7">Kapat</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M3 pencereleri -->
+<dialog id="odev-penceresi" class="genis">
+  <form id="odev-formu" method="dialog">
+    <h2 id="odev-pencere-baslik">Yeni ödev</h2>
+    <div class="iki-sutun">
+      <div>
+        <label for="of-baslik">Başlık</label>
+        <input id="of-baslik" type="text" maxlength="120" required>
+        <label for="of-sinif">Sınıf</label>
+        <select id="of-sinif" required></select>
+        <label for="of-yonerge">Kısa yönerge</label>
+        <textarea id="of-yonerge" rows="5" maxlength="4000"></textarea>
+        <label for="of-son">Son teslim (boş = süresiz)</label>
+        <input id="of-son" type="datetime-local">
+        <label class="onay-kutusu"><input id="of-gec" type="checkbox">
+          Süre dolduktan sonra da kabul et (“Geç teslim” olarak işaretlenir)</label>
+      </div>
+      <div>
+        <fieldset>
+          <legend>Kabul edilen dosya türleri</legend>
+          <div id="of-turler"></div>
+          <label for="of-ek">Ek uzantılar (virgülle, isteğe bağlı)</label>
+          <input id="of-ek" type="text" placeholder="örn. ggb, blend">
+        </fieldset>
+        <label for="of-dosya">Teslim başına en çok dosya</label>
+        <input id="of-dosya" type="number" min="1" max="500" value="20">
+        <label for="of-mb">Teslim başına toplam boyut (MB)</label>
+        <input id="of-mb" type="number" min="1" max="2048" value="100">
+        <label class="onay-kutusu"><input id="of-klasor" type="checkbox" checked>
+          Klasör yüklemeye izin ver (alt klasörlü projeler)</label>
+      </div>
+    </div>
+    <p class="ipucu">Ödev <strong>Taslak</strong> olarak kaydedilir; öğrenciler ancak “Teslimleri aç”
+      dedikten sonra görür.</p>
+    <p id="odev-form-hata" class="hata" role="alert"></p>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M3-S1-B17">Vazgeç</button>
+      <button id="of-kaydet" type="button" class="birincil" data-ui-id="M3-S1-B16">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="kod-penceresi" class="genis">
+  <form method="dialog">
+    <h2>Yeni teslim kodları</h2>
+    <p class="hata">Bu kodlar yalnız şimdi görünür. Pencereyi kapatmadan yazdırın veya öğrencilere dağıtın.</p>
+    <div id="kod-listesi" class="tablo-kap"></div>
+    <div class="pencere-butonlar">
+      <button id="btn-kod-yazdir" type="button" class="birincil" data-ui-id="M3-S2-B12">Kartları yazdır</button>
+      <button id="btn-kod-kapat" type="button" class="ikincil" data-ui-id="M3-S2-B13">Kapat</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dosyalar-penceresi" class="genis">
+  <form method="dialog">
+    <h2 id="dosyalar-baslik">Teslim dosyaları</h2>
+    <p class="ipucu">Dosyalar her zaman indirilir; tarayıcıda açılmaz. Sunucunun dosyayı saklaması
+      zararsız olduğu anlamına gelmez.</p>
+    <div id="dosyalar-listesi" class="tablo-kap"></div>
+    <div class="pencere-butonlar">
+      <a id="dosyalar-zip" class="dugme ikincil" href="#" download data-ui-id="M3-S1-B19">Bu teslimi ZIP indir</a>
+      <button value="kapat" class="ikincil" data-ui-id="M3-S1-B20">Kapat</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================================================= M5-S2 öğretmen penceresi -->
+<dialog id="ogretmen-penceresi">
+  <form id="ogretmen-formu" method="dialog">
+    <h2 id="ogretmen-pencere-baslik">Yeni öğretmen ekle</h2>
+    <div class="form-izgara">
+      <label for="ogf-kullanici">Kullanıcı adı</label>
+      <input id="ogf-kullanici" type="text" maxlength="40" required placeholder="örn. ahmet.yilmaz">
+      <label for="ogf-ad">Ad soyad</label>
+      <input id="ogf-ad" type="text" maxlength="80" required placeholder="örn. Ahmet Yılmaz">
+      <label for="ogf-brans">Branş / görev</label>
+      <input id="ogf-brans" type="text" maxlength="80" value="Bilişim Teknolojileri">
+      <label for="ogf-rol">Yetki rolü</label>
+      <select id="ogf-rol">
+        <option value="standart">Standart Öğretmen (Sınıf Yönetimi &amp; Ödev)</option>
+        <option value="admin">Admin Öğretmen (Tam Yetki)</option>
+      </select>
+      <label for="ogf-parola">Giriş şifresi (en az 8 karakter)</label>
+      <input id="ogf-parola" type="password" autocomplete="new-password" placeholder="En az 8 karakter">
+    </div>
+    <fieldset id="ogf-yetkiler-alan" class="ust-bosluk">
+      <legend>Standart öğretmen için ek menü yetkileri</legend>
+      <label class="onay-kutusu"><input id="ogf-yetki-paket" type="checkbox" value="paket_gorunum">
+        Paket Kurulumu (M2-S2) ve Görünüm Ayarları (M2-S3)</label>
+      <label class="onay-kutusu"><input id="ogf-yetki-komut" type="checkbox" value="komut_gonder">
+        SSH Komut Gönder (M2-S6)</label>
+    </fieldset>
+    <p id="ogf-hata" class="hata" role="alert" hidden></p>
+    <div class="pencere-butonlar">
+      <button value="iptal" class="ikincil" formnovalidate data-ui-id="M5-S2-B7">Vazgeç</button>
+      <button id="ogf-kaydet" type="button" class="birincil" data-ui-id="M5-S2-B6">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Yazdırılacak kod kartları (yalnız yazdırmada görünür) -->
+<div id="yazdir-alani" aria-hidden="true"></div>
+
+<script src="/statik/referans.js"></script>
+<script src="/statik/ortak.js"></script>
+<script src="/statik/envanter.js"></script>
+<script src="/statik/veyon.js"></script>
+<script src="/statik/islemler.js"></script>
+<script src="/statik/guc.js"></script>
+<script src="/statik/odevler.js"></script>
+<script src="/statik/kayitlar.js"></script>
+<script src="/statik/baslat.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+# Pardus Sınıf Yönetimi — sistem servisi
+# Ayrı ve ayrıcalıksız sistem kullanıcısıyla çalışır; yalnızca 127.0.0.1'i dinler.
+# Port kurulumda seçilir: /etc/pardus-sinif-yonetimi/ortam
+
+[Unit]
+Description=Pardus Sınıf Yönetimi (yerel web arayüzü)
+Wants=network-online.target
+After=network-online.target
+# Hata döngüsüne karşı başlatma hız sınırı (istem §3)
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=pardus-sinif
+Group=pardus-sinif
+EnvironmentFile=/etc/pardus-sinif-yonetimi/ortam
+Environment=PSY_VERI_DIZINI=/var/lib/pardus-sinif-yonetimi
+Environment=PSY_ODEV_DIZINI=/var/lib/pardus-sinif-odev
+Environment=PSY_ADRES=0.0.0.0
+Environment=PSY_AG_ERISIMI=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/opt/pardus-sinif-yonetimi
+ExecStart=/opt/pardus-sinif-yonetimi/python/bin/python3 -m uygulama.ana
+Restart=on-failure
+RestartSec=10
+StateDirectory=pardus-sinif-yonetimi
+StateDirectoryMode=0700
+# Ödev dizininde oluşturduğu dosyalar (SQLite WAL vb.) portal tarafından da
+# açılabilsin; kendi veri dizini 0700 olduğundan yönetim verisi etkilenmez.
+UMask=0007
+# Ödev verisini (sınıflar, teslimler) yönetebilmek için portal grubunun üyesi
+SupplementaryGroups=pardus-odev
+
+# Sertleştirme: servis yalnızca kendi veri dizinine ve ödev dizinine yazabilir.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=-/var/lib/pardus-sinif-odev
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

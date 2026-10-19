@@ -1,0 +1,230 @@
+#!/bin/sh
+# Pardus Sınıf Yönetimi — kurulum sonrası (dpkg postinst)
+# Tekrar çalıştırılabilir: envanter, anahtarlar, ayarlar ve ödev teslimleri korunur.
+set -e
+
+UYG=pardus-sinif-yonetimi
+KULLANICI=pardus-sinif
+ODEV_KULLANICI=pardus-odev
+VERI=/var/lib/$UYG
+ODEV_VERI=/var/lib/pardus-sinif-odev
+AYAR=/etc/$UYG
+OPT=/opt/$UYG
+PY=$OPT/python/bin/python3
+
+[ "$1" = "configure" ] || exit 0
+
+# 1) Ayrıcalıksız sistem kullanıcıları (giriş kabuğu yok)
+#    pardus-sinif: yerel yönetim paneli; pardus-odev: ağa açık öğrenci portalı.
+if ! getent passwd "$KULLANICI" >/dev/null; then
+    useradd --system --user-group --home-dir "$VERI" --no-create-home \
+        --shell /usr/sbin/nologin --comment "Pardus Sinif Yonetimi" "$KULLANICI"
+fi
+if ! getent passwd "$ODEV_KULLANICI" >/dev/null; then
+    useradd --system --user-group --home-dir "$ODEV_VERI" --no-create-home \
+        --shell /usr/sbin/nologin --comment "Pardus Sinif Yonetimi odev portali" "$ODEV_KULLANICI"
+fi
+
+# 2) Veri dizinleri
+#    Yönetim verisi yalnız pardus-sinif'e açıktır (portal okuyamaz).
+#    Ödev verisi pardus-odev grubuna açıktır (setgid): yönetim servisi bu gruba
+#    systemd SupplementaryGroups ile girer; tersi mümkün değildir.
+install -d -m 0700 -o "$KULLANICI" -g "$KULLANICI" "$VERI"
+install -d -m 2770 -o "$ODEV_KULLANICI" -g "$ODEV_KULLANICI" "$ODEV_VERI"
+
+# 3) Portlar ve laboratuvar ağı (ilk kurulumda seçilir, güncellemede korunur)
+install -d -m 0755 "$AYAR"
+touch "$AYAR/ortam"
+chmod 0644 "$AYAR/ortam"
+. "$AYAR/ortam"
+if [ -z "${PSY_PORT:-}" ]; then
+    PSY_PORT=$("$PY" - <<'PYTHON'
+import socket
+for port in range(8080, 8091):
+    s = socket.socket()
+    try:
+        s.bind(("127.0.0.1", port))
+    except OSError:
+        continue
+    finally:
+        s.close()
+    print(port)
+    break
+PYTHON
+)
+    if [ -z "$PSY_PORT" ]; then
+        echo "HATA: 8080-8090 arasında boş port bulunamadı." >&2
+        exit 1
+    fi
+    printf 'PSY_PORT=%s\n' "$PSY_PORT" >> "$AYAR/ortam"
+fi
+if [ -z "${PSY_ODEV_PORT:-}" ]; then
+    # Öğrenci portalı: 80 boşsa adres portsuz olur (http://ogretmen.lab/)
+    systemctl stop pardus-sinif-odev.service >/dev/null 2>&1 || true
+    PSY_ODEV_PORT=$("$PY" - "$PSY_PORT" <<'PYTHON'
+import socket, sys
+for port in [80] + list(range(8090, 8100)):
+    if port == int(sys.argv[1]):
+        continue
+    s = socket.socket()
+    try:
+        s.bind(("0.0.0.0", port))
+    except OSError:
+        continue
+    finally:
+        s.close()
+    print(port)
+    break
+PYTHON
+)
+    if [ -z "$PSY_ODEV_PORT" ]; then
+        echo "HATA: Öğrenci portalı için boş port bulunamadı (80, 8090-8099)." >&2
+        exit 1
+    fi
+    printf 'PSY_ODEV_PORT=%s\n' "$PSY_ODEV_PORT" >> "$AYAR/ortam"
+fi
+# Varsayılan rotanın arayüzündeki ağ(lar); öğretmen panelden değiştirebilir.
+AG_BILGISI=$("$PY" - <<'PYTHON'
+import ipaddress, subprocess
+rota = subprocess.run(["ip", "-o", "-4", "route", "show", "default"],
+                      capture_output=True, text=True).stdout.split()
+aglar, ipler, dinamik = [], [], False
+if "dev" in rota:
+    arayuz = rota[rota.index("dev") + 1]
+    for satir in subprocess.run(["ip", "-o", "-4", "addr", "show", "dev", arayuz],
+                                capture_output=True, text=True).stdout.splitlines():
+        p = satir.split()
+        if "inet" in p:
+            adres = ipaddress.ip_interface(p[p.index("inet") + 1])
+            aglar.append(str(adres.network))
+            ipler.append(str(adres.ip))
+            dinamik = dinamik or "dynamic" in p
+# Boş değer yerine "-": kabuk sözcük bölmesi alanları kaydırmasın.
+print(",".join(aglar) or "-", ",".join(ipler) or "-", "dhcp" if dinamik else "sabit")
+PYTHON
+)
+set -- $AG_BILGISI
+AGLAR=${1:--}; [ "$AGLAR" = "-" ] && AGLAR=""
+OGRETMEN_IP=${2:--}; [ "$OGRETMEN_IP" = "-" ] && OGRETMEN_IP=""
+IP_TURU=${3:-}
+if [ -z "${PSY_ODEV_AGLAR:-}" ] && [ -n "$AGLAR" ]; then
+    printf 'PSY_ODEV_AGLAR=%s\n' "$AGLAR" >> "$AYAR/ortam"
+    PSY_ODEV_AGLAR=$AGLAR
+fi
+set -- configure
+
+# 4) Güvenlik duvarı açıksa portal portu yalnız laboratuvar ağına açılır.
+#    Portal ayrıca kendi içinde de ağ dışını reddeder.
+if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q "Status: active"; then
+    for ag in $(echo "${PSY_ODEV_AGLAR:-}" | tr ',' ' '); do
+        ufw allow from "$ag" to any port "$PSY_ODEV_PORT" proto tcp \
+            comment "pardus-sinif-odev" >/dev/null 2>&1 || true
+    done
+fi
+
+# 5) Python bayt kodu: servisler /opt'a yazamadığı için her açılışta yeniden
+#    derlememeleri adına burada üretilir (prerm siler).
+"$PY" -m compileall -q -j0 "$OPT/uygulama" "$OPT/python/lib/python3.12" \
+    >/dev/null 2>&1 || true
+
+# 6) Servisleri etkinleştir ve (yeniden) başlat
+SAGLIK=""
+PORTAL_SAGLIK=""
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload
+    systemctl enable "$UYG.service" pardus-sinif-odev.service >/dev/null 2>&1
+    systemctl restart pardus-sinif-odev.service || true
+    systemctl restart "$UYG.service"
+    SAGLIK=$("$PY" - "$PSY_PORT" "$PSY_ODEV_PORT" <<'PYTHON'
+import sys, time, urllib.request
+durum = []
+for port in sys.argv[1:]:
+    for _ in range(60):
+        try:
+            urllib.request.urlopen("http://127.0.0.1:%s/api/saglik" % port, timeout=2)
+            durum.append("ok")
+            break
+        except Exception:
+            time.sleep(1)
+    else:
+        durum.append("yok")
+print(" ".join(durum))
+PYTHON
+)
+    set -- $SAGLIK
+    SAGLIK=${1:-}
+    PORTAL_SAGLIK=${2:-}
+    set -- configure
+fi
+
+# 7) Kuran kullanıcının masaüstüne simge (menü kaydı paketle birlikte gelir)
+KURAN=""
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+    KURAN="$SUDO_USER"
+elif [ -n "${PKEXEC_UID:-}" ] && [ "$PKEXEC_UID" != "0" ]; then
+    KURAN=$(getent passwd "$PKEXEC_UID" | cut -d: -f1)
+fi
+if [ -n "$KURAN" ] && getent passwd "$KURAN" >/dev/null && command -v runuser >/dev/null 2>&1; then
+    KURAN_UID=$(id -u "$KURAN")
+    KURAN_EV=$(getent passwd "$KURAN" | cut -d: -f6)
+    # Masaüstüne yazma işleri kullanıcının kendi yetkisiyle yapılır.
+    MASAUSTU=$(runuser -u "$KURAN" -- env HOME="$KURAN_EV" xdg-user-dir DESKTOP 2>/dev/null || true)
+    if [ -n "$MASAUSTU" ] && [ "$MASAUSTU" != "$KURAN_EV" ] && [ -d "$MASAUSTU" ]; then
+        HEDEF="$MASAUSTU/$UYG.desktop"
+        if [ ! -e "$HEDEF" ]; then
+            if runuser -u "$KURAN" -- install -m 0755 "/usr/share/applications/$UYG.desktop" "$HEDEF"; then
+                grep -qxF "$KURAN:$HEDEF" "$AYAR/kisayollar" 2>/dev/null \
+                    || echo "$KURAN:$HEDEF" >> "$AYAR/kisayollar"
+            fi
+        fi
+        # GNOME masaüstü simgelerinin "güvenilir" sayması için (oturum açıksa)
+        if [ -S "/run/user/$KURAN_UID/bus" ]; then
+            runuser -u "$KURAN" -- env HOME="$KURAN_EV" \
+                DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$KURAN_UID/bus" \
+                gio set "$HEDEF" metadata::trusted true >/dev/null 2>&1 || true
+        fi
+    fi
+fi
+
+# 8) Sonuç
+if [ "$PSY_ODEV_PORT" = "80" ]; then PORT_EKI=""; else PORT_EKI=":$PSY_ODEV_PORT"; fi
+echo
+echo "================================================================"
+if [ "$SAGLIK" = "ok" ]; then
+    echo " Pardus Sınıf Yönetimi kuruldu ve çalışıyor."
+else
+    echo " Pardus Sınıf Yönetimi kuruldu."
+    if [ -d /run/systemd/system ]; then
+        echo " UYARI: Hizmet henüz yanıt vermedi; bilgisayarı yeniden başlatmayı deneyin."
+    fi
+fi
+echo
+echo " Uygulamayı menüden veya masaüstündeki \"Pardus Sınıf Yönetimi\""
+echo " simgesinden açabilirsiniz."
+echo
+if [ "$PORTAL_SAGLIK" = "ok" ]; then
+    echo " Ödev teslim portalı çalışıyor. Öğrenci adresi:"
+else
+    echo " UYARI: Ödev teslim portalı yanıt vermedi. Öğrenci adresi:"
+fi
+echo "     http://ogretmen.lab$PORT_EKI/"
+if [ -n "$OGRETMEN_IP" ]; then
+    echo "     (ad kaydı yapılmamış bilgisayarlarda: http://${OGRETMEN_IP%%,*}$PORT_EKI/)"
+fi
+if [ "$IP_TURU" = "dhcp" ]; then
+    echo
+    echo " NOT: Bu bilgisayarın IP adresi DHCP ile alınıyor. Öğrencilerin portala"
+    echo " her zaman ulaşabilmesi için ağ yöneticinizden bu bilgisayara sabit IP"
+    echo " veya DHCP rezervasyonu isteyin."
+fi
+if [ -f "$VERI/kurulum_kodu" ]; then
+    echo
+    echo " İlk açılışta yönetici parolanız sorulur ve kurulum kodu"
+    echo " kendiliğinden doldurulur. Elle girmeniz gerekirse kod:"
+    echo
+    echo "     $(cat "$VERI/kurulum_kodu")"
+fi
+echo "================================================================"
+echo
+
+exit 0

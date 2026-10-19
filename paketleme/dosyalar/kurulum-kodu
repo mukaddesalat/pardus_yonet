@@ -1,0 +1,14 @@
+#!/bin/sh
+# İlk kurulum kodunu yazdırır. Yalnızca yönetici (pkexec/sudo) çalıştırabilir;
+# böylece ilk giriş parolasını yalnızca yetkili yerel kullanıcı belirler (istem §7).
+set -e
+KOD_DOSYASI=/var/lib/pardus-sinif-yonetimi/kurulum_kodu
+if [ "$(id -u)" != "0" ]; then
+    echo "Bu komut yönetici yetkisi gerektirir." >&2
+    exit 1
+fi
+if [ ! -f "$KOD_DOSYASI" ]; then
+    echo "Kurulum kodu yok: ilk kurulum zaten tamamlanmış." >&2
+    exit 2
+fi
+cat "$KOD_DOSYASI"

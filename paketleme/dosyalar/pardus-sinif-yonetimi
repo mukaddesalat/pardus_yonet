@@ -1,0 +1,54 @@
+#!/bin/sh
+# Pardus Sınıf Yönetimi — arayüzü öğretmenin varsayılan tarayıcısında açar.
+# Masaüstü simgesi ve uygulama menüsü bu betiği çalıştırır.
+
+PY=/opt/pardus-sinif-yonetimi/python/bin/python3
+[ -r /etc/pardus-sinif-yonetimi/ortam ] && . /etc/pardus-sinif-yonetimi/ortam
+PORT="${PSY_PORT:-8080}"
+ADRES="http://127.0.0.1:${PORT}/"
+
+mesaj() {
+    if command -v zenity >/dev/null 2>&1; then
+        zenity --error --title="Pardus Sınıf Yönetimi" --text="$1" 2>/dev/null
+    elif command -v notify-send >/dev/null 2>&1; then
+        notify-send "Pardus Sınıf Yönetimi" "$1"
+    else
+        echo "$1" >&2
+    fi
+}
+
+if [ "$(id -u)" = "0" ]; then
+    echo "Tarayıcı root olarak açılmaz; uygulamayı normal kullanıcı hesabınızdan açın." >&2
+    exit 1
+fi
+
+# Hizmet açılışta başlar; bilgisayar yeni açıldıysa en çok 30 sn beklenir.
+DURUM=$("$PY" - "$PORT" <<'PYTHON'
+import json, sys, time, urllib.request
+for _ in range(30):
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:%s/api/oturum" % sys.argv[1], timeout=2) as y:
+            print("hazir" if json.load(y).get("kurulum_tamam") else "kurulum")
+            sys.exit(0)
+    except Exception:
+        time.sleep(1)
+print("yok")
+PYTHON
+)
+
+case "$DURUM" in
+    yok)
+        mesaj "Pardus Sınıf Yönetimi hizmeti yanıt vermiyor. Bilgisayarı yeniden başlatıp tekrar deneyin; sorun sürerse sistem yöneticinize başvurun."
+        exit 1
+        ;;
+    kurulum)
+        # İlk açılış: kurulum kodunu yönetici parolasıyla okuyup forma taşır.
+        # Kod adres parçasında (#) taşınır; sunucuya ve günlüklere gitmez.
+        if command -v pkexec >/dev/null 2>&1; then
+            KOD=$(pkexec /usr/lib/pardus-sinif-yonetimi/kurulum-kodu 2>/dev/null) \
+                && [ -n "$KOD" ] && ADRES="${ADRES}#kod=${KOD}"
+        fi
+        ;;
+esac
+
+exec xdg-open "$ADRES"

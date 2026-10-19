@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+/veri/
+*.tar
+.pytest_cache/
+paketleme/onbellek/
+cikti/
+veri-odev/
+veri-gelistirme/
+.trash/
