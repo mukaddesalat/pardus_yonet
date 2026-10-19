@@ -45,6 +45,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install semgrep
           semgrep scan --config=p/default --config=p/owasp-top-ten --config=p/secrets --sarif --output=semgrep.sarif
+          python -c "import json; f='semgrep.sarif'; d=json.load(open(f, encoding='utf-8')); [run.__setitem__('results', [r for r in run.get('results', []) if not r.get('suppressions')]) for run in d.get('runs', [])]; json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)"
         continue-on-error: true
 
       - name: Semgrep SARIF Yükle
