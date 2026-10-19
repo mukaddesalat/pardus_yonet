@@ -312,12 +312,16 @@ function _sayfayiIcerenGrup(kod) {
   return SEZGISEL_MENULER[0].ogeler[0];
 }
 
+const VARSAYILAN_OKUL_ADI = "Şehit Cengiz Polat Fen ve Teknoloji Anadolu İmam Hatip Lisesi";
+const VARSAYILAN_OKUL_LOGO =
+  "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%231B5FC1%22%20stroke%3D%22%2393C5FD%22%20stroke-width%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M32%2012L14%2021v12c0%2011.5%207.7%2021.8%2018%2025%2010.3-3.2%2018-13.5%2018-25V21L32%2012z%22%20fill%3D%22%230F2A56%22%2F%3E%3Cpath%20d%3D%22M22%2036c4-2%208-2%2010%200%202-2%206-2%2010%200V24c-4-2-8-2-10%200-2-2-6-2-10%200v12z%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2219%22%20r%3D%222.5%22%20fill%3D%22%23FBBF24%22%2F%3E%3C%2Fsvg%3E";
+
 function okulBilgisiniUygula(okul) {
   if (!okul) return;
   Uyg.okul = okul;
-  const ad = okul.ad || "Atatürk Mesleki ve Teknik Anadolu Lisesi";
+  const ad = okul.ad || VARSAYILAN_OKUL_ADI;
   const alt = okul.alt_baslik || "Bilişim Teknolojileri Laboratuvarı";
-  const logo = okul.logo_b64 || "";
+  const logo = okul.logo_b64 || VARSAYILAN_OKUL_LOGO;
   if ($("#giris-okul-ad")) {
     $("#giris-okul-ad").textContent = ad;
     $("#giris-okul-ad").title = ad;

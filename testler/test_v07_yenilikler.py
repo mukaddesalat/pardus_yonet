@@ -59,7 +59,7 @@ class TestOkulKimligiVeOgretmenRBAC:
 
     def test_ogretmen_ekle_guncelle_sil_ve_son_admin_korumasi(self):
         admin_ozet = guvenlik.bcrypt_ozet("admin12345")
-        admin = veritabani.ogretmen_ekle("admin", "Murat Kaya", admin_ozet, rol="admin")
+        admin = veritabani.ogretmen_ekle("admin", "Mukaddes ALAT", admin_ozet, rol="admin")
         std_ozet = guvenlik.bcrypt_ozet("ogretmen123")
         std = veritabani.ogretmen_ekle(
             "zeynep.demir",
@@ -190,7 +190,7 @@ class TestKomutGonderVeHosts:
             "ssh_komut",
             {"ad": "userdel abc", "komut": "userdel -r abc", "sudo": True},
             [c1["ip"], c2["ip"], c3["ip"]],
-            ogretmen={"kullanici_adi": "admin", "ad_soyad": "Murat Kaya", "rol": "admin"},
+            ogretmen={"kullanici_adi": "admin", "ad_soyad": "Mukaddes ALAT", "rol": "admin"},
         )
 
         class SahteIstemci:
@@ -218,7 +218,7 @@ class TestKomutGonderVeHosts:
 
         kayit = veritabani.is_durumu(is_id)
         assert kayit["durum"] == "tamamlandi"
-        assert kayit["ogretmen_ad"] == "Murat Kaya"
+        assert kayit["ogretmen_ad"] == "Mukaddes ALAT"
         assert "3 bilgisayara gönderildi" in kayit["ozet"]
         assert "1 bilgisayara ulaşılamadı" in kayit["ozet"]
         assert "1 başarılı" in kayit["ozet"]

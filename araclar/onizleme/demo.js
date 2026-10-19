@@ -344,9 +344,16 @@
   const yollar = [];
   const yol = (metod, desen, islev) => yollar.push({ metod, desen: new RegExp(`^${desen}$`), islev });
 
-  let demoOkul = { ad: "Atatürk Mesleki ve Teknik Anadolu Lisesi", alt_baslik: "Bilişim Teknolojileri Laboratuvarı", logo_b64: "" };
+  const VARSAYILAN_OKUL_LOGO =
+    "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%231B5FC1%22%20stroke%3D%22%2393C5FD%22%20stroke-width%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M32%2012L14%2021v12c0%2011.5%207.7%2021.8%2018%2025%2010.3-3.2%2018-13.5%2018-25V21L32%2012z%22%20fill%3D%22%230F2A56%22%2F%3E%3Cpath%20d%3D%22M22%2036c4-2%208-2%2010%200%202-2%206-2%2010%200V24c-4-2-8-2-10%200-2-2-6-2-10%200v12z%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2219%22%20r%3D%222.5%22%20fill%3D%22%23FBBF24%22%2F%3E%3C%2Fsvg%3E";
+
+  let demoOkul = {
+    ad: "Şehit Cengiz Polat Fen ve Teknoloji Anadolu İmam Hatip Lisesi",
+    alt_baslik: "Bilişim Teknolojileri Laboratuvarı",
+    logo_b64: VARSAYILAN_OKUL_LOGO,
+  };
   let demoOgretmenler = [
-    { id: "ogr1", kullanici_adi: "admin", ad_soyad: "Murat Kaya", rol: "admin", brans: "Bilişim Alan Şefi", yetkiler: ["paket_gorunum", "komut_gonder"], son_giris: SIMDI() },
+    { id: "ogr1", kullanici_adi: "admin", ad_soyad: "Mukaddes ALAT", rol: "admin", brans: "Bilişim Teknolojileri", yetkiler: ["paket_gorunum", "komut_gonder"], son_giris: SIMDI() },
     { id: "ogr2", kullanici_adi: "zeynep.demir", ad_soyad: "Zeynep Demir", rol: "standart", brans: "Web Programcılığı", yetkiler: [], son_giris: DK(120) },
     { id: "ogr3", kullanici_adi: "ali.yilmaz", ad_soyad: "Ali Yılmaz", rol: "standart", brans: "Ağ Sistemleri", yetkiler: ["komut_gonder"], son_giris: DK(1440) },
   ];
@@ -812,8 +819,8 @@
     return r;
   });
 
-  yol("GET", "/api/isler", () => [...gecmis].reverse().map((k) => { isIlerlet(k); const { hedefler, parametreler, ...ust } = disa(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Murat Kaya", ogretmen_rol: "admin", ...ust }; }));
-  yol("GET", "/api/isler/(\\w+)", (_, [id]) => { const k = isler.get(id); if (!k) throw new Hata(404, "İş bulunamadı"); isIlerlet(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Murat Kaya", ogretmen_rol: "admin", ...disa(k) }; });
+  yol("GET", "/api/isler", () => [...gecmis].reverse().map((k) => { isIlerlet(k); const { hedefler, parametreler, ...ust } = disa(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...ust }; }));
+  yol("GET", "/api/isler/(\\w+)", (_, [id]) => { const k = isler.get(id); if (!k) throw new Hata(404, "İş bulunamadı"); isIlerlet(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...disa(k) }; });
   yol("POST", "/api/isler/(\\w+)/iptal", (_, [id]) => { const k = isler.get(id); if (!k || k.durum !== "calisiyor") throw new Hata(409, "İş çalışmıyor veya zaten bitti"); k._iptal = true; return { tamam: true, not: "İptal, güvenli noktada durdurur; başlamış adımları geri almaz" }; });
   yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.6.0 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
   yol("POST", "/api/ayarlar", (g) => { saklama = g.saklama_adedi; return { saklama_adedi: saklama }; });
