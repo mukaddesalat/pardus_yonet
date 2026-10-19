@@ -83,7 +83,8 @@ def al(p):
         if not (st.st_mode & 0o170000 == 0o100000) or st.st_uid != sahip:
             return {"hata": "kaynak dosya güvenilir değil (tür/sahip)"}
         os.makedirs(ONBELLEK, mode=0o755, exist_ok=True)
-        os.chmod(ONBELLEK, 0o755)
+        # Önbellek dizini (dizinler için 0o755 standarttır)
+        os.chmod(ONBELLEK, 0o755)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
         gecici = hedef + ".yeni"
         with os.fdopen(os.dup(fd), "rb") as giris, open(gecici, "wb") as cikis:
             shutil.copyfileobj(giris, cikis, 1048576)
@@ -200,7 +201,8 @@ def depo_erisimi(adresler):
         return None
     try:
         istek = urllib.request.Request(adres, method="HEAD")
-        with urllib.request.urlopen(istek, timeout=6) as yanit:
+        # Yalnızca yukarıda doğrulanmış http/https depolarına HEAD isteği gönderilir
+        with urllib.request.urlopen(istek, timeout=6) as yanit:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             return yanit.status < 400
     except Exception:
         return False

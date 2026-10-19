@@ -6,6 +6,7 @@ kilitle korunur. Parola veya özel anahtar bu veritabanına asla yazılmaz.
 
 import ipaddress
 import json
+import re
 import sqlite3
 import threading
 import uuid
@@ -246,12 +247,22 @@ _EK_SUTUNLAR = {
 }
 
 
+_GECERLI_KIMLIK = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+_GECERLI_TIPLER = {"TEXT", "INTEGER", "REAL", "BLOB"}
+
+
 def _goc(vt: sqlite3.Connection) -> None:
     for tablo, sutunlar in _EK_SUTUNLAR.items():
-        mevcut = {s[1] for s in vt.execute(f"PRAGMA table_info({tablo})")}
+        if not _GECERLI_KIMLIK.match(tablo):
+            continue
+        # Parameterized table info query via SQLite table-valued pragma function
+        mevcut = {s[0] for s in vt.execute("SELECT name FROM pragma_table_info(?)", (tablo,))}
         for ad, tip in sutunlar.items():
+            if not _GECERLI_KIMLIK.match(ad) or tip.upper() not in _GECERLI_TIPLER:
+                continue
             if ad not in mevcut:
-                vt.execute(f"ALTER TABLE {tablo} ADD COLUMN {ad} {tip}")
+                # Tablo ve sütun adları güvenli whitelist regex ve SQL tipleriyle doğrulanmıştır.
+                vt.execute(f'ALTER TABLE "{tablo}" ADD COLUMN "{ad}" {tip.upper()}')  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
 
 
 def _yerlesik_komutlari_yukle(vt: sqlite3.Connection) -> None:

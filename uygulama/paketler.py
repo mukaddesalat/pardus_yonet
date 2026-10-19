@@ -26,7 +26,8 @@ def paket_dizini():
     d = ayarlar.veri_yollari()["paket_dizini"]
     d.mkdir(parents=True, exist_ok=True)
     try:
-        os.chmod(d, 0o700)
+        # Paket dizini izinleri (sahip kısıtlı)
+        os.chmod(d, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
     except OSError:
         pass
     return d

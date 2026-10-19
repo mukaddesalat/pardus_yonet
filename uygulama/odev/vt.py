@@ -114,7 +114,8 @@ def _grup_yazilabilir_yap(yol) -> None:
     """
     for ek in ("", "-wal", "-shm"):
         try:
-            os.chmod(f"{yol}{ek}", 0o660)
+            # Grup yazılabilirliği (portal ve yönetim servisleri ortak grubu)
+            os.chmod(f"{yol}{ek}", 0o660)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
         except OSError:
             pass  # sahibi değilsek (diğer servis) veya dosya yoksa
 

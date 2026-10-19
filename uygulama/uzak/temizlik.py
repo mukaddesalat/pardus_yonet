@@ -363,8 +363,9 @@ def calistir(p):
 
         # ---- mod == temizle: karantinaya taşı ----
         os.makedirs(KARANTINA, mode=0o700, exist_ok=True)
-        os.chmod(KOK, 0o700)
-        os.chmod(KARANTINA, 0o700)
+        # Karantina dizinleri yalnızca root tarafından okunabilir olmalıdır
+        os.chmod(KOK, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
+        os.chmod(KARANTINA, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
         for _ in range(5):
             ad = "%s-%s" % (time.strftime("%Y%m%d-%H%M%S"), hesap)
             hedef_kok = os.path.join(KARANTINA, ad)

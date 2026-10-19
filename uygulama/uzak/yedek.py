@@ -115,8 +115,9 @@ def yedekle(p):
     du = subprocess.run(["du", "-sbx", ev], capture_output=True, text=True)
     kaynak_bayt = int(du.stdout.split()[0]) if du.returncode == 0 and du.stdout else 0
     os.makedirs(YEDEK, mode=0o700, exist_ok=True)
-    os.chmod(KOK, 0o700)
-    os.chmod(YEDEK, 0o700)
+    # Yedek dizinleri yalnızca root tarafından okunabilir olmalıdır
+    os.chmod(KOK, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
+    os.chmod(YEDEK, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
     sv = os.statvfs(YEDEK)
     bos = sv.f_bavail * sv.f_frsize
     if bos < kaynak_bayt + 200 * PARCA:

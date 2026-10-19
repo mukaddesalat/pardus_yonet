@@ -136,7 +136,8 @@ def _dizin() -> Path:
     d = ayarlar.veri_yollari()["veyon_dizini"]
     d.mkdir(parents=True, exist_ok=True)
     try:
-        os.chmod(d, 0o700)
+        # Veyon anahtar dizini (yalnızca sahibi tarafından erişilebilir)
+        os.chmod(d, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
     except OSError:
         pass
     return d

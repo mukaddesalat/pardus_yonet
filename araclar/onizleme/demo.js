@@ -342,6 +342,7 @@
   let saklama = 5;
 
   const yollar = [];
+  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
   const yol = (metod, desen, islev) => yollar.push({ metod, desen: new RegExp(`^${desen}$`), islev });
 
   const VARSAYILAN_OKUL_LOGO =

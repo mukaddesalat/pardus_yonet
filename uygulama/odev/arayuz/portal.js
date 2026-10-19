@@ -448,10 +448,24 @@ function dosyaGonder(d) {
       let mesaj = `Sunucu hatası (${xhr.status})`;
       try { mesaj = JSON.parse(xhr.responseText).detail || mesaj; } catch (_) { /* düz metin */ }
       if (xhr.status === 401) oturumBitti(mesaj);
-      reddet(Object.assign(new Error(mesaj), { durum: xhr.status, dosya: d }));
+      const h = new Error(mesaj);
+      h.durum = xhr.status;
+      h.dosya = d;
+      reddet(h);
     };
-    xhr.onerror = () => { gonderim.xhr = null; reddet(Object.assign(new Error("ag"), { ag: true, dosya: d })); };
-    xhr.onabort = () => { gonderim.xhr = null; reddet(Object.assign(new Error("iptal"), { iptal: true })); };
+    xhr.onerror = () => {
+      gonderim.xhr = null;
+      const h = new Error("ag");
+      h.ag = true;
+      h.dosya = d;
+      reddet(h);
+    };
+    xhr.onabort = () => {
+      gonderim.xhr = null;
+      const h = new Error("iptal");
+      h.iptal = true;
+      reddet(h);
+    };
     xhr.send(d.oge.dosya);
   });
 }

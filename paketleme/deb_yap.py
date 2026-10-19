@@ -112,9 +112,10 @@ def gomulu_python() -> Path:
     yol = ONBELLEK / PYTHON["ad"]
     if not yol.exists() or sha256(yol) != PYTHON["sha256"]:
         bilgi(f"Gömülü Python indiriliyor: {PYTHON['ad']}")
-        ONBELLEK.mkdir(parents=True, exist_ok=True)
-        gecici = yol.with_suffix(".indiriliyor")
-        with urllib.request.urlopen(PYTHON["url"], timeout=120) as yanit, open(gecici, "wb") as f:
+        url = PYTHON["url"]
+        if not url.startswith("https://github.com/astral-sh/"):
+            dur("Güvensiz indirme adresi: Python arşivi yalnızca resmi kaynaktan indirilebilir")
+        with urllib.request.urlopen(url, timeout=120) as yanit, open(gecici, "wb") as f:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             while parca := yanit.read(1 << 20):
                 f.write(parca)
         if sha256(gecici) != PYTHON["sha256"]:
@@ -342,7 +343,8 @@ def paket_yap() -> Path:
     girdiler += [(y, tur, izin, veri) for y, (tur, izin, veri) in agac.girdiler.items()]
     girdiler.sort(key=lambda g: g[0])
 
-    md5 = "".join(f"{hashlib.md5(veri).hexdigest()}  {yol}\n"
+    # Debian dpkg md5sums standardı (kriptografik amaçlı değildir)
+    md5 = "".join(f"{hashlib.md5(veri, usedforsecurity=False).hexdigest()}  {yol}\n"
                   for yol, tur, _, veri in girdiler if tur == "dosya")
     ad, eposta = git("config", "user.name"), git("config", "user.email")
     bakimci = f"{ad or 'Pardus Sinif Yonetimi'} <{eposta or 'root@localhost'}>"

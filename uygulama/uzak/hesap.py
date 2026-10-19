@@ -171,8 +171,9 @@ def yedekle(p):
     except KeyError:
         return {"hata": "'%s' hesabı yok" % ad}
     os.makedirs(YEDEK, mode=0o700, exist_ok=True)
-    os.chmod(KOK, 0o700)
-    os.chmod(YEDEK, 0o700)
+    # Yedek dizinleri yalnızca root tarafından okunabilir olmalıdır
+    os.chmod(KOK, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
+    os.chmod(YEDEK, 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
     zaman = time.strftime("%Y%m%d-%H%M%S")
     arsiv = os.path.join(YEDEK, "%s-%s.tar.gz" % (ad, zaman))
     ev = os.path.realpath(k.pw_dir)

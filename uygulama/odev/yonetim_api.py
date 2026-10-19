@@ -46,8 +46,8 @@ class PortalAyarIstek(BaseModel):
 
 def _portal_calisiyor_mu() -> bool:
     try:
-        with urllib.request.urlopen(
-                f"http://127.0.0.1:{ortak.PORTAL_PORTU}/api/saglik", timeout=2) as yanit:
+        url = f"http://127.0.0.1:{int(ortak.PORTAL_PORTU)}/api/saglik"
+        with urllib.request.urlopen(url, timeout=2) as yanit:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             return yanit.status == 200
     except Exception:
         return False

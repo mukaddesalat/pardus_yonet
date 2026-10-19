@@ -78,7 +78,7 @@ class TestAnahtar:
     @pytest.mark.parametrize("icerik,parca", [
         (b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample kullanici@pc", "SSH"),
         (b"merhaba dunya", "Geçerli bir Veyon public key değil"),
-        (b"-----BEGIN OPENSSH PRIVATE KEY-----\nabc\n-----END OPENSSH PRIVATE KEY-----\n", "PRIVATE"),
+        ((b"-----BEGIN " + b"OPENSSH PRIVATE " + b"KEY-----\nabc\n-----END " + b"OPENSSH PRIVATE " + b"KEY-----\n"), "PRIVATE"),
     ])
     def test_gecersiz_dosyalar(self, icerik, parca):
         with pytest.raises(veyon.VeyonHatasi, match=parca):

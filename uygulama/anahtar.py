@@ -28,7 +28,8 @@ def anahtar_uret_veya_yukle() -> str:
 
     y["anahtar_dizini"].mkdir(parents=True, exist_ok=True)
     try:
-        os.chmod(y["anahtar_dizini"], 0o700)
+        # Özel anahtar dizini yalnızca sahibi (root/uygulama) tarafından okunabilir olmalıdır
+        os.chmod(y["anahtar_dizini"], 0o700)  # nosemgrep: python.lang.security.audit.insecure-file-permissions.insecure-file-permissions
     except OSError:
         pass
 
