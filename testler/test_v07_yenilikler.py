@@ -5,7 +5,7 @@ ve M2-S6 SSH Komut Gönder (/etc/hosts ve bash komut merkezi) testleri."""
 import base64
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -229,7 +229,10 @@ class TestSinifHizliAraclar:
     def test_masaustu_url_ve_dosya_dagitimi(self):
         with tempfile.TemporaryDirectory() as tmp:
             masaustu = Path(tmp) / "Masaüstü"
+            sahte_kullanici = MagicMock(pw_name="ogrenci", pw_uid=1000, pw_gid=1000, pw_dir=tmp)
             with patch.object(uzak_sinif, "_masaustu_dizini", return_value=masaustu), \
+                 patch.object(uzak_sinif, "_ogrenci_bilgi", return_value=sahte_kullanici), \
+                 patch.object(uzak_sinif, "_kullanici_bildir"), \
                  patch.object(uzak_sinif, "_ogrenci_sahip_yap"):
                 r_url = uzak_sinif.masaustu_url("Pardus Kılavuzu", "https://pardus.org.tr")
                 assert r_url["tamam"] is True
