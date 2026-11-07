@@ -234,20 +234,102 @@ class TestSinifHizliAraclar:
     def test_masaustu_url_ve_dosya_dagitimi(self):
         with tempfile.TemporaryDirectory() as tmp:
             masaustu = Path(tmp) / "Masaüstü"
+            hosts_yolu = Path(tmp) / "hosts"
+            hosts_yolu.write_text("127.0.0.1\tlocalhost\n", encoding="utf-8")
             sahte_kullanici = MagicMock(pw_name="ogrenci", pw_uid=1000, pw_gid=1000, pw_dir=tmp)
             with patch.object(uzak_sinif, "_masaustu_dizini", return_value=masaustu), \
                  patch.object(uzak_sinif, "_ogrenci_bilgi", return_value=sahte_kullanici), \
+                 patch.object(uzak_sinif, "_oturum_ortami", return_value=(sahte_kullanici, {"DISPLAY": ":0"})), \
+                 patch.object(uzak_sinif, "_masaustu_guvenli_yap"), \
+                 patch.object(uzak_sinif, "_arka_planda") as sahte_arka, \
+                 patch.object(uzak_sinif, "_arac", side_effect=lambda ad: f"/usr/bin/{ad}"), \
+                 patch.object(uzak_sinif, "HOSTS_YOLU", hosts_yolu), \
                  patch.object(uzak_sinif, "_kullanici_bildir"), \
                  patch.object(uzak_sinif, "_ogrenci_sahip_yap"):
-                r_url = uzak_sinif.masaustu_url("Pardus Kılavuzu", "https://pardus.org.tr")
+                r_url = uzak_sinif.masaustu_url({
+                    "baslik": "Ödev Teslim Portalı",
+                    "url": "http://ogretmen.lab:8090/",
+                    "otomatik_ac": True,
+                    "hosts_ip": "192.168.10.10",
+                    "hosts_ad": "ogretmen.lab",
+                })
                 assert r_url["tamam"] is True
+                assert r_url["acildi"] is True
+                assert sahte_arka.called
+                assert "192.168.10.10\togretmen.lab" in hosts_yolu.read_text(encoding="utf-8")
+
+                html_dosyalar = list(masaustu.glob("*.html"))
+                assert len(html_dosyalar) == 1
+                assert "http://ogretmen.lab:8090/" in html_dosyalar[0].read_text(encoding="utf-8")
+
                 dosyalar = list(masaustu.glob("*.desktop"))
                 assert len(dosyalar) == 1
-                assert "https://pardus.org.tr" in dosyalar[0].read_text(encoding="utf-8")
+                desktop_metin = dosyalar[0].read_text(encoding="utf-8")
+                assert "Type=Application" in desktop_metin
+                assert 'Exec=xdg-open "http://ogretmen.lab:8090/"' in desktop_metin
 
+                # 1. Doğrudan base64 ile küçük dosya
                 b64 = base64.b64encode("Merhaba Sınıf".encode("utf-8")).decode("ascii")
                 r_dosya = uzak_sinif.masaustu_dosya("calisma_notu.txt", b64)
                 assert r_dosya["tamam"] is True
                 hedef = masaustu / "calisma_notu.txt"
                 assert hedef.exists()
                 assert hedef.read_text(encoding="utf-8") == "Merhaba Sınıf"
+
+                # 2. Geçici dosya (SFTP aktarımı) ve uzun dosya adında uzantının korunması
+                gecici = Path(tmp) / "psy-dosya-test"
+                gecici.write_bytes(b"PDF-ICERIK-TEST" * 100)
+                uzun_ad = "Cok_Uzun_Isimli_Bilisim_Teknolojileri_Ders_Calisma_Kagidi_2026_Final_Surumu_Ornek.pdf"
+                r_buyuk = uzak_sinif.masaustu_dosya({"dosya_adi": uzun_ad, "gecici_yol": str(gecici)})
+                assert r_buyuk["tamam"] is True
+                assert r_buyuk["dosya"].endswith(".pdf")
+                assert not gecici.exists()
+
+    def test_sinif_araclari_sftp_ile_buyuk_dosya_gonderir(self):
+        c1 = _hazir_cihaz("192.168.10.155", "LAB55")
+        is_id = veritabani.is_olustur("sinif_masaustu_dosya", {"dosya_adi": "deneme.pdf"}, [c1["ip"]])
+        yazilan_baytlar = {}
+        gonderilen_param = {}
+
+        class SahteSftpDosya:
+            def __init__(self, yol):
+                self.yol = yol
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                pass
+
+            def write(self, veri):
+                yazilan_baytlar[self.yol] = veri
+
+        class SahteSftp:
+            def file(self, yol, kip):
+                return SahteSftpDosya(yol)
+
+            def close(self):
+                pass
+
+        class SahteIstemci:
+            def open_sftp(self):
+                return SahteSftp()
+
+            def close(self):
+                pass
+
+        def sahte_sudo_betik(istemci, betik, parametre, zaman=30):
+            gonderilen_param.update(parametre)
+            return {"tamam": True, "mesaj": "Masaüstüne 'deneme.pdf' kopyalandı"}
+
+        buyuk_veri = b"X" * (180 * 1024)  # 180 KB (Linux MAX_ARG_STRLEN 128 KB sınırından büyük)
+        b64 = base64.b64encode(buyuk_veri).decode("ascii")
+        with patch("uygulama.sinif_araclari.yonetim.baglan", return_value=SahteIstemci()), \
+             patch("uygulama.sinif_araclari.ssh_araclari.sudo_betik", side_effect=sahte_sudo_betik):
+            sinif_araclari._calistir_tek(
+                is_id, c1, {"kip": "masaustu_dosya", "dosya_adi": "deneme.pdf", "icerik_b64": b64}
+            )
+
+        assert "icerik_b64" not in gonderilen_param
+        assert gonderilen_param.get("gecici_yol", "").startswith("/tmp/psy-dosya-")
+        assert yazilan_baytlar[gonderilen_param["gecici_yol"]] == buyuk_veri

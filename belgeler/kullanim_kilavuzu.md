@@ -9,7 +9,7 @@ Bu kılavuz, bilgisayar laboratuvarını yöneten öğretmenler için hazırlanm
 Lab Kaptanı yalnızca **öğretmen bilgisayarına** tek bir paketle kurulur. Öğrenci bilgisayarlarına hiçbir program yüklenmesi gerekmez.
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.8.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.8.2_amd64.deb
 ```
 
 Kurulum tamamlandığında uygulama arka planda çalışmaya başlar. Masaüstünüzdeki **Lab Kaptanı** simgesine tıklayarak arayüzü açabilirsiniz.
@@ -101,7 +101,7 @@ Hazırlık ekranı üç kolay adımdan oluşur:
 
 ## 5. Bakım, Görünüm ve Güç Yönetimi
 
-**Bakım & Görünüm** menüsü, laboratuvarın genel çalışma düzenini korumanızı sağlar.
+**Bakım, Görünüm & Güç** menüsü, laboratuvarın temizliğini, görünümünü, uyku ayarlarını ve zamanlı kapatma planlarını tek bir çatı altında toplar.
 
 ### 🖼️ Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası Etiketi
 M2-S3 Görünüm menüsünde zengin bir **Duvar Kâğıdı Galerisi** bulunur:
@@ -113,13 +113,13 @@ M2-S3 Görünüm menüsünde zengin bir **Duvar Kâğıdı Galerisi** bulunur:
 * **Köşede Bilgisayar Numarası Etiketi:** Duvar kâğıdı atanırken her bilgisayarın `hostname` adındaki rakamlar (örn. `ogrenci01` için **`01`**, `ogrenci15` için **`15`**) seçtiğiniz köşeye (**Sağ Üst** veya **Sol Üst**) yüksek kontrastlı rozet olarak otomatik işlenir. Böylece laboratuvara uzaktan bakıldığında hangi masada hangi bilgisayarın olduğu hemen anlaşılır.
 * **Windows 10 Düzeni:** Pardus Karşılayıcı'daki alt görev çubuğu ve uygulama menüsü tek tıkla tüm bilgisayarlara uygulanabilir.
 
-### ⚡ Güç ve Ekran Koruyucu Yönetimi
-Öğrenci bilgisayarlarının boşta kalınca kapanmasını veya ekranının kararmasını engeller:
+### ⚡ Güç, Uyku ve Zamanlı Kapatma Yönetimi (M2-S4 / M2-S5)
+Öğrenci bilgisayarlarının boşta kalınca kapanmasını veya ekranının kararmasını engeller ve planlı kapanma takvimi oluşturur:
 
 ![Güç ve Uyku Ayarları](gorseller/05_bakim_ve_guc.png)
 
 * **Hiç Kapanmasın (Önerilen Varsayılan):** Bilgisayarlar siz istemediğiniz sürece asla uykuya geçmez, askıya alınmaz ve **ekranları kapanmaz**. Hem GNOME/GDM kilitleri hem de X11 DPMS donanımsal korumasıyla monitörler daima açık kalır.
-* **Zamanlı Kapatma:** Ders bitim saatine (örneğin hafta içi her gün 17:30) otomatik kapanma planı kurabilirsiniz. Kapanmadan önce öğrenci ekranına uyarı bildirimi gönderilir.
+* **⏰ Zamanlı Kapatma (M2-S5):** Bakım, Görünüm & Güç menüsünün altında yer alan bu modülle ders bitim saatine (örneğin hafta içi her gün 17:30 veya belirli bir tarihte) otomatik kapanma planı kurabilirsiniz. Kapanmadan önce öğrenci ekranına uyarı bildirimi gönderilir. Güç ve Uyku sayfasındaki **"⏰ Zamanlı Kapatma Planla →"** düğmesiyle iki sayfa arasında tek tıkla geçiş yapabilirsiniz.
 
 ---
 
@@ -148,16 +148,22 @@ Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda 
 
 ---
 
-## 8. Ödev Dağıtımı ve Teslim Portalı
+## 8. Ödev Dağıtımı, Masaüstüne Dosya & Web Bağlantısı Bırakma (M3-S1)
 
-Öğrenciler ödevlerini internete ihtiyaç duymadan, yerel ağ üzerinden öğretmen bilgisayarına yükleyebilir.
+Öğrenciler ödevlerini internete ihtiyaç duymadan, yerel ağ üzerinden öğretmen bilgisayarına yükleyebilir; öğretmen ise tek tıkla öğrenci masaüstlerine dosya ve bağlantı dağıtabilir.
 
 ![Ödevler ve Teslim](gorseller/07_odevler.png)
 
-1. **Materyal Dağıtımı:** Öğrencilerin masaüstüne tek tıkla ders notu, örnek kod veya web bağlantısı gönderebilirsiniz.
-2. **Ödev Oluşturma:** Başlık, son teslim tarihi ve izinli dosya türlerini belirleyin.
-3. **Öğrenci Teslim Kodları:** Öğrenciler kendi adlarına üretilen 8 karakterli kodla `http://ogretmen.lab:8090` adresinden ödevlerini gönderir.
-4. **Toplu İndirme (ZIP):** Öğretmen tek tıkla tüm sınıfın ödevlerini öğrenci numarası ve ada göre klasörlenmiş tek bir ZIP arşivi olarak indirebilir.
+1. **🚀 Masaüstüne Dosya / Materyal Bırakma (SFTP):**
+   * Çalışma kâğıdı, sunum, kaynak kod, PDF veya görsel gibi ders materyallerini (en çok 50 MB) sürükle-bırak alanına bırakarak veya dosya seçerek tüm sınıfın `/home/ogrenci/Masaüstü` klasörüne kopyalayabilirsiniz.
+   * Dosyalar güvenli SFTP aktarımıyla iletilir ve Linux komut satırı sınırlarına takılmaz.
+2. **🌐 Doğrudan Tarayıcıda Açılan Web Bağlantısı ve Ödev Portalı:**
+   * Öğrencilerin masaüstüne tıklanabilir web kısayolu bırakabilirsiniz. Pardus GNOME ortamında kırık görünmeyen `.html` yönlendirici ve güvenilir başlatıcı birlikte oluşturulur.
+   * **Öğrenci Ekranlarında Web Sayfasını Hemen Aç:** İşaretlendiğinde açık öğrenci oturumlarında gönderilen web sayfası veya teslim portalı tarayıcıda otomatik olarak hemen açılır.
+   * **🎯 Ödev Portalını Sınıfa Gönder ve Aç:** Tek tıkla öğretmen bilgisayarının yerel ağ adresini (`ogretmen.lab`) tüm öğrenci bilgisayarlarının `/etc/hosts` dosyasına işler ve portalı öğrenci ekranlarında anında açar.
+3. **Ödev Oluşturma:** Başlık, son teslim tarihi ve izinli dosya türlerini belirleyin.
+4. **Öğrenci Teslim Kodları:** Öğrenciler kendi adlarına üretilen 8 karakterli kodla `http://ogretmen.lab:8090` adresinden ödevlerini gönderir.
+5. **Toplu İndirme (ZIP):** Öğretmen tek tıkla tüm sınıfın ödevlerini öğrenci numarası ve ada göre klasörlenmiş tek bir ZIP arşivi olarak indirebilir.
 
 ---
 

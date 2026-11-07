@@ -1,14 +1,14 @@
 # Lab Kaptanı (Pardus Sınıf Yönetimi) — Yönetici Kılavuzu
 
 Sistem yöneticileri için kurulum, mimari, veri konumları, güvenlik modeli ve kurtarma.
-Sürüm 0.8.0.
+Sürüm 0.8.2.
 
 ## Kurulum
 
 Öğretmen bilgisayarında (Pardus 23 EDU) tek komut yeterlidir:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.8.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.8.2_amd64.deb
 ```
 
 Paket kendi Python çalışma ortamını ve tüm kütüphaneleri içerir; kurulum

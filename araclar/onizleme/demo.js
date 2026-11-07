@@ -984,7 +984,7 @@
   yol("GET", "/api/isler", () => [...gecmis].reverse().map((k) => { isIlerlet(k); const { hedefler, parametreler, ...ust } = disa(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...ust }; }));
   yol("GET", "/api/isler/(\\w+)", (_, [id]) => { const k = isler.get(id); if (!k) throw new Hata(404, "İş bulunamadı"); isIlerlet(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...disa(k) }; });
   yol("POST", "/api/isler/(\\w+)/iptal", (_, [id]) => { const k = isler.get(id); if (!k || k.durum !== "calisiyor") throw new Hata(409, "İş çalışmıyor veya zaten bitti"); k._iptal = true; return { tamam: true, not: "İptal, güvenli noktada durdurur; başlamış adımları geri almaz" }; });
-  yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.8.0 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
+  yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.8.2 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
   yol("POST", "/api/ayarlar", (g) => { saklama = g.saklama_adedi; return { saklama_adedi: saklama }; });
 
   let demoSistemYedekler = [
@@ -1063,10 +1063,10 @@
     durum: "basarili", mesaj: g.kisitla ? "dış internet kısıtlandı (yerel ağ açık)" : "internet kısıtlaması kaldırıldı",
   })));
   yol("POST", "/api/sinif/masaustu-url", (g) => isBaslat("sinif_masaustu_url", g.cihazlar, g, () => ({
-    durum: "basarili", mesaj: `masaüstüne kısayol bırakıldı: ${g.baslik}.desktop`,
+    durum: "basarili", mesaj: `masaüstüne web bağlantısı bırakıldı: ${g.baslik}.html${g.otomatik_ac ? " (tarayıcıda açıldı)" : ""}`,
   })));
   yol("POST", "/api/sinif/masaustu-dosya", (g) => isBaslat("sinif_masaustu_dosya", g.cihazlar, g, () => ({
-    durum: "basarili", mesaj: `masaüstüne dosya kopyalandı: ${g.dosya_adi}`,
+    durum: "basarili", mesaj: `masaüstüne dosya kopyalandı (SFTP): ${g.dosya_adi}`,
   })));
   yol("GET", "/api/komutlar", () => demoKomutlar);
   yol("POST", "/api/komutlar", (g) => {
@@ -1108,7 +1108,8 @@
   });
 
   /* ---- ödevler ---- */
-  yol("GET", "/api/odev/durum", () => ({ adres: "http://ogretmen.lab", adres_adi: "ogretmen.lab", aglar: ["192.168.10.0/24", "192.168.20.0/24"],
+  yol("GET", "/api/odev/durum", () => ({ adres: "http://ogretmen.lab:8090/", adres_adi: "ogretmen.lab", port: 8090,
+    ogretmen_ip: "192.168.10.10", ip_adres: "http://192.168.10.10:8090/", aglar: ["192.168.10.0/24", "192.168.20.0/24"],
     portal_calisiyor: true, bos_alan: 212 * 1073741824, turler: { belge: "Belgeler", gorsel: "Görseller", arsiv: "Arşivler (zip)", kod: "Kod dosyaları", medya: "Ses / video" },
     varsayilan_turler: ["belge", "gorsel", "arsiv"] }));
   yol("POST", "/api/odev/ayarlar", () => ({ not: "DEMO: ayar kaydedildi (gerçekte portal yeniden yapılandırılır)." }));

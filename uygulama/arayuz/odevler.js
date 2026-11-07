@@ -38,7 +38,12 @@ function odevKimligi(o) { return kimlikSlug(o.id).slice(0, 8) || "ODEV"; }
 /* ---- sayfalar ---- */
 
 const m3s1 = {
+  kur() {
+    const secimYeri = $("#sayfa-M3-S1 .secim-yeri");
+    if (secimYeri) secimCubuguKur(secimYeri, "sinif");
+  },
   async ac() {
+    Secim.bildir();
     await Promise.all([portalDurumuYukle(), sinifListesiniYukle()]);
     takipGoster(Boolean(takipOdevId));
   },
@@ -523,42 +528,170 @@ $("#btn-kod-yazdir").addEventListener("click", () => {
 });
 
 /* ---- M3-S1 Masaüstüne bağlantı / dosya dağıtımı ---- */
+let m3s1SeciliDosya = null;
+
+function _m3s1HedefCihazlar() {
+  const secili = Secim.liste();
+  if (secili.length) return secili;
+  return Veri.cihazlar
+    .filter((c) => labKapsami(c) && !c.korunan && !(c.uygunluk && c.uygunluk.sinif))
+    .map((c) => c.id);
+}
+
+function _m3s1PortalBilgisi() {
+  const adres = (odevDurum && odevDurum.adres) || "http://ogretmen.lab:8090/";
+  const adresAdi = (odevDurum && odevDurum.adres_adi) || "ogretmen.lab";
+  const ogretmenIp = (odevDurum && odevDurum.ogretmen_ip) || "";
+  return { adres, adresAdi, ogretmenIp };
+}
+
+async function _m3s1WebBaglantisiGonder(baslik, url, otomatikAc, zorunluHosts = false) {
+  if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+    bildir("Geçerli bir http:// veya https:// web adresi yazın.", true);
+    return;
+  }
+  const { adresAdi, ogretmenIp } = _m3s1PortalBilgisi();
+  let hostsIp = null;
+  let hostsAd = null;
+  try {
+    const u = new URL(url);
+    if ((zorunluHosts || u.hostname === adresAdi) && ogretmenIp && u.hostname.includes(".")) {
+      hostsIp = ogretmenIp;
+      hostsAd = u.hostname;
+    }
+  } catch (_) {}
+
+  const adaylar = _m3s1HedefCihazlar();
+  const aciklamaEk = otomatikAc
+    ? "Masaüstüne doğrudan tarayıcıda açılan web bağlantısı bırakılacak ve açık oturumlarda sayfa hemen açılacaktır."
+    : "Masaüstüne doğrudan tarayıcıda açılan web bağlantısı bırakılacaktır.";
+  const hedefler = await onayIste({
+    islem: "sinif",
+    cihazlar: adaylar,
+    baslik: `Masaüstüne web bağlantısı gönder — ${baslik}`,
+    aciklama: `“${url}” adresi öğrenci bilgisayarlarının Masaüstü klasörüne gönderilecek. ${aciklamaEk}`,
+  });
+  if (hedefler) {
+    await isBaslat("/api/sinif/masaustu-url", {
+      cihazlar: hedefler,
+      baslik,
+      url,
+      otomatik_ac: Boolean(otomatikAc),
+      hosts_ip: hostsIp,
+      hosts_ad: hostsAd,
+    });
+  }
+}
+
+if ($("#m3s1-preset-portal")) {
+  $("#m3s1-preset-portal").addEventListener("click", () => {
+    const { adres } = _m3s1PortalBilgisi();
+    $("#m3s1-url-baslik").value = "Ödev Teslim Portalı";
+    $("#m3s1-url-adres").value = adres;
+    if ($("#m3s1-url-otomatik-ac")) $("#m3s1-url-otomatik-ac").checked = true;
+  });
+}
+
+if ($("#m3s1-preset-pardus")) {
+  $("#m3s1-preset-pardus").addEventListener("click", () => {
+    $("#m3s1-url-baslik").value = "Pardus Resmi Kılavuz";
+    $("#m3s1-url-adres").value = "https://www.pardus.org.tr";
+  });
+}
+
+if ($("#m3s1-portal-hemen-gonder")) {
+  $("#m3s1-portal-hemen-gonder").addEventListener("click", async () => {
+    const { adres } = _m3s1PortalBilgisi();
+    $("#m3s1-url-baslik").value = "Ödev Teslim Portalı";
+    $("#m3s1-url-adres").value = adres;
+    if ($("#m3s1-url-otomatik-ac")) $("#m3s1-url-otomatik-ac").checked = true;
+    await _m3s1WebBaglantisiGonder("Ödev Teslim Portalı", adres, true, true);
+  });
+}
+
 if ($("#m3s1-url-gonder")) {
   $("#m3s1-url-gonder").addEventListener("click", async () => {
     const baslik = $("#m3s1-url-baslik").value.trim() || "Ders Bağlantısı";
     const url = $("#m3s1-url-adres").value.trim();
-    if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
-      bildir("Geçerli bir http:// veya https:// web adresi yazın.", true);
-      return;
-    }
-    const hedefler = await onayIste({
-      islem: "sinif", cihazlar: Secim.liste(),
-      baslik: `Masaüstüne bağlantı gönder — ${baslik}`,
-      aciklama: `Seçili öğrenci bilgisayarlarının Masaüstü klasörüne “${url}” kısayolu oluşturulacaktır.`,
-    });
-    if (hedefler) isBaslat("/api/sinif/masaustu-url", { cihazlar: hedefler, baslik, url });
+    const otomatikAc = $("#m3s1-url-otomatik-ac") ? $("#m3s1-url-otomatik-ac").checked : true;
+    await _m3s1WebBaglantisiGonder(baslik, url, otomatikAc);
+  });
+}
+
+function _m3s1DosyaSecildi(dosya) {
+  m3s1SeciliDosya = dosya || null;
+  const bilgiKutu = $("#m3s1-secili-dosya-bilgi");
+  const bilgiAd = $("#m3s1-secili-dosya-ad");
+  if (!bilgiKutu || !bilgiAd) return;
+  if (!m3s1SeciliDosya) {
+    bilgiKutu.hidden = true;
+    bilgiAd.textContent = "";
+    return;
+  }
+  bilgiAd.textContent = `📄 ${m3s1SeciliDosya.name} (${boyutYaz(m3s1SeciliDosya.size)})`;
+  bilgiKutu.hidden = false;
+}
+
+if ($("#m3s1-dosya-sec")) {
+  $("#m3s1-dosya-sec").addEventListener("change", () => {
+    _m3s1DosyaSecildi($("#m3s1-dosya-sec").files[0] || null);
+  });
+}
+
+if ($("#m3s1-secili-dosya-temizle")) {
+  $("#m3s1-secili-dosya-temizle").addEventListener("click", () => {
+    if ($("#m3s1-dosya-sec")) $("#m3s1-dosya-sec").value = "";
+    _m3s1DosyaSecildi(null);
+  });
+}
+
+if ($("#m3s1-dosya-kutu")) {
+  const kutu = $("#m3s1-dosya-kutu");
+  kutu.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    kutu.classList.add("surukleniyor");
+  });
+  kutu.addEventListener("dragleave", () => kutu.classList.remove("surukleniyor"));
+  kutu.addEventListener("drop", (e) => {
+    e.preventDefault();
+    kutu.classList.remove("surukleniyor");
+    const gelen = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (gelen) _m3s1DosyaSecildi(gelen);
   });
 }
 
 if ($("#m3s1-dosya-gonder")) {
   $("#m3s1-dosya-gonder").addEventListener("click", async () => {
-    const dosya = $("#m3s1-dosya-sec").files[0];
-    if (!dosya) { bildir("Önce dağıtılacak dosyayı seçin.", true); return; }
-    if (dosya.size > 20 * 1024 * 1024) { bildir("Masaüstüne dağıtılacak dosya en çok 20 MB olabilir.", true); return; }
-    const b64 = await new Promise((coz, reddet) => {
-      const okuyucu = new FileReader();
-      okuyucu.onload = () => coz(okuyucu.result.split(",")[1]);
-      okuyucu.onerror = reddet;
-      okuyucu.readAsDataURL(dosya);
-    });
+    const dosya = m3s1SeciliDosya || ($("#m3s1-dosya-sec") && $("#m3s1-dosya-sec").files[0]);
+    if (!dosya) { bildir("Önce masaüstüne dağıtılacak dosyayı seçin veya kutuya sürükleyin.", true); return; }
+    if (dosya.size > 50 * 1024 * 1024) { bildir("Masaüstüne dağıtılacak dosya en çok 50 MB olabilir.", true); return; }
+    let b64;
+    try {
+      b64 = await new Promise((coz, reddet) => {
+        const okuyucu = new FileReader();
+        okuyucu.onload = () => {
+          const sonuc = String(okuyucu.result || "");
+          const virgul = sonuc.indexOf(",");
+          coz(virgul >= 0 ? sonuc.slice(virgul + 1) : sonuc);
+        };
+        okuyucu.onerror = () => reddet(new Error("Dosya okunamadı"));
+        okuyucu.readAsDataURL(dosya);
+      });
+    } catch (hata) {
+      bildir(hata.message || "Dosya okunamadı.", true);
+      return;
+    }
+    const adaylar = _m3s1HedefCihazlar();
     const hedefler = await onayIste({
-      islem: "sinif", cihazlar: Secim.liste(),
+      islem: "sinif",
+      cihazlar: adaylar,
       baslik: `Masaüstüne dosya dağıt — ${dosya.name}`,
-      aciklama: `“${dosya.name}” (${boyutYaz(dosya.size)}) seçili öğrenci bilgisayarlarının Masaüstü klasörüne kopyalanacaktır.`,
+      aciklama: `“${dosya.name}” (${boyutYaz(dosya.size)}) seçili öğrenci bilgisayarlarının Masaüstü klasörüne SFTP ile kopyalanacaktır.`,
     });
     if (hedefler) {
       await isBaslat("/api/sinif/masaustu-dosya", { cihazlar: hedefler, dosya_adi: dosya.name, icerik_b64: b64 });
-      $("#m3s1-dosya-sec").value = "";
+      if ($("#m3s1-dosya-sec")) $("#m3s1-dosya-sec").value = "";
+      _m3s1DosyaSecildi(null);
     }
   });
 }

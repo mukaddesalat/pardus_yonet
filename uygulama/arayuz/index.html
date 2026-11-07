@@ -637,6 +637,7 @@
             <div class="arac-cubugu">
               <button id="m2s4-yeniden" type="button" class="ikincil" data-ui-id="M2-S4-B1">Yeniden başlat</button>
               <button id="m2s4-kapat" type="button" class="tehlikeli" data-ui-id="M2-S4-B2">Kapat</button>
+              <button id="m2s4-zamanli-git" type="button" class="ikincil">⏰ Zamanlı Kapatma Planla →</button>
             </div>
           </div>
           <div class="kart">
@@ -742,7 +743,7 @@
             <div class="kart">
               <h2>Kayıtlı Komut Kütüphanesi</h2>
               <p class="ipucu">Hazır komutlardan birini düzenleyiciye yükleyin veya kendi kaydettiğiniz komutları yönetin.</p>
-              <div class="arac-cubugu" style="margin-bottom: 8px;">
+              <div class="arac-cubugu alt-bosluk">
                 <button id="m2s6-hizli-veyon" type="button" class="ikincil kucuk" title="Veyon servisini kontrol edip kapalıysa ayağa kaldıran komutu yükler">🔄 Veyon Servisini Aç (Hızlı Yükle)</button>
               </div>
               <div id="m2s6-kutuphane" class="komut-kutuphane"></div>
@@ -802,22 +803,67 @@
       <section id="sayfa-M3-S1" class="sayfa" data-ui-id="M3-S1" hidden>
         <header class="sayfa-baslik">
           <span class="kod-cip">M3 · S1</span>
-          <h1>Teslimler</h1>
-          <p class="sayfa-aciklama">Öğrenci adresi: <strong id="portal-adres" class="adres"></strong>
+          <h1>Teslimler ve Masaüstüne Dağıtım</h1>
+          <p class="sayfa-aciklama">Öğrenci portal adresi: <strong id="portal-adres" class="adres"></strong>
             <span id="portal-durum"></span></p>
         </header>
-        <div class="kart alt-bosluk">
-          <h2>Öğrenci Masaüstüne Ders Materyali veya Bağlantı Dağıt</h2>
-          <p class="ipucu">Seçili öğrenci bilgisayarlarının <code>/home/ogrenci/Masaüstü</code> klasörüne çalışma dosyası veya tıklanabilir web kısayolu gönderir.</p>
-          <div class="iki-sutun">
-            <div class="arac-cubugu">
-              <input id="m3s1-url-baslik" type="text" maxlength="60" placeholder="Kısayol adı (örn. Ders Notları)" aria-label="Kısayol adı">
-              <input id="m3s1-url-adres" type="url" maxlength="500" placeholder="https://..." aria-label="Web adresi">
-              <button id="m3s1-url-gonder" type="button" class="ikincil kucuk" data-ui-id="M3-S1-B22">Masaüstüne Bağlantı Gönder</button>
+        <div class="secim-yeri" data-islem="sinif"></div>
+        <div class="kart dagitim-ana-kart alt-bosluk">
+          <div class="dagitim-ust-baslik">
+            <div>
+              <h2 class="sifir-alt">🚀 Öğrenci Masaüstüne Dosya ve Web Bağlantısı Bırak</h2>
+              <p class="ipucu sifir-alt">Seçili öğrenci bilgisayarlarının <code>/home/ogrenci/Masaüstü</code> klasörüne ders materyali bırakır veya doğrudan tarayıcıda açılan web bağlantısı gönderir (seçim yoksa laboratuvardaki tüm uygun bilgisayarlar hedeflenir).</p>
             </div>
-            <div class="arac-cubugu">
-              <input id="m3s1-dosya-sec" type="file" aria-label="Dağıtılacak dosya">
-              <button id="m3s1-dosya-gonder" type="button" class="ikincil kucuk" data-ui-id="M3-S1-B23">Masaüstüne Dosya Dağıt</button>
+            <button id="m3s1-portal-hemen-gonder" type="button" class="birincil kucuk" title="Ödev Teslim Portalı bağlantısını tüm sınıfa gönderir ve ekranlarda açar">🎯 Ödev Portalını Sınıfa Gönder ve Aç</button>
+          </div>
+          <div class="dagitim-izgara">
+            <div class="dagitim-alt-kart">
+              <div class="dagitim-kart-baslik">
+                <div class="dagitim-ikon-rozet" aria-hidden="true">🌐</div>
+                <div>
+                  <h3>Web Sayfası &amp; Ödev Portalı Bağlantısı</h3>
+                  <p>Öğrenci çift tıkladığında doğrudan web tarayıcısında açılan bağlantı dosyası oluşturur ve isteğe bağlı olarak sayfayı ekranlarda hemen açar.</p>
+                </div>
+              </div>
+              <div class="dagitim-hazir-cubuk">
+                <span class="dagitim-hazir-etiket">Hızlı Doldur:</span>
+                <button id="m3s1-preset-portal" type="button" class="ikincil kucuk">🎯 Ödev Teslim Portalı</button>
+                <button id="m3s1-preset-pardus" type="button" class="ikincil kucuk">🐾 Pardus Kılavuzu</button>
+              </div>
+              <div class="dagitim-giris-grubu">
+                <input id="m3s1-url-baslik" type="text" maxlength="60" placeholder="Bağlantı adı (örn. Ödev Teslim Portalı)" aria-label="Kısayol adı">
+                <input id="m3s1-url-adres" type="url" maxlength="500" placeholder="http://ogretmen.lab:8090/ veya https://..." aria-label="Web adresi">
+              </div>
+              <label class="onay-kutusu"><input id="m3s1-url-otomatik-ac" type="checkbox" checked>
+                Gönderince öğrenci ekranlarında web sayfasını tarayıcıda hemen aç</label>
+              <div class="dagitim-eylem-satir">
+                <span class="ipucu">Hem <code>.html</code> web açıcı hem güvenilir başlatıcı bırakılır.</span>
+                <button id="m3s1-url-gonder" type="button" class="birincil" data-ui-id="M3-S1-B22">🌐 Web Bağlantısını Gönder</button>
+              </div>
+            </div>
+
+            <div class="dagitim-alt-kart">
+              <div class="dagitim-kart-baslik">
+                <div class="dagitim-ikon-rozet" aria-hidden="true">📁</div>
+                <div>
+                  <h3>Masaüstüne Dosya / Materyal Bırak</h3>
+                  <p>Çalışma kağıdı, PDF, örnek kaynak kod, sunum, görsel veya arşiv dosyasını SFTP üzerinden tüm öğrenci masaüstlerine kopyalar.</p>
+                </div>
+              </div>
+              <label id="m3s1-dosya-kutu" for="m3s1-dosya-sec" class="dosya-birakma-alani">
+                <span class="dosya-birakma-ikon" aria-hidden="true">📥</span>
+                <span class="dosya-birakma-metin">Dağıtılacak dosyayı seçmek için tıklayın veya buraya sürükleyin</span>
+                <span class="dosya-birakma-alt">PDF, ZIP, Python/C++, LibreOffice, görsel vb. (en çok 50 MB)</span>
+              </label>
+              <input id="m3s1-dosya-sec" type="file" class="gizli-giris" aria-label="Dağıtılacak dosya">
+              <div id="m3s1-secili-dosya-bilgi" class="secili-dosya-rozet" hidden>
+                <span id="m3s1-secili-dosya-ad" class="secili-dosya-ad"></span>
+                <button id="m3s1-secili-dosya-temizle" type="button" class="ikincil kucuk" title="Seçili dosyayı kaldır">✕</button>
+              </div>
+              <div class="dagitim-eylem-satir">
+                <span class="ipucu">Hedef: <code>/home/ogrenci/Masaüstü/</code></span>
+                <button id="m3s1-dosya-gonder" type="button" class="birincil" data-ui-id="M3-S1-B23">📤 Masaüstüne Dosya Dağıt</button>
+              </div>
             </div>
           </div>
         </div>

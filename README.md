@@ -5,7 +5,7 @@
 <h1 align="center">Lab Kaptanı</h1>
 
 <p align="center">
-  <strong>Pardus Sınıf Yönetimi (Sürüm 0.8.0)</strong><br>
+  <strong>Pardus Sınıf Yönetimi (Sürüm 0.8.2)</strong><br>
   Pardus ve Debian tabanlı okul bilgisayar laboratuvarları için teknik bilgi gerektirmeyen, Türkçe ve modern merkezi yönetim uygulaması.
 </p>
 
@@ -13,7 +13,7 @@
   <img alt="Lisans: GPL-3.0-or-later" src="https://img.shields.io/badge/lisans-GPL--3.0--or--later-blue">
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
   <img alt="Pardus 23 EDU" src="https://img.shields.io/badge/Pardus-23%20EDU-1B5FC1">
-  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.8.0-brightgreen">
+  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.8.2-brightgreen">
 </p>
 
 ---
@@ -71,7 +71,7 @@ Lab Kaptanı, öğretmenlerin teknik detaylarla vakit kaybetmeden dersi verimli 
 Öğretmen bilgisayarında (Pardus 23 EDU) terminal açarak paketi kurun:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.8.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.8.2_amd64.deb
 ```
 
 > **Not:** Paket, kendi gömülü Python çalışma ortamını ve gerekli tüm kütüphaneleri taşır. Kurulum için internet bağlantısı gerekmez.

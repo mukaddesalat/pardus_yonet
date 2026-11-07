@@ -499,6 +499,55 @@ def _ogrenci_sahip_yap(hedef: Path, bilgi, izin: int = 0o644) -> None:
 
 
 
+def _masaustu_guvenli_yap(hedef: Path, ortam: dict | None) -> None:
+    """GNOME ve XFCE masaüstlerinde .desktop başlatıcısını güvenilir (trusted) olarak işaretler."""
+    if not ortam:
+        return
+    gio = _arac("gio")
+    if not gio:
+        return
+    try:
+        _calistir(_ogrenci_komutu([gio, "set", str(hedef), "metadata::trusted", "true"], ortam))
+    except Exception:
+        pass
+
+
+def _web_acici_html(baslik: str, url: str) -> str:
+    """Öğrenci çift tıkladığında uyarı göstermeden varsayılan tarayıcıda açılan HTML başlatıcı."""
+    esc_baslik = html.escape(baslik, quote=True)
+    esc_url = html.escape(url, quote=True)
+    js_url = json.dumps(url)
+    return (
+        "<!doctype html>\n"
+        "<html lang=\"tr\">\n"
+        "<head>\n"
+        "  <meta charset=\"utf-8\">\n"
+        f"  <title>{esc_baslik}</title>\n"
+        f"  <meta http-equiv=\"refresh\" content=\"0; url={esc_url}\">\n"
+        "  <style>\n"
+        "    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;"
+        "background:#0f172a;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif}\n"
+        "    .kart{background:#1e293b;border:2px solid #38bdf8;border-radius:16px;padding:32px 40px;"
+        "max-width:540px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.4)}\n"
+        "    h1{margin:0 0 12px;font-size:24px;color:#38bdf8}\n"
+        "    p{margin:0 0 22px;color:#cbd5e1;font-size:15px;word-break:break-all}\n"
+        "    a.dugme{display:inline-block;background:#0284c7;color:#fff;text-decoration:none;"
+        "font-weight:700;padding:12px 28px;border-radius:10px;font-size:16px}\n"
+        "    a.dugme:hover{background:#0369a1}\n"
+        "  </style>\n"
+        f"  <script>window.location.replace({js_url});</script>\n"
+        "</head>\n"
+        "<body>\n"
+        "  <div class=\"kart\">\n"
+        f"    <h1>🌐 {esc_baslik}</h1>\n"
+        f"    <p>Web sayfasına yönlendiriliyorsunuz:<br><strong>{esc_url}</strong></p>\n"
+        f"    <a class=\"dugme\" href=\"{esc_url}\">Web Sayfasını Şimdi Aç →</a>\n"
+        "  </div>\n"
+        "</body>\n"
+        "</html>\n"
+    )
+
+
 def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
     if isinstance(p, str):
         p = {"baslik": p, "url": url_arg or ""}
@@ -509,22 +558,66 @@ def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
     url = (p.get("url") or "").strip()
     if not re.match(r"^https?://[^\s\"'<>]+$", url):
         return {"hata": "Geçersiz web adresi (http:// veya https:// ile başlamalı)"}
+
+    # İsteğe bağlı: Ödev portalı vb. yerel alan adı için /etc/hosts kaydını otomatik tamamla
+    hosts_ip = (p.get("hosts_ip") or "").strip()
+    hosts_ad = (p.get("hosts_ad") or "").strip().lower()
+    if hosts_ip and hosts_ad and not hosts_ip.startswith("127."):
+        try:
+            hosts_ekle({"ip": hosts_ip, "ad": hosts_ad})
+        except Exception:
+            pass
+
     masa = Path(_masaustu_dizini(bilgi.pw_dir if bilgi else "/home/ogrenci"))
     masa.mkdir(parents=True, exist_ok=True)
-    dosya_adi = re.sub(r"\s+", "_", baslik) + ".desktop"
+    temel_ad = re.sub(r"\s+", "_", baslik)
+
+    # 1. Her masaüstü ortamında (GNOME/XFCE) çift tıklayınca doğrudan tarayıcıda açılan .html web dosyası
+    html_adi = temel_ad + ".html"
+    html_hedef = masa / html_adi
+    html_hedef.write_text(_web_acici_html(baslik, url), encoding="utf-8")
+    _ogrenci_sahip_yap(html_hedef, bilgi, 0o644)
+
+    # 2. Uygulama başlatıcısı (.desktop): Type=Application + xdg-open + güvenilir işareti
+    dosya_adi = temel_ad + ".desktop"
     hedef = masa / dosya_adi
     icerik = (
         "[Desktop Entry]\n"
         "Version=1.0\n"
-        "Type=Link\n"
+        "Type=Application\n"
         f"Name={baslik}\n"
+        f"Comment={url}\n"
+        f"Exec=xdg-open \"{url}\"\n"
         f"URL={url}\n"
-        "Icon=text-html\n"
+        "Terminal=false\n"
+        "Icon=web-browser\n"
+        "Categories=Network;WebBrowser;\n"
     )
     hedef.write_text(icerik, encoding="utf-8")
     _ogrenci_sahip_yap(hedef, bilgi, 0o755)
-    _kullanici_bildir("Masaüstüne Bağlantı Gönderildi", f"{baslik}: {url}", acil=False)
-    return {"tamam": True, "dosya": str(hedef), "mesaj": f"Masaüstüne '{dosya_adi}' eklendi"}
+
+    _, ortam = _oturum_ortami()
+    _masaustu_guvenli_yap(hedef, ortam)
+
+    acildi = False
+    if p.get("otomatik_ac") and ortam:
+        xdg_open = _arac("xdg-open")
+        if xdg_open:
+            try:
+                _arka_planda(_ogrenci_komutu([xdg_open, url], ortam))
+                acildi = True
+            except Exception:
+                acildi = False
+
+    _kullanici_bildir("Masaüstüne Web Bağlantısı Gönderildi", f"{baslik}: {url}", acil=False)
+    ek_bilgi = " ve tarayıcıda açıldı" if acildi else ""
+    return {
+        "tamam": True,
+        "dosya": str(html_hedef),
+        "desktop_dosya": str(hedef),
+        "acildi": acildi,
+        "mesaj": f"Masaüstüne '{html_adi}' web bağlantısı eklendi{ek_bilgi}",
+    }
 
 
 def masaustu_dosya(p: dict | str, icerik_b64_arg: str | None = None) -> dict:
@@ -534,20 +627,43 @@ def masaustu_dosya(p: dict | str, icerik_b64_arg: str | None = None) -> dict:
     if not bilgi and hasattr(pwd, "getpwnam"):
         return {"hata": f"'{PROFIL}' hesabı bulunamadı"}
     ham_ad = os.path.basename((p.get("dosya_adi") or "").strip())
-    temiz_ad = re.sub(r"[^\w\s.\-ğüşöçıİĞÜŞÖÇ]", "_", ham_ad)[:80]
+    if not ham_ad or ham_ad.startswith("."):
+        return {"hata": "Geçersiz dosya adı"}
+    kok_ad, uzanti = os.path.splitext(ham_ad)
+    temiz_kok = re.sub(r"[^\w\s.\-ğüşöçıİĞÜŞÖÇ]", "_", kok_ad).strip(" .")[:64]
+    temiz_uzanti = re.sub(r"[^\w.\-]", "", uzanti)[:16]
+    temiz_ad = f"{temiz_kok}{temiz_uzanti}" if temiz_kok else ""
     if not temiz_ad or temiz_ad.startswith("."):
         return {"hata": "Geçersiz dosya adı"}
-    try:
-        veri = base64.b64decode(p.get("icerik_b64") or "", validate=True)
-    except Exception:
-        return {"hata": "Dosya verisi çözümlenemedi"}
     masa = Path(_masaustu_dizini(bilgi.pw_dir if bilgi else "/home/ogrenci"))
     masa.mkdir(parents=True, exist_ok=True)
     hedef = masa / temiz_ad
-    hedef.write_bytes(veri)
+
+    gecici_yol = (p.get("gecici_yol") or "").strip()
+    if gecici_yol:
+        gecici_p = Path(gecici_yol)
+        if not gecici_p.is_file():
+            return {"hata": "Aktarılan geçici dosya bulunamadı"}
+        try:
+            boyut = gecici_p.stat().st_size
+            shutil.move(str(gecici_p), str(hedef))
+        finally:
+            try:
+                if gecici_p.exists():
+                    gecici_p.unlink()
+            except OSError:
+                pass
+    else:
+        try:
+            veri = base64.b64decode(p.get("icerik_b64") or "", validate=True)
+        except Exception:
+            return {"hata": "Dosya verisi çözümlenemedi"}
+        hedef.write_bytes(veri)
+        boyut = len(veri)
+
     _ogrenci_sahip_yap(hedef, bilgi, 0o644)
     _kullanici_bildir("Masaüstüne Dosya Gönderildi", f"'{temiz_ad}' masaüstünüze kaydedildi.", acil=False)
-    return {"tamam": True, "dosya": str(hedef), "boyut": len(veri), "mesaj": f"Masaüstüne '{temiz_ad}' kopyalandı ({len(veri)} B)"}
+    return {"tamam": True, "dosya": str(hedef), "boyut": boyut, "mesaj": f"Masaüstüne '{temiz_ad}' kopyalandı ({boyut} B)"}
 
 
 def hosts_ekle(p: dict | str, ad_arg: str | None = None) -> dict:

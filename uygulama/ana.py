@@ -326,6 +326,9 @@ class InternetIstek(CihazListesiIstek):
 class MasaustuUrlIstek(CihazListesiIstek):
     baslik: str
     url: str
+    otomatik_ac: bool = False
+    hosts_ip: str | None = None
+    hosts_ad: str | None = None
 
 
 class MasaustuDosyaIstek(CihazListesiIstek):
@@ -1167,11 +1170,19 @@ async def sinif_internet(istek: InternetIstek):
 
 @uygulama.post("/api/sinif/masaustu-url", dependencies=[korumali])
 async def sinif_masaustu_url(istek: MasaustuUrlIstek):
+    ek_param = {
+        "baslik": istek.baslik,
+        "url": istek.url,
+        "otomatik_ac": istek.otomatik_ac,
+    }
+    if istek.hosts_ip:
+        ek_param["hosts_ip"] = istek.hosts_ip
+    if istek.hosts_ad:
+        ek_param["hosts_ad"] = istek.hosts_ad
     return _is_baslat(
-        "sinif_masaustu_url", {"baslik": istek.baslik, "url": istek.url}, istek.cihazlar,
+        "sinif_masaustu_url", {"baslik": istek.baslik, "url": istek.url, "otomatik_ac": istek.otomatik_ac}, istek.cihazlar,
         lambda is_id, iptal: sinif_araclari.sinif_isi(
-            is_id, istek.cihazlar, "masaustu_url",
-            {"baslik": istek.baslik, "url": istek.url}, iptal))
+            is_id, istek.cihazlar, "masaustu_url", ek_param, iptal))
 
 
 @uygulama.post("/api/sinif/masaustu-dosya", dependencies=[korumali])

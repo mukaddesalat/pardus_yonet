@@ -3,6 +3,22 @@
 Bu dosya [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) biçimini izler ve
 sürüm numaraları [Anlamsal Sürümleme](https://semver.org/lang/tr/) ile verilir.
 
+## [0.8.2] — 2026-11-07
+
+### Düzeltilen & Geliştirilen
+- **Öğrenci Masaüstüne Dosya Bırakma (M3-S1 / SFTP Aktarımı):**
+  - Dosyaların SSH komut satırı argümanı (`argv[1]`) üzerinden Base64 ile gönderilmesinden kaynaklanan Linux `MAX_ARG_STRLEN` (128 KB) ve `E2BIG` kanal boyutu aşımı hatası giderildi.
+  - Dosyalar artık doğrudan SFTP kanalı (ve stdin akış desteği) ile öğrenci bilgisayarına `/tmp/psy-dosya-...` olarak aktarılıp `masaustu_dosya` betiği tarafından `/home/ogrenci/Masaüstü/` dizinine taşınıyor; dosya boyutu sınırı **50 MB**'a çıkarıldı.
+  - `M3-S1` sayfasına doğrudan bilgisayar seçim çubuğu eklendi; bilgisayar seçilmediğinde mevcut laboratuvardaki tüm uygun bilgisayarları otomatik hedefleme sağlandı.
+  - Sürükle-bırak destekli dosya bırakma alanı, seçili dosya adı, rozet ve temizleme kontrolleriyle arayüz zenginleştirildi.
+- **Masaüstüne Web Bağlantısı ve Ödev Portalı Kısayolu (M3-S1):**
+  - Pardus GNOME masaüstünde kırık veya yetkisiz `.lnk` gibi görünen `Type=Link` dosya yapısı düzeltildi.
+  - Her masaüstü ortamında (GNOME/XFCE) çift tıklandığında güvenlik engeline takılmadan varsayılan web tarayıcısında açılan **`.html` web yönlendirici dosyası** ve `Type=Application` (`xdg-open`) güvenilir `.desktop` başlatıcısı birlikte oluşturuldu.
+  - Gönderilen web bağlantısını veya Ödev Teslim Portalını öğrenci ekranlarında anında tarayıcıda açan **"Öğrenci ekranlarında web sayfasını hemen aç"** (`otomatik_ac`) seçeneği eklendi.
+  - **"🎯 Ödev Portalını Sınıfa Gönder ve Aç"** kısayolu ile öğretmen bilgisayarının IP adresi (`ogretmen.lab`) öğrenci bilgisayarlarının `/etc/hosts` dosyasına otomatik kaydedilerek isim çözümleme sorunu giderildi.
+- **Menü Düzeni:**
+  - **⏰ Zamanlı Kapatma (`M2-S5`)**, sistem ayarları grubundan çıkarılarak **🧹 Bakım, Görünüm & Güç (`nav-bakim`)** menüsü altına, **🔌 Güç & Uyku Ayarı (`M2-S4`)** yanına taşındı. `M2-S4` sayfasına tek tıkla zamanlı kapatma planlamaya geçiş kısayolu eklendi.
+
 ## [0.8.1] — 2026-11-07
 
 ### Eklenen

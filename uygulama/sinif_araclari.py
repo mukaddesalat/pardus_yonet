@@ -8,6 +8,9 @@
 """
 
 import asyncio
+import base64
+import secrets
+import shlex
 
 from . import ayarlar, secim, ssh_araclari, uzak, veritabani, yonetim
 
@@ -67,7 +70,51 @@ def _calistir_tek(is_id: str, cihaz: dict, parametre: dict) -> None:
             "cihaz_hostname": cihaz.get("hostname") or "",
             "cihaz_etiket": cihaz.get("etiket") or "",
         }
-        sonuc = ssh_araclari.sudo_betik(istemci, uzak.betik("sinif"), parametre_gonder, zaman=30)
+        zaman_asimi = 30
+        gecici_yol = None
+        if parametre_gonder.get("kip") == "masaustu_dosya" and parametre_gonder.get("icerik_b64"):
+            try:
+                ham_veri = base64.b64decode(parametre_gonder.get("icerik_b64") or "", validate=True)
+            except Exception:
+                veritabani.hedef_guncelle(is_id, ip, "basarisiz", "uygulama",
+                                          f"{ad} — Dosya verisi çözümlenemedi", {**veri, "ulasildi": True})
+                return
+            kb = max(1, len(ham_veri) // 1024)
+            veritabani.hedef_guncelle(is_id, ip, "calisiyor", "aktarim",
+                                      f"{ad} — dosya aktarılıyor ({kb} KB)", veri)
+            gecici_yol = f"/tmp/psy-dosya-{secrets.token_hex(8)}"
+            aktarildi = False
+            if hasattr(istemci, "open_sftp"):
+                try:
+                    sftp = istemci.open_sftp()
+                    try:
+                        with sftp.file(gecici_yol, "wb") as f:
+                            f.write(ham_veri)
+                        aktarildi = True
+                    finally:
+                        sftp.close()
+                except Exception:
+                    aktarildi = False
+            if not aktarildi and hasattr(istemci, "exec_command"):
+                try:
+                    kod_k, _, _ = ssh_araclari.komut(
+                        istemci, f"cat > {shlex.quote(gecici_yol)}", girdi=ham_veri, zaman=120
+                    )
+                    aktarildi = kod_k == 0
+                except Exception:
+                    aktarildi = False
+            if aktarildi:
+                parametre_gonder = {k: v for k, v in parametre_gonder.items() if k != "icerik_b64"}
+                parametre_gonder["gecici_yol"] = gecici_yol
+                zaman_asimi = 120
+        try:
+            sonuc = ssh_araclari.sudo_betik(istemci, uzak.betik("sinif"), parametre_gonder, zaman=zaman_asimi)
+        finally:
+            if gecici_yol and hasattr(istemci, "exec_command"):
+                try:
+                    ssh_araclari.komut(istemci, f"rm -f {shlex.quote(gecici_yol)}", zaman=5)
+                except Exception:
+                    pass
         if "hata" in sonuc:
             veritabani.hedef_guncelle(is_id, ip, "basarisiz", "uygulama",
                                       f"{ad} — {sonuc['hata']}", {**veri, "ulasildi": True, "sonuc": sonuc})

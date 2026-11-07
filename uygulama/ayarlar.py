@@ -51,7 +51,7 @@ VEYON_PORT = 11100                 # Veyon sunucusu (bağlantı doğrulaması i�
 VEYON_ANAHTAR_VARSAYILAN = "teacher"
 EN_BUYUK_ANAHTAR = 65536           # public key dosyası üst sınırı (bayt)
 
-VERSIYON = "0.8.1"
+VERSIYON = "0.8.2"
 UYGULAMA_ADI = "Lab Kaptanı"   # görünen ad; paket adı pardus-sinif-yonetimi kalır
 
 

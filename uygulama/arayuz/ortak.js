@@ -219,13 +219,13 @@ function sayfaAdi(kod) {
   return { menu, sayfa };
 }
 
-/** Standart öğretmen yetki denetimi: M1-S1, M2-S1, M2-S4, M3-S1, M3-S2, M4-S1 her zaman açık;
+/** Standart öğretmen yetki denetimi: M1-S1, M2-S1, M2-S4, M2-S5, M3-S1, M3-S2, M4-S1 her zaman açık;
  *  M2-S2/M2-S3 -> paket_gorunum yetkisi; M2-S6 -> komut_gonder yetkisi; diğerleri yalnız Admin. */
 function sayfaYetkiliMi(kod) {
   const ogr = Uyg.ogretmen;
   if (!ogr || ogr.rol === "admin") return true;
   const yetkiler = Array.isArray(ogr.yetkiler) ? ogr.yetkiler : [];
-  if (["M1-S1", "M2-S1", "M2-S4", "M3-S1", "M3-S2", "M4-S1"].includes(kod)) return true;
+  if (["M1-S1", "M2-S1", "M2-S4", "M2-S5", "M3-S1", "M3-S2", "M4-S1"].includes(kod)) return true;
   if (["M2-S2", "M2-S3"].includes(kod)) return yetkiler.includes("paket_gorunum");
   if (kod === "M2-S6") return yetkiler.includes("komut_gonder");
   return false;
@@ -255,12 +255,13 @@ const SEZGISEL_MENULER = [
       {
         id: "nav-bakim",
         emoji: "🧹",
-        baslik: "Bakım & Görünüm",
-        alt: "Ders Sonu Temizliği, Paket, Uyku",
-        altStandart: "Ders Sonu Temizliği & Uyku Kilidi",
+        baslik: "Bakım, Görünüm & Güç",
+        alt: "Temizlik, Güç, Zamanlı Kapatma, Paket & Görünüm",
+        altStandart: "Ders Sonu Temizliği, Güç & Zamanlı Kapatma",
         sayfalar: [
           ["M2-S1", "🧹 Ders Sonu Temizliği & Yedek"],
           ["M2-S4", "🔌 Güç & Uyku Ayarı"],
+          ["M2-S5", "⏰ Zamanlı Kapatma"],
           ["M2-S2", "📦 .deb Paket Kurulumu"],
           ["M2-S3", "🖼️ Masaüstü Görünümü"],
         ],
@@ -289,14 +290,13 @@ const SEZGISEL_MENULER = [
         id: "nav-kurulum",
         emoji: "⚙️",
         baslik: "Kurulum, Okul & Öğretmen",
-        alt: "Logo, Hesaplar, İlk Hazırlık, Veyon",
+        alt: "Logo, Hesaplar, İlk Hazırlık, Veyon, Yedek",
         sayfalar: [
           ["M5-S2", "🏫 Okul Logosu & Öğretmenler"],
           ["M1-S2", "🔑 İlk Hazırlık (SSH & Sudo)"],
           ["M1-S3", "🔍 Ağda Bilgisayar Bul"],
           ["M1-S4", "👁️ Veyon Kurulumu"],
-          ["M2-S5", "⏰ Zamanlı Kapatma"],
-          ["M5-S1", "🛠️ Sistem Ayarları"],
+          ["M5-S1", "🛠️ Sistem Ayarları & Yedekleme"],
         ],
       },
     ],

@@ -17,6 +17,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
+from .. import ag
 from . import kurallar, odevler, ortak, siniflar, vt
 
 yonlendirici = APIRouter(prefix="/api/odev")
@@ -66,7 +67,13 @@ async def durum():
     port = "" if ortak.PORTAL_PORTU == 80 else f":{ortak.PORTAL_PORTU}"
     kok = ortak.ODEV_DIZINI
     kok.mkdir(parents=True, exist_ok=True)
+    ag_bilgi = ag.varsayilan_ag() or {}
+    ogretmen_ip = (ag_bilgi.get("adres") or "").strip()
+    if ogretmen_ip.startswith("127."):
+        ogretmen_ip = ""
     return {"adres": f"http://{ad}{port}/", "adres_adi": ad, "port": ortak.PORTAL_PORTU,
+            "ogretmen_ip": ogretmen_ip,
+            "ip_adres": f"http://{ogretmen_ip}{port}/" if ogretmen_ip else "",
             "portal_calisiyor": await asyncio.to_thread(_portal_calisiyor_mu),
             "bos_alan": shutil.disk_usage(kok).free, "aglar": _aglar(),
             "turler": {k: v[0] for k, v in kurallar.KATEGORILER.items()},
