@@ -202,13 +202,17 @@ class CihazEkleIstek(BaseModel):
     ip: str
     port: int = 22
     etiket: str | None = None
+    hostname: str | None = None
     grup: str | None = None
     baglanti_hesabi: str | None = None
     korunan: bool = False
 
 
 class CihazDuzenleIstek(BaseModel):
+    ip: str | None = None
+    port: int | None = None
     etiket: str | None = None
+    hostname: str | None = None
     grup: str | None = None
     baglanti_hesabi: str | None = None
     korunan: bool | None = None
@@ -230,6 +234,11 @@ class AyarIstek(BaseModel):
 class DuvarGorselIstek(BaseModel):
     icerik_b64: str
     uzanti: str  # ".png" veya ".jpg"
+    ad: str | None = None
+
+
+class DuvarGaleriSecIstek(BaseModel):
+    id: str
 
 
 class GorunumIstek(OnayliIstek):
@@ -244,14 +253,36 @@ class PaketIstek(OnayliIstek):
     plan_is_id: str | None = None
 
 
+class RepoAraIstek(BaseModel):
+    sorgu: str
+    cihaz: str | None = None
+
+
+class RepoKuruluListeleIstek(BaseModel):
+    cihaz: str | None = None
+    tum_paketler: bool = False
+
+
+class RepoKurIstek(OnayliIstek):
+    paketler: list[str]
+    guncelle: bool = True
+
+
+class RepoKaldirIstek(OnayliIstek):
+    paketler: list[str]
+    artiklari_temizle: bool = False
+
+
 class VeyonPlanIstek(CihazListesiIstek):
     kip: str = "ikisi"               # 'kur' | 'yapilandir' | 'ikisi'
+    uzman: dict | None = None
 
 
 class VeyonUygulaIstek(OnayliIstek):
     kip: str = "ikisi"
     plan_is_id: str | None = None
     anahtar_uyarisi_onay: bool = False   # öğretmen PC hazırlık sorunlarına rağmen devam
+    uzman: dict | None = None
 
 
 class VeyonPaketSecIstek(BaseModel):
@@ -260,7 +291,7 @@ class VeyonPaketSecIstek(BaseModel):
 
 class UykuIstek(OnayliIstek):
     islem: str = "onizle"            # 'onizle' | 'uygula' | 'kaldir'
-    ekran_dk: int = 10
+    ekran_dk: int = 0
 
 
 class KapatmaPlanIstek(OnayliIstek):
@@ -498,7 +529,7 @@ async def cihaz_ekle(istek: CihazEkleIstek):
     """Yalnız kayıt oluşturur: bağlantı, hesap değişikliği veya kurulum başlatmaz."""
     try:
         cihaz_id = envanter.cihaz_ekle(istek.ip, istek.port, istek.etiket, istek.grup,
-                                       istek.baglanti_hesabi, istek.korunan)
+                                       istek.baglanti_hesabi, istek.korunan, istek.hostname)
     except envanter.EnvanterHatasi as hata:
         raise HTTPException(422, str(hata))
     return {"id": cihaz_id}
@@ -509,7 +540,7 @@ async def cihaz_duzenle(cihaz_id: str, istek: CihazDuzenleIstek):
     if isler.aktif_is_var_mi():
         raise HTTPException(409, "Devam eden bir iş var; önce bitmesini bekleyin")
     try:
-        return envanter.cihaz_duzenle(cihaz_id, istek.model_dump(exclude_unset=True))
+        return await asyncio.to_thread(envanter.cihaz_duzenle, cihaz_id, istek.model_dump(exclude_unset=True))
     except envanter.EnvanterHatasi as hata:
         raise HTTPException(422, str(hata))
 
@@ -785,18 +816,77 @@ async def paket_plan(sha: str, istek: CihazListesiIstek):
 
 @uygulama.post("/api/paketler/{sha}/kur", dependencies=[korumali])
 async def paket_kur(sha: str, istek: PaketIstek):
-    _onay_gerekli(istek.onay, "Kurulum planı onaylanmalıdır")
+    _onay_gerekli(istek.onay, "Kurulum onaylanmalıdır")
     paket = paketler.paket_bilgisi(sha)
     if not paket:
         raise HTTPException(404, "Paket bulunamadı")
-    uygun = set(paketler.onaylanabilir_hedefler(istek.plan_is_id or "", sha))
-    hedefler = [c for c in istek.cihazlar if c in uygun]
-    if not hedefler:
-        raise HTTPException(422, "Onaylanan planda kurulabilir bilgisayar yok; önce planı hazırlayın")
+    if istek.plan_is_id:
+        uygun = set(paketler.onaylanabilir_hedefler(istek.plan_is_id, sha))
+        hedefler = [c for c in istek.cihazlar if c in uygun]
+        if not hedefler:
+            raise HTTPException(422, "Onaylanan planda kurulabilir bilgisayar yok")
+    else:
+        uygun_cihazlar, _ = secim.hedefleri_ayir(istek.cihazlar, "paket")
+        hedefler = [c["id"] for c in uygun_cihazlar]
+        if not hedefler:
+            raise HTTPException(422, "Seçimde kuruluma uygun bilgisayar yok")
     return _is_baslat(
         "paket_kur", {"sha256": sha, "paket": paket["paket"], "surum": paket["surum"],
                       "plan_is_id": istek.plan_is_id}, hedefler,
         lambda is_id, iptal: paketler.kur_isi(is_id, sha, hedefler, iptal))
+
+
+@uygulama.get("/api/paketler/repo/katalog", dependencies=[korumali])
+async def repo_katalog():
+    return paketler.repo_katalog()
+
+
+@uygulama.post("/api/paketler/repo/ara", dependencies=[korumali])
+async def repo_ara(istek: RepoAraIstek):
+    try:
+        return await asyncio.to_thread(paketler.repo_ara, istek.sorgu, istek.cihaz)
+    except ValueError as hata:
+        raise HTTPException(422, str(hata))
+
+
+@uygulama.post("/api/paketler/repo/kurulu-listele", dependencies=[korumali])
+async def repo_kurulu_listele(istek: RepoKuruluListeleIstek):
+    try:
+        return await asyncio.to_thread(paketler.kurulu_listele, istek.cihaz, istek.tum_paketler)
+    except ValueError as hata:
+        raise HTTPException(422, str(hata))
+
+
+@uygulama.post("/api/paketler/repo/kur", dependencies=[korumali])
+async def repo_kur(istek: RepoKurIstek):
+    _onay_gerekli(istek.onay, "Depodan paket kurulumu onaylanmalıdır")
+    try:
+        temiz_paketler = paketler.paket_listesi_dogrula(istek.paketler, kaldirma_mi=False)
+    except ValueError as hata:
+        raise HTTPException(422, str(hata))
+    uygun_cihazlar, _ = secim.hedefleri_ayir(istek.cihazlar, "paket")
+    hedefler = [c["id"] for c in uygun_cihazlar]
+    if not hedefler:
+        raise HTTPException(422, "Seçimde paket kurulumuna uygun bilgisayar yok")
+    return _is_baslat(
+        "repo_kur", {"paketler": temiz_paketler, "guncelle": istek.guncelle}, hedefler,
+        lambda is_id, iptal: paketler.repo_kur_isi(is_id, temiz_paketler, istek.guncelle, hedefler, iptal))
+
+
+@uygulama.post("/api/paketler/repo/kaldir", dependencies=[korumali])
+async def repo_kaldir(istek: RepoKaldirIstek):
+    _onay_gerekli(istek.onay, "Uygulama kaldırma işlemi onaylanmalıdır")
+    try:
+        temiz_paketler = paketler.paket_listesi_dogrula(istek.paketler, kaldirma_mi=True)
+    except ValueError as hata:
+        raise HTTPException(422, str(hata))
+    uygun_cihazlar, _ = secim.hedefleri_ayir(istek.cihazlar, "paket")
+    hedefler = [c["id"] for c in uygun_cihazlar]
+    if not hedefler:
+        raise HTTPException(422, "Seçimde işlem yapmaya uygun bilgisayar yok")
+    return _is_baslat(
+        "repo_kaldir", {"paketler": temiz_paketler, "artiklari_temizle": istek.artiklari_temizle}, hedefler,
+        lambda is_id, iptal: paketler.repo_kaldir_isi(is_id, temiz_paketler, istek.artiklari_temizle, hedefler, iptal))
 
 
 # ---- M1-S4 Veyon Ayarları ----
@@ -872,17 +962,23 @@ async def veyon_surumler(istek: CihazListesiIstek):
 async def veyon_plan(istek: VeyonPlanIstek):
     parametre = _veyon_on_kosul(_veyon_kip(istek.kip))
     return _is_baslat("veyon_plan", parametre, istek.cihazlar,
-                      lambda is_id, iptal: veyon.plan_isi(is_id, istek.cihazlar, istek.kip, iptal))
+                      lambda is_id, iptal: veyon.plan_isi(is_id, istek.cihazlar, istek.kip, iptal, istek.uzman))
 
 
 @uygulama.post("/api/veyon/uygula", dependencies=[korumali])
 async def veyon_uygula(istek: VeyonUygulaIstek):
-    _onay_gerekli(istek.onay, "Veyon planı onaylanmalıdır")
+    _onay_gerekli(istek.onay, "Veyon işlemi onaylanmalıdır")
     parametre = _veyon_on_kosul(_veyon_kip(istek.kip))
-    uygun = set(veyon.onaylanabilir_hedefler(istek.plan_is_id or "", istek.kip))
-    hedefler = [c for c in istek.cihazlar if c in uygun]
-    if not hedefler:
-        raise HTTPException(422, "Onaylanan planda uygulanabilir bilgisayar yok; önce planı hazırlayın")
+    if istek.plan_is_id:
+        uygun = set(veyon.onaylanabilir_hedefler(istek.plan_is_id, istek.kip))
+        hedefler = [c for c in istek.cihazlar if c in uygun]
+        if not hedefler:
+            raise HTTPException(422, "Onaylanan planda uygulanabilir bilgisayar yok")
+    else:
+        uygun_cihazlar, _ = secim.hedefleri_ayir(istek.cihazlar, "veyon")
+        hedefler = [c["id"] for c in uygun_cihazlar]
+        if not hedefler:
+            raise HTTPException(422, "Seçimde Veyon işlemine uygun bilgisayar yok")
     if istek.kip in ("yapilandir", "ikisi") and not istek.anahtar_uyarisi_onay:
         hazirlik = await asyncio.to_thread(veyon.ogretmen_hazirligi)
         if hazirlik["sorunlar"]:
@@ -890,7 +986,7 @@ async def veyon_uygula(istek: VeyonUygulaIstek):
                                 + " | ".join(hazirlik["sorunlar"])
                                 + " — yine de devam etmek için onay penceresindeki kutuyu işaretleyin")
     return _is_baslat("veyon_uygula", {**parametre, "plan_is_id": istek.plan_is_id}, hedefler,
-                      lambda is_id, iptal: veyon.uygula_isi(is_id, hedefler, istek.kip, iptal))
+                      lambda is_id, iptal: veyon.uygula_isi(is_id, hedefler, istek.kip, iptal, istek.uzman))
 
 
 @uygulama.post("/api/veyon/dogrula", dependencies=[korumali])
@@ -910,7 +1006,7 @@ async def veyon_geri_al(istek: OnayliIstek):
 
 @uygulama.get("/api/gorunum", dependencies=[korumali])
 async def gorunum_bilgisi():
-    return {"gorsel": gorunum.gorsel_bilgi()}
+    return gorunum.galeri_listele()
 
 
 @uygulama.post("/api/duvar-kagidi/gorsel", dependencies=[korumali])
@@ -918,10 +1014,38 @@ async def duvar_gorsel_yukle(istek: DuvarGorselIstek):
     if istek.uzanti not in (".png", ".jpg", ".jpeg"):
         raise HTTPException(422, "Yalnızca .png / .jpg kabul edilir")
     try:
-        bayt = gorunum.gorsel_kaydet(istek.icerik_b64, istek.uzanti)
+        galeri = gorunum.galeri_ekle(istek.icerik_b64, istek.uzanti, istek.ad)
     except ValueError as hata:
         raise HTTPException(422, str(hata))
-    return {"tamam": True, "bayt": bayt}
+    bayt = (galeri.get("gorsel") or {}).get("bayt", 0)
+    return {"tamam": True, "bayt": bayt, "galeri": galeri, **galeri}
+
+
+@uygulama.post("/api/duvar-kagidi/galeri/sec", dependencies=[korumali])
+async def duvar_galeri_sec(istek: DuvarGaleriSecIstek):
+    try:
+        galeri = gorunum.galeri_sec(istek.id)
+    except ValueError as hata:
+        raise HTTPException(422, str(hata))
+    return {"tamam": True, "galeri": galeri, **galeri}
+
+
+@uygulama.delete("/api/duvar-kagidi/galeri/{oge_id}", dependencies=[korumali])
+async def duvar_galeri_sil(oge_id: str):
+    try:
+        galeri = gorunum.galeri_sil(oge_id)
+    except ValueError as hata:
+        raise HTTPException(422, str(hata))
+    return {"tamam": True, "silindi": True, "galeri": galeri, **galeri}
+
+
+@uygulama.get("/api/duvar-kagidi/galeri/{oge_id}/indir", dependencies=[korumali])
+async def duvar_galeri_indir(oge_id: str):
+    yol = gorunum.galeri_dosya_yolu(oge_id)
+    if not yol:
+        raise HTTPException(404, "Duvar kağıdı bulunamadı")
+    media = "image/jpeg" if yol.suffix.lower() in (".jpg", ".jpeg") else "image/png"
+    return FileResponse(yol, media_type=media)
 
 
 def _gorunum_secenekleri(istek: GorunumIstek) -> dict:

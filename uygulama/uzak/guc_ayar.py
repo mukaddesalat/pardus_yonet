@@ -42,6 +42,8 @@ GDM_PROFIL = "/etc/dconf/profile/gdm"
 GDM_PROFIL_PAKET = "/usr/share/dconf/profile/gdm"
 GDM_PROFIL_IMZA = "# Pardus Sinif Yonetimi: giris ekrani guc ayari icin system-db:gdm eklendi (M2-S4)"
 LOGIND = "/etc/systemd/logind.conf.d/pardus-sinif-guc.conf"
+XORG_DPMS = "/etc/X11/xorg.conf.d/90-pardus-sinif-dpms.conf"
+XDG_OTO_DPMS = "/etc/xdg/autostart/pardus-sinif-dpms.desktop"
 KOK = "/var/lib/pardus-sinif-yonetimi"
 DURUM_DOSYASI = KOK + "/guc.json"
 BIRIM_KOK = "/etc/systemd/system"
@@ -57,18 +59,134 @@ GUC_ANAHTARLARI = [  # (dconf yolu, değer) — oturum ve giriş ekranı için
     ("/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type", "'nothing'"),
     ("/org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-timeout", "0"),
     ("/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout", "0"),
+    ("/org/gnome/settings-daemon/plugins/power/idle-dim", "false"),
+    ("/org/gnome/settings-daemon/plugins/power/ambient-enabled", "false"),
+    ("/org/gnome/desktop/screensaver/idle-activation-enabled", "false"),
+    ("/org/gnome/desktop/screensaver/lock-enabled", "false"),
 ]
 EKRAN_ANAHTARI = "/org/gnome/desktop/session/idle-delay"
 
 LOGIND_ICERIK = """# Pardus Sinif Yonetimi: bosta uyku / askiya alma yok (yonetim icin erisilebilir kalsin)
 [Login]
 IdleAction=ignore
+IdleActionSec=0
+HandlePowerKey=ignore
 HandleSuspendKey=ignore
 HandleHibernateKey=ignore
 HandleLidSwitch=ignore
 HandleLidSwitchExternalPower=ignore
 HandleLidSwitchDocked=ignore
 """
+
+
+def xorg_dpms_icerik(ekran_dk):
+    dk = max(0, int(ekran_dk))
+    dpms_bool = "true" if dk > 0 else "false"
+    return (
+        "# Pardus Sinif Yonetimi: X11 DPMS ve ekran kararma ayari (M2-S4)\n"
+        "Section \"ServerFlags\"\n"
+        "    Option \"BlankTime\" \"%d\"\n"
+        "    Option \"StandbyTime\" \"%d\"\n"
+        "    Option \"SuspendTime\" \"%d\"\n"
+        "    Option \"OffTime\" \"%d\"\n"
+        "EndSection\n\n"
+        "Section \"Monitor\"\n"
+        "    Identifier \"Monitor0\"\n"
+        "    Option \"DPMS\" \"%s\"\n"
+        "EndSection\n"
+    ) % (dk, dk, dk, dk, dpms_bool)
+
+
+def xdg_oto_dpms_icerik(ekran_dk):
+    sn = max(0, int(ekran_dk)) * 60
+    if sn == 0:
+        komut = (
+            "xset s off -dpms s noblank 2>/dev/null; "
+            "gsettings set org.gnome.desktop.session idle-delay 0 2>/dev/null; "
+            "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false 2>/dev/null; "
+            "gsettings set org.gnome.desktop.screensaver lock-enabled false 2>/dev/null; "
+            "gsettings set org.gnome.settings-daemon.plugins.power idle-dim false 2>/dev/null; "
+            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing' 2>/dev/null; "
+            "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/dpms-enabled -n -t bool -s false 2>/dev/null; "
+            "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -n -t int -s 0 2>/dev/null; "
+            "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/inactivity-on-ac -n -t int -s 0 2>/dev/null; "
+            "true"
+        )
+    else:
+        komut = (
+            "xset s %d +dpms dpms %d %d %d 2>/dev/null; "
+            "gsettings set org.gnome.desktop.session idle-delay %d 2>/dev/null; "
+            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing' 2>/dev/null; "
+            "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/inactivity-on-ac -n -t int -s 0 2>/dev/null; "
+            "true"
+        ) % (sn, sn, sn, sn, sn)
+    return (
+        "[Desktop Entry]\n"
+        "Type=Application\n"
+        "Name=Pardus Sinif Yonetimi Ekran ve Guc Koruma\n"
+        "Comment=Ekranin kendiliginden kapanmasini ve uyku modunu engeller\n"
+        "Exec=/bin/sh -c \"%s\"\n"
+        "Terminal=false\n"
+        "NoDisplay=true\n"
+        "X-GNOME-Autostart-enabled=true\n"
+    ) % komut
+
+
+def acik_oturumlara_aninda_uygula(ekran_dk):
+    """Açık X11/Wayland grafik oturumlarında DPMS ve gsettings/xfconf ayarlarını oturumu kapatmadan anında uygular."""
+    sn = max(0, int(ekran_dk)) * 60
+    rc, cikti, _ = calistir(["loginctl", "list-sessions", "--no-legend"], 10)
+    if rc != 0:
+        return
+    for satir in cikti.splitlines():
+        parca = satir.split()
+        if len(parca) < 3:
+            continue
+        oturum_id, uid_str, kul = parca[0], parca[1], parca[2]
+        if not uid_str.isdigit():
+            continue
+        calisma = "/run/user/%s" % uid_str
+        ortam = [
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "XDG_RUNTIME_DIR=%s" % calisma,
+            "DBUS_SESSION_BUS_ADDRESS=unix:path=%s/bus" % calisma,
+        ]
+        # X11 soketini bul
+        for x_no in range(10):
+            x_soket = "/tmp/.X11-unix/X%d" % x_no
+            try:
+                if os.path.exists(x_soket) and os.stat(x_soket).st_uid == int(uid_str):
+                    ortam.append("DISPLAY=:%d" % x_no)
+                    break
+            except OSError:
+                pass
+        for xauth in ("%s/gdm/Xauthority" % calisma, "/home/%s/.Xauthority" % kul, "/var/lib/gdm3/.Xauthority"):
+            if os.path.exists(xauth):
+                ortam.append("XAUTHORITY=%s" % xauth)
+                break
+        if sn == 0:
+            komut = (
+                "xset s off -dpms s noblank 2>/dev/null; "
+                "gsettings set org.gnome.desktop.session idle-delay 0 2>/dev/null; "
+                "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false 2>/dev/null; "
+                "gsettings set org.gnome.desktop.screensaver lock-enabled false 2>/dev/null; "
+                "gsettings set org.gnome.settings-daemon.plugins.power idle-dim false 2>/dev/null; "
+                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing' 2>/dev/null; "
+                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing' 2>/dev/null; "
+                "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/dpms-enabled -n -t bool -s false 2>/dev/null; "
+                "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -n -t int -s 0 2>/dev/null; "
+                "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/inactivity-on-ac -n -t int -s 0 2>/dev/null; "
+                "true"
+            )
+        else:
+            komut = (
+                "xset s %d +dpms dpms %d %d %d 2>/dev/null; "
+                "gsettings set org.gnome.desktop.session idle-delay %d 2>/dev/null; "
+                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing' 2>/dev/null; "
+                "true"
+            ) % (sn, sn, sn, sn, sn)
+        calistir(["runuser", "-u", kul, "--", "env", *ortam, "/bin/sh", "-c", komut], 10)
+
 
 BEKLEYEN_BIRIM = "pardus-sinif-kapatma-bekliyor"   # geçici (systemd-run) zamanlayıcı: uyarı süresi
 BEKLEYEN_SAAT = "/run/pardus-sinif-kapatma"         # bekleyen kapanma saati (SS:DD); açılışta silinir
@@ -344,7 +462,7 @@ def durum(p=None):
 
 def uyku(p):
     islem = p.get("islem", "onizle")
-    ekran_dk = int(p.get("ekran_dk", 10))
+    ekran_dk = int(p.get("ekran_dk", 0))
     if islem not in ("onizle", "uygula", "kaldir") or not 0 <= ekran_dk <= 240:
         return {"hata": "geçersiz parametre"}
     once = durum()
@@ -372,13 +490,20 @@ def uyku(p):
             kayit["gdm_profili"] = True
         if gdm_notu:
             adimlar.append(gdm_notu)
+        gdm_anahtarlari = oturum_anahtarlari(0 if ekran_dk == 0 else ekran_dk)
         if gdm:
-            yaz(DCONF_GDM, dconf_icerik(GUC_ANAHTARLARI))
-            yaz(DCONF_GDM_KILIT, "\n".join(y for y, _ in GUC_ANAHTARLARI) + "\n")
+            yaz(DCONF_GDM, dconf_icerik(gdm_anahtarlari))
+            yaz(DCONF_GDM_KILIT, "\n".join(y for y, _ in gdm_anahtarlari) + "\n")
         yaz(LOGIND, LOGIND_ICERIK)
+        yaz(XORG_DPMS, xorg_dpms_icerik(ekran_dk))
+        yaz(XDG_OTO_DPMS, xdg_oto_dpms_icerik(ekran_dk))
         rc, _, hata = calistir(["dconf", "update"])
         if rc != 0:
             hatalar.append("dconf update: " + hata.strip()[-200:])
+        # systemd-logind ayarlarını açık oturumu düşürmeden anında yeniden yükle
+        calistir(["systemctl", "kill", "-s", "HUP", "systemd-logind"], 10)
+        # Açık grafik oturumlarda X11 DPMS / gsettings / xfconf ayarlarını hemen uygula
+        acik_oturumlara_aninda_uygula(ekran_dk)
         kayit["ekran_dk"] = ekran_dk
         kayit["zaman"] = time.strftime("%Y-%m-%dT%H:%M:%S")
         durum_yaz(kayit)
@@ -393,15 +518,15 @@ def uyku(p):
         if yanlis:
             hatalar.append("oturum ayarı geri okunamadı: " + ", ".join(yanlis))
         else:
-            adimlar.append("oturum: boşta uyku yok, ekran koruyucu %s (kilitli)"
-                           % ("%d dk" % ekran_dk if ekran_dk else "kapalı"))
+            adimlar.append("oturum: boşta uyku yok, ekran koruyucu/DPMS %s (kilitli ve açık oturuma anında uygulandı)"
+                           % ("%d dk" % ekran_dk if ekran_dk else "tamamen kapalı — ekran hiç kapanmaz"))
         if gdm:
-            yanlis = [y for y, d in GUC_ANAHTARLARI if not ayni(dconf_oku("gdm", y), d)]
+            yanlis = [y for y, d in gdm_anahtarlari if not ayni(dconf_oku("gdm", y), d)]
             if yanlis:
                 hatalar.append("giriş ekranı ayarı geri okunamadı: " + ", ".join(yanlis))
             else:
-                adimlar.append("giriş ekranı (GDM): boşta uyku yok (giriş ekranı yeniden açılınca)")
-        adimlar.append("güç tuşu/kapak uyku yapmaz (logind; bir sonraki açılışta tam geçerli)")
+                adimlar.append("giriş ekranı (GDM): boşta uyku ve ekran kapanması kapalı")
+        adimlar.append("güç tuşu/kapak uyku yapmaz (logind + X11 DPMS koruması etkin)")
     else:  # kaldir
         bizim = [h for h in (kayit.get("maskelenen") or []) if h in UYKU_HEDEFLERI]
         if bizim:
@@ -427,7 +552,10 @@ def uyku(p):
             calistir(["dconf", "update"])
             adimlar.append("GNOME güç ayarları varsayılana döndü")
         if sil(LOGIND):
+            calistir(["systemctl", "kill", "-s", "HUP", "systemd-logind"], 10)
             adimlar.append("logind ayarı kaldırıldı")
+        if sil(XORG_DPMS) | sil(XDG_OTO_DPMS):
+            adimlar.append("X11 DPMS ve otomatik başlatma koruması kaldırıldı")
         sil(DURUM_DOSYASI)
         if not adimlar:
             adimlar.append("bu uygulamanın yaptığı bir güç ayarı yoktu")

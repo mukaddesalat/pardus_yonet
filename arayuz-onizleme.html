@@ -934,6 +934,273 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
   color: #0F172A;
 }
 
+/* Pardus Yazılım Merkezi / Repo Mağazası (M2-S2) */
+.magaza-sekmeler {
+  margin-bottom: 14px;
+}
+.magaza-panel {
+  margin-bottom: 16px;
+}
+.magaza-sepet-karti {
+  border-left: 4px solid var(--c-primary, #1B5FC1);
+  margin-bottom: 14px;
+}
+.magaza-sepet-ust {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.magaza-kur-cubuk {
+  margin-top: 8px;
+}
+.magaza-paket-giris {
+  flex: 1;
+  min-width: 260px;
+}
+.magaza-bolum-baslik {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.magaza-kategoriler {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.magaza-katalog-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+  gap: 10px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.magaza-uygulama-kart {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.magaza-uygulama-kart:hover {
+  border-color: #93C5FD;
+  background: #FFFFFF;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+}
+.magaza-uygulama-kart.secili {
+  border-color: var(--c-primary, #1B5FC1);
+  background: #EFF6FF;
+  box-shadow: 0 0 0 2px rgba(27, 95, 193, 0.15);
+}
+.magaza-kart-ust {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.magaza-ikon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.magaza-baslik-alan {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.magaza-ad {
+  font-size: 0.9rem;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.magaza-aciklama {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.35;
+}
+.magaza-kart-alt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed #E2E8F0;
+}
+.magaza-ara-giris {
+  flex: 1;
+  min-width: 200px;
+}
+.magaza-ara-sonuc {
+  max-height: 360px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.magaza-kurulu-kap {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.satir-korumali {
+  opacity: 0.78;
+  background: #F8FAFC;
+}
+.satir-secili {
+  background: #FEF2F2;
+}
+.alt-tablo-baslik {
+  font-size: 1rem;
+  margin: 12px 0 8px;
+}
+
+/* M1-S4 Uzman Ayarları */
+.uzman-ayarlari {
+  margin-bottom: 14px;
+}
+.uzman-ayarlari > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 2px;
+  list-style: none;
+  user-select: none;
+}
+.uzman-ayarlari > summary::-webkit-details-marker {
+  display: none;
+}
+.uzman-govde {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #E2E8F0;
+}
+.uzman-izgara {
+  grid-template-columns: minmax(220px, 280px) 1fr;
+}
+
+/* M2-S3 Duvar Kağıdı Galerisi ve Köşe Numarası Rozeti */
+.duvar-ayar-kutusu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  margin: 6px 0 10px;
+}
+.duvar-galeri-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.duvar-galeri-kart {
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+.duvar-galeri-kart:hover {
+  border-color: #60A5FA;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+.duvar-galeri-kart.secili {
+  border-color: var(--c-primary, #1B5FC1);
+  box-shadow: 0 0 0 2px rgba(27, 95, 193, 0.2);
+}
+.duvar-kart-onizleme {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, #0F172A, #1E3A8A);
+  overflow: hidden;
+}
+.duvar-kart-onizleme img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.duvar-kose-rozet {
+  position: absolute;
+  top: 6px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1.5px solid #38BDF8;
+  border-radius: 7px;
+  padding: 2px 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.05;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.duvar-kose-rozet.sag_ust {
+  right: 6px;
+}
+.duvar-kose-rozet.sol_ust {
+  left: 6px;
+}
+.duvar-kose-no {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #38BDF8;
+  letter-spacing: 0.02em;
+}
+.duvar-kose-host {
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+.duvar-kart-alt {
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.duvar-kart-baslik {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.duvar-kart-baslik strong {
+  font-size: 0.78rem;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.duvar-kart-eylemler {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+
+
 
 
 /* ---- yalnız önizleme ---- */
@@ -1197,8 +1464,8 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
               (öneri: pardus). Silinecek hesap önce yedeklenir. Gerekmiyorsa bu adımı geçin.</p>
             <p id="m1s2-adim3" class="adim-sayaci" role="status"></p>
             <div class="arac-cubugu">
-              <button id="m1s2-tek-onizle" type="button" class="ikincil" data-ui-id="M1-S2-B4">Önce göster</button>
-              <button id="m1s2-tek-uygula" type="button" class="tehlikeli" data-ui-id="M1-S2-B5" disabled>Temizle</button>
+              <button id="m1s2-tek-onizle" type="button" class="ikincil" data-ui-id="M1-S2-B4">Önce göster (Önerilen)</button>
+              <button id="m1s2-tek-uygula" type="button" class="tehlikeli" data-ui-id="M1-S2-B5">Temizle</button>
             </div>
             <details class="teknik"><summary>Teknik ayrıntı</summary>
               <p>Korunacak hesabın anahtarı ve parolasız yetkisi yeni bir oturumda doğrulanmadan silme yapılmaz;
@@ -1287,6 +1554,53 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
           </div>
         </div>
 
+        <details id="m1s4-uzman-panel" class="kart uzman-ayarlari">
+          <summary data-ui-id="M1-S4-B21">
+            <span>⚙️ <strong>Uzman Ayarları</strong> <span class="ipucu">(veyon-cli uzak yapılandırma parametreleri — tıklamadan doğrudan kur/yapılandır derseniz varsayılanlar otomatik uygulanır)</span></span>
+            <span class="rozet iyi">Varsayılan profil hazır</span>
+          </summary>
+          <div class="uzman-govde">
+            <p class="ipucu">“Kur ve yapılandır” veya “Seçililerde Veyon'u yapılandır” düğmesine bastığınızda paket ve public key yüklüyse ek soru sorulmadan aşağıdaki <code>veyon-cli</code> ayarları uzaktan uygulanır:</p>
+            <div class="form-izgara uzman-izgara">
+              <label for="m1s4-uzman-yontem">Kimlik yöntemi</label>
+              <select id="m1s4-uzman-yontem">
+                <option value="1" selected>Anahtar dosya yetkilendirmesi (Authentication/Method = 1 — Varsayılan)</option>
+                <option value="0">Oturum açma / parola yetkilendirmesi (Authentication/Method = 0)</option>
+              </select>
+
+              <label for="m1s4-uzman-grup">Yetkilendirme anahtarı erişim grubu</label>
+              <input id="m1s4-uzman-grup" type="text" maxlength="32" value="root" placeholder="root (varsayılan erişim grubu)">
+
+              <label for="m1s4-uzman-kullanici-grup">Kullanıcı grupları</label>
+              <select id="m1s4-uzman-kullanici-grup">
+                <option value="sistem" selected>Varsayılan sistem kullanıcı grupları (POSIX — Varsayılan)</option>
+                <option value="islem">Kullanıcı gruplarını erişim denetiminde işle (ProcessUserGroups = true)</option>
+              </select>
+
+              <label for="m1s4-uzman-vnc">VNC sunucusu</label>
+              <select id="m1s4-uzman-vnc">
+                <option value="dahili" selected>Dahili VNC sunucusu (Builtin VNC Server — Varsayılan)</option>
+                <option value="harici">Harici VNC sunucusu (x11vnc)</option>
+              </select>
+
+              <label for="m1s4-uzman-kalite">Uzak erişim görüntü kalitesi (Image Quality)</label>
+              <select id="m1s4-uzman-kalite">
+                <option value="yuksek" selected>Yüksek görüntü kalitesi (En iyi kalite — Varsayılan)</option>
+                <option value="orta">Orta görüntü kalitesi (Dengeli)</option>
+                <option value="dusuk">Düşük görüntü kalitesi (Düşük bant genişliği)</option>
+              </select>
+
+              <label for="m1s4-uzman-port">Veyon birincil servis portu</label>
+              <input id="m1s4-uzman-port" type="number" min="1024" max="65535" value="11100" placeholder="11100 (varsayılan Veyon portu)">
+            </div>
+            <div class="arac-cubugu ust-bosluk">
+              <button id="m1s4-uzman-sifirla" type="button" class="ikincil kucuk" data-ui-id="M1-S4-B22">Varsayılan ayarlara sıfırla</button>
+              <span class="ipucu">Uzak bilgisayarda çalıştırılacak <code>veyon-cli</code> komut özeti:</span>
+            </div>
+            <pre id="m1s4-uzman-komutlar" class="komut"></pre>
+          </div>
+        </details>
+
         <div class="kart">
           <h2>Bilgisayarlar</h2>
           <div class="secim-yeri" data-islem="veyon"></div>
@@ -1337,8 +1651,8 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
         </fieldset>
         <p id="m2s1-kapsam-uyari" class="uyari-kutusu" role="note"></p>
         <div class="arac-cubugu">
-          <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle</button>
-          <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7" disabled>Temizliği başlat</button>
+          <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle (Önerilen)</button>
+          <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7">Temizliği başlat</button>
           <span class="ayrac"></span>
           <button id="m2s1-oturumlar" type="button" class="tehlikeli" data-ui-id="M2-S1-B5">Tüm öğrenci oturumlarını kapat</button>
           <button id="m2s1-yedek" type="button" class="ikincil" data-ui-id="M2-S1-B9">Yalnız yedek al</button>
@@ -1348,32 +1662,110 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
         <div id="m2s1-tablo" class="tablo-kap"></div>
       </section>
 
-      <!-- ================================================= M2-S2 Paket Kurulumu -->
+      <!-- ================================================= M2-S2 Yazılım Merkezi ve Paket -->
       <section id="sayfa-M2-S2" class="sayfa" data-ui-id="M2-S2" hidden>
         <header class="sayfa-baslik">
           <span class="kod-cip">M2 · S2</span>
-          <h1>Paket Kurulumu</h1>
-          <p class="sayfa-aciklama">Dosyayı seç → hedefleri göster → planı hazırla (aktarım, SHA-256,
-            sürüm/mimari/boş alan/kilit/bağımlılık) → planı onayla → kur → kurulu sürümü doğrula.
-            Kaldırma ve sürüm düşürme gerektiren kurulum engellenir; sudo parolası sorulmaz.</p>
+          <h1>Pardus Yazılım Merkezi ve Paket Yönetimi</h1>
+          <p class="sayfa-aciklama">Öğrenci bilgisayarlarının tanımlı Pardus APT depolarından tek tıkla popüler uygulamaları veya aradığınız paketleri kurun, kurulu programları güvenle kaldırın ya da yerel <code>.deb</code> paketi dağıtın. Kritik sistem ve masaüstü paketleri otomatik korunur.</p>
         </header>
-        <div class="kart paket-karti">
-          <div class="arac-cubugu">
-            <label class="dugme ikincil" for="m2s2-dosya" data-ui-id="M2-S2-B1">.deb dosyası seç</label>
-            <input id="m2s2-dosya" type="file" accept=".deb,application/vnd.debian.binary-package" class="gizli-giris">
-            <label for="m2s2-paket" class="satir-ici">Yüklü paket</label>
-            <select id="m2s2-paket" data-ui-id="M2-S2-B6"></select>
-            <button id="m2s2-sil" type="button" class="ikincil kucuk" data-ui-id="M2-S2-B4">Paketi öğretmen PC'den sil</button>
-          </div>
-          <p id="m2s2-yukleme" class="ipucu" role="status"></p>
-          <dl id="m2s2-bilgi" class="paket-bilgi"></dl>
-        </div>
+
         <div class="secim-yeri" data-islem="paket"></div>
-        <div class="arac-cubugu">
-          <button id="m2s2-plan" type="button" class="ikincil" data-ui-id="M2-S2-B2">Kurulum planını hazırla</button>
-          <button id="m2s2-kur" type="button" class="birincil" data-ui-id="M2-S2-B3" disabled>Planı onayla ve kur</button>
+
+        <div class="kapsam-secimi magaza-sekmeler" role="tablist" aria-label="Yazılım yönetim yöntemi">
+          <button id="m2s2-sekme-btn-magaza" type="button" class="kapsam aktif" role="tab" aria-selected="true">🏪 Pardus Depodan Uygulama Kur (Yazılım Merkezi)</button>
+          <button id="m2s2-sekme-btn-kaldir" type="button" class="kapsam" role="tab" aria-selected="false">🗑️ Kurulu Uygulamalar ve Güvenli Kaldırma</button>
+          <button id="m2s2-sekme-btn-deb" type="button" class="kapsam" role="tab" aria-selected="false">📦 Yerel .deb Dosyasından Kurulum</button>
         </div>
-        <div id="m2s2-kartlar" class="ozet-kartlar"></div>
+
+        <!-- SEKME 1: PARDUS YAZILIM MERKEZİ / APT REPO KURULUM -->
+        <div id="m2s2-panel-magaza" class="magaza-panel">
+          <div class="kart magaza-sepet-karti">
+            <div class="magaza-sepet-ust">
+              <div>
+                <h2>Kurulum Sepeti (APT Depodan Uzaktan Kurulum)</h2>
+                <p class="ipucu">Aşağıdaki katalogdan veya depo aramasından uygulama seçin ya da paket adlarını boşlukla ayırarak yazın. Seçtiğiniz tek bilgisayara veya tüm seçili bilgisayarlara kurulur.</p>
+              </div>
+              <div id="m2s2-sepet-sayac" class="rozet mavi">0 uygulama seçili</div>
+            </div>
+            <div class="arac-cubugu magaza-kur-cubuk">
+              <input id="m2s2-repo-paketler" type="text" class="magaza-paket-giris mono" placeholder="Örn: gimp vlc thonny libreoffice (katalogdan veya aramadan tıklayarak ekleyebilirsiniz)">
+              <label class="onay-kutusu satir-ici"><input id="m2s2-repo-update" type="checkbox" checked> Önce depo listesini güncelle (apt update)</label>
+              <button id="m2s2-sepet-temizle" type="button" class="ikincil kucuk">Sepeti Temizle</button>
+              <button id="m2s2-repo-kur" type="button" class="birincil" data-ui-id="M2-S2-B9">Seçili Bilgisayarlara Depodan Kur</button>
+            </div>
+          </div>
+
+          <div class="iki-sutun magaza-iki-sutun">
+            <div class="kart">
+              <div class="magaza-bolum-baslik">
+                <h2>Popüler Pardus &amp; Laboratuvar Uygulamaları</h2>
+                <div id="m2s2-kategori-cubuk" class="magaza-kategoriler"></div>
+              </div>
+              <div id="m2s2-katalog-kap" class="magaza-katalog-izgara"></div>
+            </div>
+
+            <div class="kart">
+              <h2>Bilgisayarın Tanımlı APT Deposunda Ara</h2>
+              <p class="ipucu">Hedef bilgisayarda tanımlı Pardus/Debian depo adreslerinde (<code>/etc/apt/sources.list</code>) bulunan tüm paketlerde canlı arama yapar.</p>
+              <div class="arac-cubugu">
+                <label for="m2s2-ara-cihaz" class="satir-ici">Sorgulanacak PC:</label>
+                <select id="m2s2-ara-cihaz"></select>
+              </div>
+              <div class="arac-cubugu">
+                <input id="m2s2-ara-giris" type="search" class="magaza-ara-giris" placeholder="Uygulama adı veya anahtar kelime (örn: python, pdf, satranç, resim)...">
+                <button id="m2s2-ara-dugme" type="button" class="ikincil" data-ui-id="M2-S2-B8">Depoda Ara</button>
+              </div>
+              <p id="m2s2-ara-durum" class="ipucu" role="status"></p>
+              <div id="m2s2-ara-sonuc" class="magaza-ara-sonuc"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEKME 2: KURULU UYGULAMALARI LİSTELE VE GÜVENLİ KALDIR -->
+        <div id="m2s2-panel-kaldir" class="magaza-panel" hidden>
+          <div class="kart">
+            <h2>Kurulu Uygulamalar ve Güvenli Kaldırma</h2>
+            <p class="ipucu">Seçtiğiniz bilgisayardaki kurulu programları listeler. İşaretlediğiniz uygulamaları <strong>tek bilgisayardan veya tüm seçili bilgisayarlardan</strong> kaldırabilirsiniz. Pardus masaüstü, SSH, ağ, Veyon ve temel sistem paketleri <strong>🔒 Korumalı</strong> olarak kilitlidir; yanlışlıkla kaldırılamaz.</p>
+            <div class="arac-cubugu">
+              <label for="m2s2-kurulu-cihaz" class="satir-ici">Listesi okunacak PC:</label>
+              <select id="m2s2-kurulu-cihaz"></select>
+              <button id="m2s2-kurulu-listele" type="button" class="ikincil" data-ui-id="M2-S2-B10">Kurulu Uygulamaları Getir</button>
+              <input id="m2s2-kurulu-filtre" type="search" placeholder="Listede ara (paket adı veya açıklama)...">
+              <label class="onay-kutusu satir-ici"><input id="m2s2-kurulu-tum" type="checkbox"> Sistem/kütüphane paketlerini de göster</label>
+            </div>
+            <div class="arac-cubugu">
+              <span id="m2s2-kaldir-secili-bilgi" class="rozet notr">0 uygulama kaldırmak için seçildi</span>
+              <label class="onay-kutusu satir-ici"><input id="m2s2-kurulu-purge" type="checkbox"> Ayar dosyalarını da temizle (purge)</label>
+              <button id="m2s2-kurulu-secim-temizle" type="button" class="ikincil kucuk">Seçimi Bırak</button>
+              <button id="m2s2-kurulu-kaldir" type="button" class="tehlikeli" data-ui-id="M2-S2-B11">Seçili Uygulamaları Kaldır</button>
+            </div>
+            <p id="m2s2-kurulu-durum" class="ipucu" role="status"></p>
+            <div id="m2s2-kurulu-tablo" class="tablo-kap magaza-kurulu-kap"></div>
+          </div>
+        </div>
+
+        <!-- SEKME 3: YEREL .DEB DOSYASINDAN KURULUM -->
+        <div id="m2s2-panel-deb" class="magaza-panel" hidden>
+          <div class="kart paket-karti">
+            <div class="arac-cubugu">
+              <label class="dugme ikincil" for="m2s2-dosya" data-ui-id="M2-S2-B1">.deb dosyası seç</label>
+              <input id="m2s2-dosya" type="file" accept=".deb,application/vnd.debian.binary-package" class="gizli-giris">
+              <label for="m2s2-paket" class="satir-ici">Yüklü paket</label>
+              <select id="m2s2-paket" data-ui-id="M2-S2-B6"></select>
+              <button id="m2s2-sil" type="button" class="ikincil kucuk" data-ui-id="M2-S2-B4">Paketi öğretmen PC'den sil</button>
+            </div>
+            <p id="m2s2-yukleme" class="ipucu" role="status"></p>
+            <dl id="m2s2-bilgi" class="paket-bilgi"></dl>
+          </div>
+          <div class="arac-cubugu">
+            <button id="m2s2-plan" type="button" class="ikincil" data-ui-id="M2-S2-B2">Kurulum planını hazırla (Önerilen)</button>
+            <button id="m2s2-kur" type="button" class="birincil" data-ui-id="M2-S2-B3">Kur</button>
+          </div>
+          <div id="m2s2-kartlar" class="ozet-kartlar"></div>
+        </div>
+
+        <h2 class="alt-tablo-baslik">Hedef Bilgisayarlar (Tek veya Çoklu Seçim)</h2>
         <div id="m2s2-tablo" class="tablo-kap"></div>
       </section>
 
@@ -1398,11 +1790,20 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
               <label class="onay-kutusu"><input type="checkbox" id="m2s3-duzen" checked data-ui-id="M2-S3-B1">
                 Windows 10 benzeri düzen <span class="ipucu">(alt görev çubuğu + uygulama menüsü; dash-to-panel + ArcMenu)</span></label>
               <label class="onay-kutusu"><input type="checkbox" id="m2s3-duvar" data-ui-id="M2-S3-B2">
-                Standart duvar kâğıdı</label>
-              <div class="alt-secenek">
-                <label class="dugme ikincil kucuk" for="m2s3-gorsel" data-ui-id="M2-S3-B3">Görsel seç</label>
-                <input id="m2s3-gorsel" type="file" accept=".png,.jpg,.jpeg" class="gizli-giris">
+                Duvar kâğıdı galerisinden ata <span class="ipucu">(köşede bilgisayar numarası etiketiyle)</span></label>
+              <div class="alt-secenek duvar-ayar-kutusu">
+                <div class="arac-cubugu">
+                  <label class="satir-ici" for="m2s3-duvar-kose">Bilgisayar no etiketi</label>
+                  <select id="m2s3-duvar-kose" data-ui-id="M2-S3-B11">
+                    <option value="sag_ust" selected>Sağ üst köşede numara (örn: ogrenci01 → 01)</option>
+                    <option value="sol_ust">Sol üst köşede numara (örn: ogrenci01 → 01)</option>
+                    <option value="yok">Etiketsiz (numara yazılmasın)</option>
+                  </select>
+                  <label class="dugme ikincil kucuk" for="m2s3-gorsel" data-ui-id="M2-S3-B3">+ Galeriye fotoğraf ekle</label>
+                  <input id="m2s3-gorsel" type="file" accept=".png,.jpg,.jpeg" multiple class="gizli-giris">
+                </div>
                 <span id="m2s3-gorsel-bilgi" class="ipucu"></span>
+                <div id="m2s3-galeri" class="duvar-galeri-izgara" aria-label="Duvar kâğıdı galerisi"></div>
               </div>
               <label class="onay-kutusu"><input type="checkbox" id="m2s3-kilit-ekran" checked data-ui-id="M2-S3-B4">
                 Öğrenci ekran kilidini kapat</label>
@@ -1417,14 +1818,15 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
           <div class="kart">
             <h2>Hedef görünüm <span class="rozet notr">Temsili çizim</span></h2>
             <div id="m2s3-temsili" class="temsili"></div>
-            <p class="ipucu">Bu bir çizimdir, gerçek Pardus ekran görüntüsü değildir. Gerçek düzen her
-              bilgisayardaki Pardus Karşılayıcı tanımından (“10” düzeni) okunur.</p>
+            <p class="ipucu">Duvar kâğıdı atandığında her bilgisayarın kendi <code>hostname</code> bilgisindeki
+              rakamlar (örn. <code>ogrenci01</code> → <strong>01</strong>) seçtiğiniz köşeye yüksek kontrastlı rozet
+              olarak işlenir; uzaktan bakıldığında hangi bilgisayar olduğu hemen anlaşılır.</p>
           </div>
         </div>
         <div class="secim-yeri" data-islem="gorunum"></div>
         <div class="arac-cubugu">
-          <button id="m2s3-onizle" type="button" class="ikincil" data-ui-id="M2-S3-B8">Önizle</button>
-          <button id="m2s3-uygula" type="button" class="birincil" data-ui-id="M2-S3-B9" disabled>Uygula</button>
+          <button id="m2s3-onizle" type="button" class="ikincil" data-ui-id="M2-S3-B8">Önizle (Önerilen)</button>
+          <button id="m2s3-uygula" type="button" class="birincil" data-ui-id="M2-S3-B9">Uygula</button>
         </div>
         <div id="m2s3-tablo" class="tablo-kap"></div>
       </section>
@@ -1449,29 +1851,32 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
             </div>
           </div>
           <div class="kart">
-            <h2>Uyku ve ekran koruyucu</h2>
-            <p class="ipucu">Bilgisayarlar boşta <strong>uykuya geçmez ve kendiliğinden kapanmaz</strong>; böylece
-              yönetim için her zaman erişilebilir kalır. Boşta kalan ekran yalnız kararır (ekran koruyucu).</p>
+            <h2>Uyku ve ekran kapanmasını engelle</h2>
+            <p class="ipucu">Bilgisayarlar boşta <strong>uykuya geçmez, askıya alınmaz ve siz istemediğiniz sürece
+              ekranları kapanmaz</strong>. Hem GNOME/GDM hem X11 DPMS ve açık oturumlarda anında uygulanır.</p>
             <div class="arac-cubugu">
-              <label for="m2s4-ekran" class="satir-ici">Ekran koruyucu</label>
+              <label for="m2s4-ekran" class="satir-ici">Ekran kapanma süresi</label>
               <select id="m2s4-ekran" data-ui-id="M2-S4-B3">
+                <option value="0" selected>Hiç kapanmasın (ekran hep açık kalır — önerilen)</option>
                 <option value="5">5 dakika boşta kalınca</option>
-                <option value="10" selected>10 dakika boşta kalınca</option>
+                <option value="10">10 dakika boşta kalınca</option>
                 <option value="15">15 dakika boşta kalınca</option>
                 <option value="30">30 dakika boşta kalınca</option>
                 <option value="60">1 saat boşta kalınca</option>
-                <option value="0">Hiç (ekran açık kalır)</option>
               </select>
             </div>
             <div class="arac-cubugu">
               <button id="m2s4-uyku-onizle" type="button" class="ikincil" data-ui-id="M2-S4-B4">Önizle</button>
-              <button id="m2s4-uyku-uygula" type="button" class="birincil" data-ui-id="M2-S4-B5">Uyku modunu kapat</button>
+              <button id="m2s4-uyku-uygula" type="button" class="birincil" data-ui-id="M2-S4-B5">Uyku ve ekran kapanmasını kapat</button>
               <button id="m2s4-uyku-kaldir" type="button" class="ikincil" data-ui-id="M2-S4-B6">Varsayılana dön</button>
             </div>
             <details class="teknik"><summary>Teknik ayrıntı</summary>
               <p>sleep/suspend/hibernate hedefleri maskelenir (<code>systemctl mask</code>): oturum, giriş ekranı veya güç
-                tuşu uyku başlatamaz. GNOME güç ayarları dconf'ta kilitlenir (<code>sleep-inactive-*-type='nothing'</code>,
-                <code>idle-delay</code>); logind boşta eylemi yok sayar. Zamanlı kapatma (M2-S5) bundan etkilenmez.</p></details>
+                tuşu uyku başlatamaz. GNOME ve GDM güç/ekran koruyucu ayarları dconf'ta kilitlenir
+                (<code>sleep-inactive-*-type='nothing'</code>, <code>idle-delay=0</code>, <code>idle-dim=false</code>,
+                <code>idle-activation-enabled=false</code>); X11 DPMS (<code>90-pardus-sinif-dpms.conf</code> ve
+                <code>xset s off -dpms s noblank</code>) ile donanımsal monitör kapanması engellenir; logind ayarları
+                oturumları düşürmeden anında etkinleştirilir. Zamanlı kapatma (M2-S5) bundan etkilenmez.</p></details>
           </div>
         </div>
         <div id="m2s4-tablo" class="tablo-kap"></div>
@@ -1872,6 +2277,8 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
       <input id="cf-port" type="number" value="22" min="1" max="65535">
       <label for="cf-ad">Görünen ad</label>
       <input id="cf-ad" type="text" maxlength="40" placeholder="örn. LAB05">
+      <label for="cf-hostname">Hostname (Bilgisayar adı)</label>
+      <input id="cf-hostname" type="text" maxlength="63" placeholder="örn. pardus-lab05">
       <label for="cf-lab">Laboratuvar</label>
       <input id="cf-lab" type="text" maxlength="40" value="Laboratuvar" list="lab-listesi">
       <label for="cf-hesap">Yönetim hesabı</label>
@@ -1885,7 +2292,7 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
       Korunan cihaz (EBA/ETAP): hiçbir işleme dahil edilmez</label>
     <p id="cf-hesap-uyari" class="uyari-kutusu" hidden>Yönetim hesabı değişirse anahtar yeni hesapta
       kurulu olmayacağından bilgisayar M1-S2'den yeniden hazırlanmalıdır.</p>
-    <p class="ipucu">Kaydetmek bağlantı kurmaz, hesap değiştirmez ve paket kurmaz.</p>
+    <p class="ipucu">Bilgisayar yönetime hazırsa hostname (bilgisayar adı) değişikliği doğrudan uzak bilgisayara da uygulanır.</p>
     <div class="pencere-butonlar">
       <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S1-B10">Vazgeç</button>
       <button id="cf-kaydet" value="kaydet" class="birincil" data-ui-id="M1-S1-B9">Kaydet</button>
@@ -1920,8 +2327,8 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
         <div id="co-hesap" class="co-deger mono">pardus</div>
       </div>
       <div class="co-oge">
-        <span class="co-etiket">SSH Portu</span>
-        <div id="co-port" class="co-deger mono">22</div>
+        <span class="co-etiket">Hostname / IP Adresi</span>
+        <div id="co-hostname" class="co-deger mono">—</div>
       </div>
       <div class="co-oge">
         <span class="co-etiket">İşletim Sistemi / Masaüstü</span>
@@ -2249,8 +2656,8 @@ window.PSY_REFERANS = {
     { kod: "M2", ad: "İşlemler", ikon: "arac", sayfalar: [
       { kod: "S1", ad: "Profil Temizliği", ikon: "supurge",
         aciklama: "Ders sonu temizliği, profil sıfırlama, öğrenci oturumlarını kapatma, yedek ve yedekten dönüş." },
-      { kod: "S2", ad: "Paket Kurulumu", ikon: "paket",
-        aciklama: "Öğretmen bilgisayarındaki .deb paketini seçili bilgisayarlara plan ve onayla kurar (Veyon hariç: M1-S4)." },
+      { kod: "S2", ad: "Yazılım Merkezi ve Paket", ikon: "paket",
+        aciklama: "Pardus Yazılım Merkezi (APT depo mağazası) ile tek veya çoklu bilgisayara uzaktan uygulama kurma, kurulu uygulamaları güvenli kaldırma ve yerel .deb paketi kurulumu." },
       { kod: "S3", ad: "Görünüm ve Giriş", ikon: "gorunum",
         aciklama: "Windows 10 benzeri ortak Pardus görünümü, duvar kâğıdı, ekran kilidi, otomatik giriş, yönetim hesabını gizleme." },
       { kod: "S4", ad: "Güç ve Uyku", ikon: "guc",
@@ -2307,7 +2714,7 @@ window.PSY_REFERANS = {
     "M1-S1-B4": ["Envanterden çıkar", "Seçilileri envanterden çıkarır (isteğe bağlı anahtar kaldırma)"],
     "M1-S1-B5": ["Ansible envanterini indir", "Hazır bilgisayarların parolasız Ansible envanteri"],
     "M1-S1-B6": ["Filtreleri temizle", "Arama, durum ve laboratuvar filtresini sıfırlar (seçimi değiştirmez)"],
-    "M1-S1-B7-*": ["Düzenle (satır)", "Ad, laboratuvar, yönetim hesabı ve korunan cihaz ayarı"],
+    "M1-S1-B7-*": ["Düzenle (satır)", "IP, SSH portu, görünen ad, bilgisayar adı (hostname), laboratuvar, yönetim hesabı ve korunan cihaz ayarı"],
     "M1-S1-B8-*": ["Gereken işleme git (satır)", "Satırdaki “gereken işlem” sayfasını açar"],
     "M1-S1-B9": ["Kaydet (ekle/düzenle penceresi)", "Kaydı kaydeder"],
     "M1-S1-B10": ["Vazgeç (ekle/düzenle penceresi)", "Pencereyi kapatır"],
@@ -2364,6 +2771,8 @@ window.PSY_REFERANS = {
     "M1-S4-B18": ["Öğretmen PC sorununa rağmen devam", "Private key/yöntem sorunu bilinerek yapılandırmaya izin verir"],
     "M1-S4-B19": ["Yedekle ve değiştir (anahtar)", "Aynı adlı farklı anahtarı yedekleyip yenisiyle değiştirir"],
     "M1-S4-B20": ["Vazgeç (anahtar değişimi)", "Mevcut anahtar korunur"],
+    "M1-S4-B21": ["Uzman Ayarları (veyon-cli)", "Uzak bilgisayarda veyon-cli ile yapılacak kimlik, erişim grubu, VNC ve görüntü kalitesi ayarlarını gösterir/gizler"],
+    "M1-S4-B22": ["Varsayılan ayarlara sıfırla", "Uzman ayarlarındaki veyon-cli parametrelerini varsayılan değerlere döndürür"],
 
     "M2-S1-B1": ["Kapsam: Ders sonu temizliği", "Seçilen alanlar kurtarılabilir karantinaya taşınır"],
     "M2-S1-B2": ["Kapsam: Profil ayarlarını sıfırla", "Gizli dosyalar (tarayıcı verileri dahil) silinir; Belgeler korunur"],
@@ -2390,10 +2799,14 @@ window.PSY_REFERANS = {
     "M2-S2-B5-*": ["Plan ayrıntısı (satır)", "O bilgisayarın plan ayrıntısını gösterir"],
     "M2-S2-B6": ["Paket seçici", "Daha önce yüklenen paketlerden birini seçer"],
     "M2-S2-B7": ["Kapat (plan ayrıntısı)", "Plan ayrıntısı penceresini kapatır"],
+    "M2-S2-B8": ["Depoda uygulama ara", "Hedef bilgisayarın tanımlı APT depolarında uygulama arar"],
+    "M2-S2-B9": ["Seçili uygulamaları depodan kur", "Seçilen mağaza/depo uygulamalarını tek veya çoklu bilgisayara uzaktan kurar"],
+    "M2-S2-B10": ["Kurulu uygulamaları listele", "Seçilen bilgisayardaki kurulu uygulamaları okur (sistem paketleri korumalıdır)"],
+    "M2-S2-B11": ["Seçili uygulamaları kaldır", "İşaretlenen kurulu uygulamaları kritik sistem paketlerine dokunmadan kaldırır"],
 
     "M2-S3-B1": ["Windows 10 benzeri düzen", "Pardus Karşılayıcı “10” düzeni: alt görev çubuğu + uygulama menüsü"],
-    "M2-S3-B2": ["Standart duvar kâğıdı", "Yüklenen görseli tüm bilgisayarlara uygular"],
-    "M2-S3-B3": ["Duvar kâğıdı görseli seç", "PNG/JPEG, en çok 20 MB"],
+    "M2-S3-B2": ["Duvar kâğıdı galerisinden ata", "Galerideki seçili görseli köşede bilgisayar numarası etiketiyle tüm bilgisayarlara uygular"],
+    "M2-S3-B3": ["Galeriye fotoğraf ekle", "Duvar kâğıdı galerisine PNG/JPEG fotoğraf(lar) yükler (en çok 20 MB)"],
     "M2-S3-B4": ["Ekran kilidini kapat", "Öğrenci ekran kilidi kapalı olur"],
     "M2-S3-B5": ["Öğrenci otomatik girişi", "GDM ogrenci hesabıyla otomatik giriş yapar"],
     "M2-S3-B6": ["Yönetim hesabını giriş ekranında gizle", "hp/pardus giriş listesinde görünmez; SSH sürer"],
@@ -2401,12 +2814,13 @@ window.PSY_REFERANS = {
     "M2-S3-B8": ["Önizle", "Hedeflerde ne değişeceğini gösterir (salt okunur)"],
     "M2-S3-B9": ["Uygula", "Önizlenen ayarları onayla uygular"],
     "M2-S3-B10": ["İşlem yönü", "Uygula veya daha önce uygulananı kaldır"],
+    "M2-S3-B11": ["Bilgisayar numarası köşe konumu", "Duvar kâğıdının sağ üst veya sol üst köşesine hostname içindeki bilgisayar numarasını (örn: 01) yazar"],
 
     "M2-S4-B1": ["Yeniden başlat", "Seçili bilgisayarları yeniden başlatır ve açılışı doğrular"],
     "M2-S4-B2": ["Kapat", "Seçili bilgisayarları kapatır ve kapanmayı doğrular"],
-    "M2-S4-B3": ["Ekran koruyucu süresi", "Boşta kalınca ekranın kararacağı süre (uyku yok)"],
+    "M2-S4-B3": ["Ekran kapanma süresi", "Ekranın hiç kapanmaması (0 dk — önerilen) veya boşta kalınca kararma süresi"],
     "M2-S4-B4": ["Güç ayarını önizle", "Seçililerde şu anki uyku/ekran ayarını okur; hiçbir şey değişmez"],
-    "M2-S4-B5": ["Uyku modunu kapat", "Bilgisayarlar uykuya geçmez, boşta kapanmaz; ekran koruyucu kalır"],
+    "M2-S4-B5": ["Uyku ve ekran kapanmasını kapat", "Bilgisayarlar uykuya geçmez, DPMS ve ekran kararması engellenir"],
     "M2-S4-B6": ["Varsayılan güç ayarına dön", "Bu uygulamanın yaptığı uyku ayarını geri alır"],
 
     "M2-S5-B1": ["Plan türü: bir kez", "Belirli bir tarih ve saatte bir kez kapat (at gibi)"],
@@ -2877,7 +3291,8 @@ window.PSY_REFERANS = {
   yol("POST", "/api/cihazlar", (g) => {
     if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(g.ip || "")) throw new Hata(422, "Geçersiz IP adresi");
     if (cihazlar.some((c) => c.ip === g.ip)) throw new Hata(422, `${g.ip}:22 zaten envanterde`);
-    const c = { ...cihaz(90 + cihazlar.length, g.etiket || g.ip, g.grup || "Laboratuvar"), ip: g.ip, etiket: g.etiket || null,
+    const c = { ...cihaz(90 + cihazlar.length, g.etiket || g.ip, g.grup || "Laboratuvar"), ip: g.ip, ssh_port: Number(g.port) || 22,
+      etiket: g.etiket || null, hostname: g.hostname || null,
       anahtar_durumu: "gerekli", sudo_durumu: null, parmak_izi: null, parmak_izi_onay: 0, durum: "Kimlik okunmadı",
       baglanti_hesabi: g.baglanti_hesabi || null, yonetim_hesaplari: null, korunan: g.korunan ? 1 : 0, son_kontrol: null,
       gizleme_durumu: null, otomatik_giris: null, gorunum_durumu: null, ogrenci_oturumu: null, pardus_surum: null, masaustu: null,
@@ -2889,11 +3304,22 @@ window.PSY_REFERANS = {
   yol("PATCH", "/api/cihazlar/([\\w-]+)", (g, [id]) => {
     const c = cihazAl(id);
     const degisti = "baglanti_hesabi" in g && g.baglanti_hesabi !== c.baglanti_hesabi;
+    if ("ip" in g && g.ip) c.ip = g.ip;
+    if ("port" in g && g.port) c.ssh_port = Number(g.port) || 22;
     if ("etiket" in g) c.etiket = g.etiket;
     if ("grup" in g) c.grup = g.grup || "Laboratuvar";
     if ("korunan" in g) { c.korunan = g.korunan ? 1 : 0; c.korunan_neden = g.korunan ? "Öğretmen işaretledi" : null; }
+    let hostname_degisti = false, hostname_uzak = false, hostname_mesaj = null;
+    if ("hostname" in g && g.hostname !== c.hostname) {
+      c.hostname = g.hostname || null;
+      hostname_degisti = true;
+      hostname_uzak = c.anahtar_durumu === "ok" && c.sudo_durumu === "parolasiz" && c.erisim !== 0;
+      hostname_mesaj = hostname_uzak
+        ? `Uzak bilgisayarda ve envanterde hostname '${c.hostname}' olarak güncellendi.`
+        : `Hostname '${c.hostname || "—"}' envantere kaydedildi.`;
+    }
     if (degisti) Object.assign(c, { baglanti_hesabi: g.baglanti_hesabi, anahtar_durumu: "gerekli", sudo_durumu: null, durum: "Hazırlık gerekli" });
-    return { hesap_degisti: degisti };
+    return { hesap_degisti: degisti, hostname_degisti, hostname_uzak, hostname_mesaj };
   });
   yol("POST", "/api/cihazlar/ice-aktar/onizle", (g) => iceAktar(g, false));
   yol("POST", "/api/cihazlar/ice-aktar", (g) => iceAktar(g, true));
@@ -3100,8 +3526,13 @@ window.PSY_REFERANS = {
   const vOge = (c, kur) => {
     const y = c.veyon_yapilandirma || {};
     const ayni = y.eslesme === "eslesiyor";
-    return { anahtar: { ad: veyonAnahtar ? veyonAnahtar.ad : "teacher", durum: ayni ? "zaten" : y.eslesme === "farkli" ? "degistirilecek" : "eklenecek", mevcut_kimlik: y.eslesme === "farkli" ? "5d0c11fe" : null },
-      yontem: { durum: y.yontem === 1 && !kur ? "zaten" : "ayarlanacak" }, servis: { durum: (y.servis || {}).calisiyor && !kur ? "zaten" : "etkinlestirilecek" } };
+    return {
+      anahtar: { ad: veyonAnahtar ? veyonAnahtar.ad : "teacher", durum: ayni ? "zaten" : y.eslesme === "farkli" ? "degistirilecek" : "eklenecek", mevcut_kimlik: y.eslesme === "farkli" ? "5d0c11fe" : null },
+      yontem: { durum: y.yontem === 1 && !kur ? "zaten" : "ayarlanacak" },
+      erisim_grubu: { durum: ayni && !kur ? "zaten" : "ayarlanacak", hedef: "root" },
+      vnc_kalite: { durum: ayni && !kur ? "zaten" : "ayarlanacak" },
+      servis: { durum: (y.servis || {}).calisiyor && !kur ? "zaten" : "etkinlestirilecek" },
+    };
   };
   function veyonPlani(c, kip) {
     const p = veyonPaketi();
@@ -3221,6 +3652,112 @@ window.PSY_REFERANS = {
     return r;
   });
 
+  /* ---- Pardus Yazılım Merkezi / Repo (DEMO) ---- */
+  const DEMO_REPO_KATALOG = [
+    { kategori: "Kodlama ve Robotik", ikon: "💻", uygulamalar: [
+      { paket: "thonny", ad: "Thonny Python IDE", ikon: "🐍", aciklama: "Öğrenciler için adım adım hata ayıklamalı kolay Python geliştirme ortamı" },
+      { paket: "arduino", ad: "Arduino IDE", ikon: "🤖", aciklama: "Robotik kodlama ve mikrodenetleyici kart programlama ortamı" },
+      { paket: "fritzing", ad: "Fritzing", ikon: "🔌", aciklama: "Elektronik devre şeması ve breadboard prototipleme tasarımı" },
+      { paket: "geany", ad: "Geany", ikon: "📝", aciklama: "Hızlı ve hafif C, C++, Python, HTML/JS kod düzenleyici" },
+      { paket: "codeblocks", ad: "Code::Blocks", ikon: "⚙️", aciklama: "C ve C++ dersleri için tümleşik geliştirme ortamı (IDE)" },
+      { paket: "sqlitebrowser", ad: "DB Browser for SQLite", ikon: "🗄️", aciklama: "Veritabanı dersleri için görsel SQLite tablo ve SQL sorgu aracı" },
+      { paket: "git", ad: "Git", ikon: "🌿", aciklama: "Dağıtık sürüm kontrol ve proje takip sistemi" },
+      { paket: "python3-pip", ad: "Python3 Pip", ikon: "📦", aciklama: "Python kütüphane ve paket kurulum yöneticisi" },
+    ] },
+    { kategori: "Tasarım, Grafik ve Medya", ikon: "🎨", uygulamalar: [
+      { paket: "gimp", ad: "GIMP", ikon: "🖌️", aciklama: "Profesyonel fotoğraf işleme ve görsel tasarım programı" },
+      { paket: "inkscape", ad: "Inkscape", ikon: "✒️", aciklama: "Vektörel grafik, logo ve afiş tasarım uygulaması (SVG)" },
+      { paket: "krita", ad: "Krita", ikon: "🎨", aciklama: "Dijital boyama, illüstrasyon ve 2B animasyon stüdyosu" },
+      { paket: "kolourpaint", ad: "KolourPaint", ikon: "🖼️", aciklama: "Hızlı ve sade resim/çizim programı (MS Paint benzeri)" },
+      { paket: "blender", ad: "Blender", ikon: "🧊", aciklama: "3B modelleme, animasyon, simülasyon ve render stüdyosu" },
+      { paket: "kdenlive", ad: "Kdenlive", ikon: "🎬", aciklama: "Çok katmanlı video kurgu ve montaj programı" },
+      { paket: "audacity", ad: "Audacity", ikon: "🎙️", aciklama: "Ses kaydetme, kesme ve efekt düzenleme stüdyosu" },
+      { paket: "vlc", ad: "VLC Media Player", ikon: "▶️", aciklama: "Tüm video ve ses biçimlerini oynatan medya oynatıcı" },
+    ] },
+    { kategori: "Ofis, Eğitim ve Bilim", ikon: "📚", uygulamalar: [
+      { paket: "libreoffice", ad: "LibreOffice Tam Paket", ikon: "📄", aciklama: "Kelime işlemci (Writer), hesap tablosu (Calc) ve sunum (Impress)" },
+      { paket: "scratch", ad: "Scratch", ikon: "🐱", aciklama: "Blok tabanlı algoritma, animasyon ve oyun geliştirme aracı" },
+      { paket: "geogebra", ad: "GeoGebra", ikon: "📐", aciklama: "Etkileşimli geometri, cebir, tablo ve istatistik uygulaması" },
+      { paket: "stellarium", ad: "Stellarium", ikon: "🔭", aciklama: "Gerçekçi 3B gökyüzü ve astronomi gözlem simülasyonu" },
+      { paket: "kalzium", ad: "Kalzium", ikon: "🧪", aciklama: "Etkileşimli periyodik tablo ve kimya başvuru aracı" },
+      { paket: "gcompris-qt", ad: "GCompris", ikon: "🧩", aciklama: "Zengin eğitsel algoritma, matematik ve bilim etkinlikleri" },
+    ] },
+    { kategori: "İnternet ve Sistem Araçları", ikon: "🛠️", uygulamalar: [
+      { paket: "chromium", ad: "Chromium Tarayıcı", ikon: "🌐", aciklama: "Hızlı ve modern açık kaynaklı web tarayıcısı" },
+      { paket: "firefox-esr", ad: "Firefox ESR", ikon: "🦊", aciklama: "Pardus varsayılan uzun süreli destekli web tarayıcısı" },
+      { paket: "okular", ad: "Okular PDF Okuyucu", ikon: "📑", aciklama: "Gelişmiş PDF, EPUB ve e-kitap görüntüleme ve işaretleme aracı" },
+      { paket: "filezilla", ad: "FileZilla", ikon: "📂", aciklama: "Web sunucuları için görsel FTP / SFTP dosya aktarım istemcisi" },
+      { paket: "7zip", ad: "7-Zip", ikon: "🗜️", aciklama: "7z, ZIP, RAR ve TAR arşiv sıkıştırma ve açma aracı" },
+      { paket: "htop", ad: "htop", ikon: "📊", aciklama: "Renkli ve etkileşimli işlemci/bellek süreç izleyicisi" },
+    ] },
+  ];
+  let demoKuruluUygulamalar = [
+    { paket: "audacity", surum: "3.2.4+dfsg-1", boyut_kb: 38400, bolum: "sound", aciklama: "Çok kanallı ses düzenleme ve kayıt uygulaması", korumali: false },
+    { paket: "chromium", surum: "120.0.6099.224-1~deb12u1", boyut_kb: 245000, bolum: "web", aciklama: "Açık kaynaklı Google web tarayıcısı", korumali: false },
+    { paket: "firefox-esr", surum: "115.8.0esr-1~deb12u1", boyut_kb: 228000, bolum: "web", aciklama: "Mozilla Firefox Uzun Süreli Destekli Tarayıcı", korumali: false },
+    { paket: "gimp", surum: "2.10.34-1+deb12u2", boyut_kb: 112000, bolum: "graphics", aciklama: "GNU Görüntü İşleme Programı", korumali: false },
+    { paket: "inkscape", surum: "1.2.2-2+b1", boyut_kb: 98500, bolum: "graphics", aciklama: "Vektörel çizim ve grafik tasarım programı", korumali: false },
+    { paket: "libreoffice", surum: "4:7.4.7-1+deb12u1", boyut_kb: 412000, bolum: "editors", aciklama: "Tam kapsamlı ofis üretkenlik paketi", korumali: false },
+    { paket: "thonny", surum: "4.0.1-1", boyut_kb: 14200, bolum: "devel", aciklama: "Yeni başlayanlar için Python IDE", korumali: false },
+    { paket: "vlc", surum: "3.0.20-0+deb12u1", boyut_kb: 64000, bolum: "video", aciklama: "Çoklu ortam oynatıcı ve yayıncı", korumali: false },
+    { paket: "gdm3", surum: "43.0-3", boyut_kb: 4200, bolum: "gnome", aciklama: "GNOME Ekran Yöneticisi (Giriş Ekranı)", korumali: true },
+    { paket: "gnome-shell", surum: "43.9-0+deb12u1", boyut_kb: 18500, bolum: "gnome", aciklama: "GNOME masaüstü kullanıcı arayüzü kabuğu", korumali: true },
+    { paket: "network-manager", surum: "1.42.4-1", boyut_kb: 12800, bolum: "net", aciklama: "Ağ bağlantısı yönetim çerçevesi", korumali: true },
+    { paket: "openssh-server", surum: "1:9.2p1-2+deb12u2", boyut_kb: 1950, bolum: "net", aciklama: "Güvenli kabuk (SSH) sunucusu", korumali: true },
+    { paket: "pardus-software", surum: "0.7.2", boyut_kb: 8400, bolum: "admin", aciklama: "Pardus Yazılım Merkezi uygulaması", korumali: true },
+    { paket: "pardus-welcome", surum: "0.4.5", boyut_kb: 6100, bolum: "admin", aciklama: "Pardus Hoşgeldiniz ve Karşılayıcı", korumali: true },
+    { paket: "sudo", surum: "1.9.13p3-1+deb12u1", boyut_kb: 5400, bolum: "admin", aciklama: "Süper kullanıcı yetki yönetimi", korumali: true },
+    { paket: "veyon", surum: "4.11.0.0-debian.12", boyut_kb: 32000, bolum: "education", aciklama: "Bilgisayar izleme ve sınıf yönetimi", korumali: true },
+  ];
+  yol("GET", "/api/paketler/repo/katalog", () => ({ kategoriler: DEMO_REPO_KATALOG }));
+  yol("POST", "/api/paketler/repo/ara", (g) => {
+    const q = (g.sorgu || "").toLowerCase();
+    const tum = DEMO_REPO_KATALOG.flatMap((k) => k.uygulamalar).map((u) => ({
+      paket: u.paket,
+      aciklama: u.aciklama,
+      kurulu: demoKuruluUygulamalar.some((x) => x.paket === u.paket),
+      kurulu_surum: (demoKuruluUygulamalar.find((x) => x.paket === u.paket) || {}).surum || null,
+      korumali: false,
+    }));
+    const sonuclar = tum.filter((u) => u.paket.includes(q) || u.aciklama.toLowerCase().includes(q));
+    if (!sonuclar.length) {
+      sonuclar.push({ paket: q.replace(/[^a-z0-9+.-]/g, "") || "ornek-paket", aciklama: `Pardus deposundaki '${g.sorgu}' paketi (DEMO)`, kurulu: false, kurulu_surum: null, korumali: false });
+    }
+    const c = (g.cihaz && cihazlar.find((x) => x.id === g.cihaz)) || cihazlar[0];
+    return { cihaz_id: c.id, cihaz_ad: adi(c), sorgu: g.sorgu, sonuclar };
+  });
+  yol("POST", "/api/paketler/repo/kurulu-listele", (g) => {
+    const c = (g.cihaz && cihazlar.find((x) => x.id === g.cihaz)) || cihazlar[0];
+    return { cihaz_id: c.id, cihaz_ad: adi(c), ip: c.ip, uygulamalar: demoKuruluUygulamalar, toplam: demoKuruluUygulamalar.length };
+  });
+  yol("POST", "/api/paketler/repo/kur", (g) => {
+    const paketAdlari = g.paketler || [];
+    for (const p of paketAdlari) {
+      if (!demoKuruluUygulamalar.some((x) => x.paket === p)) {
+        demoKuruluUygulamalar.unshift({ paket: p, surum: "1.0+pardus23", boyut_kb: 24500, bolum: "education", aciklama: "Pardus deposundan kurulan uygulama", korumali: false });
+      }
+    }
+    const kurulanlar = Object.fromEntries(paketAdlari.map((p) => [p, "1.0+pardus23"]));
+    const r = isBaslat("repo_kur", g.cihazlar, { paketler: paketAdlari }, () => ({
+      durum: "basarili",
+      mesaj: `kuruldu ve doğrulandı: ${paketAdlari.map((p) => `${p} (1.0+pardus23)`).join(", ")}`,
+      veri: { sonuc: { durum: "kuruldu", kurulanlar } },
+    }));
+    isler.get(r.is_id)._uygunlukIslemi = "paket";
+    return r;
+  });
+  yol("POST", "/api/paketler/repo/kaldir", (g) => {
+    const paketAdlari = g.paketler || [];
+    demoKuruluUygulamalar = demoKuruluUygulamalar.filter((x) => x.korumali || !paketAdlari.includes(x.paket));
+    const r = isBaslat("repo_kaldir", g.cihazlar, { paketler: paketAdlari }, () => ({
+      durum: "basarili",
+      mesaj: `güvenli şekilde kaldırıldı: ${paketAdlari.join(", ")}`,
+      veri: { sonuc: { durum: "kaldirildi", kaldirilanlar: paketAdlari } },
+    }));
+    isler.get(r.is_id)._uygunlukIslemi = "paket";
+    return r;
+  });
+
   /* ---- M2-S4 uyku ayarı ve M2-S5 zamanlı kapatma ---- */
   const gucOzet = (g) => (g ? `${g.uyku_kapali ? "uyku KAPALI" : "uyku AÇIK (bilgisayar boşta uykuya geçebilir)"}; ${g.planlar.length} kapatma planı${g.bekleyen ? `; BEKLEYEN KAPATMA VAR${g.bekleyen_saat ? ` (kapanma ${g.bekleyen_saat})` : ""}` : ""}` : "güç durumu okundu");
   const gucBos = () => ({ uyku_kapali: false, ekran_dk: null, bekleyen: false, planlar: [], zaman: SIMDI() });
@@ -3279,9 +3816,44 @@ window.PSY_REFERANS = {
     return r;
   });
 
-  let gorsel = null;
-  yol("GET", "/api/gorunum", () => ({ gorsel }));
-  yol("POST", "/api/duvar-kagidi/gorsel", (g) => { gorsel = { ad: `duvar${g.uzanti}`, bayt: Math.round(g.icerik_b64.length * 0.75) }; return { tamam: true, bayt: gorsel.bayt }; });
+  let demoGaleriOgeler = [
+    { id: "sablon_pardus_lacivert", ad: "sablon_pardus_lacivert.png", baslik: "Pardus Gece Mavisi (Kurumsal)", bayt: 48200, hazir: true },
+    { id: "sablon_anadolu_turkuaz", ad: "sablon_anadolu_turkuaz.png", baslik: "Anadolu Turkuazı (Ferah)", bayt: 46800, hazir: true },
+    { id: "sablon_bilisim_antrasit", ad: "sablon_bilisim_antrasit.png", baslik: "Bilişim Atölyesi (Koyu Antrasit)", bayt: 49100, hazir: true },
+  ];
+  let demoSeciliGaleriId = "sablon_pardus_lacivert";
+  const demoGaleriDurum = () => {
+    const gorsel = demoGaleriOgeler.find((o) => o.id === demoSeciliGaleriId) || demoGaleriOgeler[0] || null;
+    return { gorsel, secili_id: gorsel ? gorsel.id : null, ogeler: demoGaleriOgeler };
+  };
+  yol("GET", "/api/gorunum", () => demoGaleriDurum());
+  yol("POST", "/api/duvar-kagidi/gorsel", (g) => {
+    const id = `duvar_${Date.now().toString(36)}`;
+    const baslik = (g.ad || `duvar${g.uzanti}`).replace(/\.(png|jpg|jpeg)$/i, "");
+    const mime = g.uzanti === ".png" ? "image/png" : "image/jpeg";
+    const oge = {
+      id,
+      ad: `${id}${g.uzanti}`,
+      baslik,
+      bayt: Math.round((g.icerik_b64 || "").length * 0.75),
+      hazir: false,
+      onizleme_url: g.icerik_b64 ? `data:${mime};base64,${g.icerik_b64}` : null,
+    };
+    demoGaleriOgeler.push(oge);
+    demoSeciliGaleriId = id;
+    return { tamam: true, bayt: oge.bayt, oge, galeri: demoGaleriDurum() };
+  });
+  yol("POST", "/api/duvar-kagidi/galeri/sec", (g) => {
+    const oge = demoGaleriOgeler.find((o) => o.id === g.id);
+    if (!oge) throw new Hata(422, "Duvar kâğıdı bulunamadı");
+    demoSeciliGaleriId = oge.id;
+    return { tamam: true, oge, galeri: demoGaleriDurum() };
+  });
+  yol("DELETE", "/api/duvar-kagidi/galeri/([\\w-]+)", (_, [id]) => {
+    demoGaleriOgeler = demoGaleriOgeler.filter((o) => o.id !== id || o.hazir);
+    if (demoSeciliGaleriId === id) demoSeciliGaleriId = demoGaleriOgeler[0].id;
+    return { tamam: true, silindi: true, galeri: demoGaleriDurum() };
+  });
   function gorunumIs(g, kip) {
     const r = isBaslat(kip === "uygula" ? "gorunum" : "gorunum_onizleme", g.cihazlar, { secenekler: g.secenekler }, (c) => {
       const d = (a) => (kip === "uygula" ? (g.secenekler[a] === "kaldir" ? "kaldirildi" : "uygulandi") : (g.secenekler[a] === "kaldir" ? "kaldirilacak" : "uygulanacak"));
@@ -4674,13 +5246,16 @@ function cihazOzetPenceresi(c) {
   }
 
   const elLab = $("#co-lab");
-  if (elLab) elLab.textContent = c.grup || "Laboratuvar";
+  if (elLab) elLab.textContent = c.laboratuvar || c.grup || "Laboratuvar";
 
   const elHesap = $("#co-hesap");
   if (elHesap) elHesap.textContent = c.baglanti_hesabi || "Otomatik (pardus/hp)";
 
-  const elPort = $("#co-port");
-  if (elPort) elPort.textContent = String(c.ssh_port || 22);
+  const elHostname = $("#co-hostname");
+  if (elHostname) {
+    const ipMetin = c.ssh_port === 22 ? c.ip : `${c.ip}:${c.ssh_port}`;
+    elHostname.textContent = `${c.hostname || "Okunmadı"} · ${ipMetin}`;
+  }
 
   const elSurum = $("#co-surum");
   if (elSurum) {
@@ -4999,9 +5574,11 @@ function cihazPenceresi(c) {
     (c.hostname ? ` — bilgisayar adı: ${c.hostname}` : "") + (c.korunan_neden ? ` — ${c.korunan_neden}` : "") : "";
   $("#cf-ip").value = c ? c.ip : "";
   $("#cf-port").value = c ? c.ssh_port : 22;
-  $("#cf-ip").disabled = Boolean(c);
-  $("#cf-port").disabled = Boolean(c);
+  $("#cf-ip").disabled = false;
+  $("#cf-port").disabled = false;
   $("#cf-ad").value = c ? (c.etiket || "") : "";
+  const elHn = $("#cf-hostname");
+  if (elHn) elHn.value = c ? (c.hostname || "") : "";
   $("#cf-lab").value = c ? c.laboratuvar : (Secim.lab || "Laboratuvar");
   const hesap = $("#cf-hesap");
   hesap.value = c ? (c.baglanti_hesabi || "") : "";
@@ -5021,14 +5598,25 @@ $("#cf-hesap").addEventListener("change", () => {
 
 $("#cihaz-penceresi").addEventListener("close", async () => {
   if ($("#cihaz-penceresi").returnValue !== "kaydet") return;
-  const govde = { etiket: $("#cf-ad").value.trim() || null, grup: $("#cf-lab").value.trim() || null,
-    baglanti_hesabi: $("#cf-hesap").value || null, korunan: $("#cf-korunan").checked };
+  const elHn = $("#cf-hostname");
+  const govde = {
+    ip: $("#cf-ip").value.trim(),
+    port: Number($("#cf-port").value) || 22,
+    etiket: $("#cf-ad").value.trim() || null,
+    hostname: elHn ? (elHn.value.trim() || null) : null,
+    grup: $("#cf-lab").value.trim() || null,
+    baglanti_hesabi: $("#cf-hesap").value || null,
+    korunan: $("#cf-korunan").checked,
+  };
   try {
     if (duzenlenenCihaz) {
       const s = await api(`/api/cihazlar/${duzenlenenCihaz.id}`, govde, "PATCH");
-      bildir(s.hesap_degisti ? "Kaydedildi. Yönetim hesabı değişti: bu bilgisayarı M1-S2'den yeniden hazırlayın." : "Kaydedildi.");
+      const mesajlar = ["Kaydedildi."];
+      if (s.hostname_mesaj) mesajlar.push(s.hostname_mesaj);
+      if (s.hesap_degisti) mesajlar.push("Yönetim hesabı değişti: bu bilgisayarı M1-S2'den yeniden hazırlayın.");
+      bildir(mesajlar.join(" "));
     } else {
-      await api("/api/cihazlar", { ...govde, ip: $("#cf-ip").value.trim(), port: Number($("#cf-port").value) || 22 });
+      await api("/api/cihazlar", govde);
       bildir("Eklendi. Bağlantı kurulmadı; sunucu kimliğini M1-S2'de okuyup onaylayın.");
     }
     await cihazlariYukle();
@@ -5146,16 +5734,20 @@ const m1s2 = {
   },
   korunacakHucresi(c) {
     const o = this.tekOnizleme.get(c.id);
-    if (!o || !o.oneri) return "—";
-    const var_olan = Object.entries(o.hesaplar).filter(([, v]) => v).map(([h]) => h);
+    const var_olan = o && o.hesaplar
+      ? Object.entries(o.hesaplar).filter(([, v]) => v).map(([h]) => h)
+      : (c.yonetim_hesaplari || []);
+    if (var_olan.length < 2) return "—";
+    const oneri = (o && o.oneri) || (var_olan.includes("pardus") ? "pardus" : var_olan[0]);
     const sec = el("select", { "data-ui-id": `M1-S2-B6-${satirKimligi(c)}`, "aria-label": `${c.ad} korunacak hesap`,
       onchange: (e) => this.korunacak.set(c.id, e.target.value) },
     ...var_olan.map((h) => el("option", { value: h, metin: `${h} korunsun` })));
-    sec.value = this.korunacak.get(c.id) || o.oneri;
+    sec.value = this.korunacak.get(c.id) || oneri;
     const sil = var_olan.find((h) => h !== sec.value);
-    const bilgi = o.hesaplar[sil];
+    const bilgi = o && o.hesaplar ? o.hesaplar[sil] : null;
     return el("div", {}, sec, bilgi ? el("span", { class: "alt",
-      metin: `Silinecek ${sil}: ${boyut(bilgi.ev_bayt)} ev dizini, ${bilgi.anahtar_sayisi} anahtar${bilgi.oturum ? ", AÇIK OTURUM" : ""}` }) : null);
+      metin: `Silinecek ${sil}: ${boyut(bilgi.ev_bayt)} ev dizini, ${bilgi.anahtar_sayisi} anahtar${bilgi.oturum ? ", AÇIK OTURUM" : ""}` })
+      : el("span", { class: "alt", metin: `Silinecek: ${sil} (boyut için “Önce göster” önerilir)` }));
   },
   async kimlikOku() {
     const hedefler = await onayIste({ islem: "durum", cihazlar: Secim.liste(), baslik: "Sunucu kimliklerini oku",
@@ -5186,22 +5778,35 @@ const m1s2 = {
     if (!kayit) return;
     this.tekOnizleme = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.oneri) this.tekOnizleme.set(h.veri.cihaz_id, h.veri);
-    $("#m1s2-tek-uygula").disabled = !this.tekOnizleme.size;
     bildir(this.tekOnizleme.size
       ? `${this.tekOnizleme.size} bilgisayarda hp ve pardus birlikte var. Tabloda korunacak hesabı seçip B5 ile uygulayın.`
       : "Seçili bilgisayarlarda tekilleştirme gerektiren durum yok.");
     this.tablo.ciz();
   },
   async tekUygula() {
-    const adaylar = Secim.liste().filter((id) => this.tekOnizleme.has(id));
-    if (!adaylar.length) { bildir("Önizlemesi yapılmış ve seçili bilgisayar yok.", true); return; }
-    const secim = (id) => this.korunacak.get(id) || this.tekOnizleme.get(id).oneri;
+    const adaylar = Secim.liste().filter((id) => {
+      const c = Veri.bul(id);
+      return this.tekOnizleme.has(id) || (c && (c.yonetim_hesaplari || []).length > 1);
+    });
+    if (!adaylar.length) { bildir("Seçimde iki yönetim hesabı (pardus + hp) olan bilgisayar yok.", true); return; }
+    const onizlemeEksik = adaylar.some((id) => !this.tekOnizleme.has(id));
+    const secim = (id) => {
+      if (this.korunacak.get(id)) return this.korunacak.get(id);
+      const o = this.tekOnizleme.get(id);
+      if (o && o.oneri) return o.oneri;
+      const c = Veri.bul(id);
+      const yh = (c && c.yonetim_hesaplari) || [];
+      return yh.includes("pardus") ? "pardus" : (yh[0] || "pardus");
+    };
     const hedefler = await onayIste({
       islem: "tekillestirme", cihazlar: adaylar, baslik: "hp / pardus tekilleştirme",
       aciklama: "Her bilgisayarda seçilen hesap korunur. Diğer hesabın ev dizini ve hesap kayıtları öğrenci bilgisayarında yedeklenir, sonra hesap silinir.",
-      uyarilar: ["Korunacak hesapla yeni oturumda anahtar ve parolasız sudo doğrulanmadan silme yapılmaz.",
+      uyarilar: [
+        ...(onizlemeEksik ? ["💡 Öneri: İşlemden önce “Önce göster” ile silinecek hesabın ev dizini boyutunu ve açık oturum durumunu önizlemeniz önerilir. İsterseniz önizleme yapmadan da devam edebilirsiniz."] : []),
+        "Korunacak hesapla yeni oturumda anahtar ve parolasız sudo doğrulanmadan silme yapılmaz.",
         "Silinecek hesapta açık oturum varsa o bilgisayar atlanır.",
-        "Envanter ve Ansible dışa aktarımı korunacak hesaba geçer."],
+        "Envanter ve Ansible dışa aktarımı korunacak hesaba geçer.",
+      ],
       yikici: true, onayMetni: "Seçilen yönetim hesaplarının silineceğini anladım", baslatMetni: "Tekilleştir",
       hedefEk: { baslik: "Korunacak → silinecek", hucre: (h) => { const k = secim(h.id); return `${k} korunur → ${k === "pardus" ? "hp" : "pardus"} silinir`; } },
     });
@@ -5209,7 +5814,6 @@ const m1s2 = {
     const korunacaklar = Object.fromEntries(hedefler.map((id) => [id, secim(id)]));
     await isBaslat("/api/tekillestirme/uygula", { korunacaklar, onay: true });
     this.tekOnizleme = new Map();
-    $("#m1s2-tek-uygula").disabled = true;
   },
   ac() { this.sayaclar(); this.tablo.ciz(); Secim.bildir(); },
   sayaclar() {
@@ -5387,16 +5991,83 @@ const m1s4 = {
     $("#m1s4-anahtar-dosya").addEventListener("change", (o) => this.anahtarYukle(o.target.files[0]));
     $("#m1s4-anahtar-sil").addEventListener("click", () => this.anahtarSil());
     $("#m1s4-ogretmen").addEventListener("click", () => this.ogretmenDenetle());
-    $("#m1s4-kontrol").addEventListener("click", () => this.plan(this.kontrolKipi(), true));
-    $("#m1s4-kur").addEventListener("click", () => this.plan("kur"));
-    $("#m1s4-yapilandir").addEventListener("click", () => this.plan("yapilandir"));
-    $("#m1s4-ikisi").addEventListener("click", () => this.plan("ikisi"));
+    $("#m1s4-kontrol").addEventListener("click", () => this.plan(this.kontrolKipi(), false));
+    $("#m1s4-kur").addEventListener("click", () => this.dogrudanUygula("kur"));
+    $("#m1s4-yapilandir").addEventListener("click", () => this.dogrudanUygula("yapilandir"));
+    $("#m1s4-ikisi").addEventListener("click", () => this.dogrudanUygula("ikisi"));
     $("#m1s4-dogrula").addEventListener("click", () => this.dogrula());
     $("#m1s4-surumler").addEventListener("click", () => this.surumler());
     $("#m1s4-geri").addEventListener("click", () => this.geriAl());
     $("#vo-onay").addEventListener("change", () => this.onayDurumu());
     $("#vo-ogretmen").addEventListener("change", () => this.onayDurumu());
+    for (const id of [
+      "m1s4-uzman-yontem", "m1s4-uzman-grup", "m1s4-uzman-kullanici-grup",
+      "m1s4-uzman-vnc", "m1s4-uzman-kalite", "m1s4-uzman-port",
+    ]) {
+      const inp = $(`#${id}`);
+      if (inp) {
+        inp.addEventListener("change", () => this.uzmanKomutlariniGuncelle());
+        inp.addEventListener("input", () => this.uzmanKomutlariniGuncelle());
+      }
+    }
+    const sifirlaBtn = $("#m1s4-uzman-sifirla");
+    if (sifirlaBtn) sifirlaBtn.addEventListener("click", () => this.uzmanAyarlariSifirla());
+    this.uzmanKomutlariniGuncelle();
     Veri.dinleyiciler.add(() => this.kartlar());
+  },
+
+  uzmanAyarlariOku() {
+    const yontem = Number(($("#m1s4-uzman-yontem") && $("#m1s4-uzman-yontem").value) || "1");
+    const erisimGrubu = (($("#m1s4-uzman-grup") && $("#m1s4-uzman-grup").value) || "").trim() || "root";
+    const kullaniciGruplari = (($("#m1s4-uzman-kullanici-grup") && $("#m1s4-uzman-kullanici-grup").value) || "sistem");
+    const vncSunucu = (($("#m1s4-uzman-vnc") && $("#m1s4-uzman-vnc").value) || "dahili");
+    const goruntuKalitesi = (($("#m1s4-uzman-kalite") && $("#m1s4-uzman-kalite").value) || "yuksek");
+    const portHam = Number(($("#m1s4-uzman-port") && $("#m1s4-uzman-port").value) || "11100");
+    const port = Number.isFinite(portHam) && portHam >= 1024 && portHam <= 65535 ? portHam : 11100;
+    return {
+      yontem: yontem === 0 ? 0 : 1,
+      erisim_grubu: erisimGrubu,
+      kullanici_gruplari: kullaniciGruplari,
+      vnc_sunucu: vncSunucu,
+      goruntu_kalitesi: goruntuKalitesi,
+      port,
+    };
+  },
+
+  uzmanAyarlariSifirla() {
+    if ($("#m1s4-uzman-yontem")) $("#m1s4-uzman-yontem").value = "1";
+    if ($("#m1s4-uzman-grup")) $("#m1s4-uzman-grup").value = "root";
+    if ($("#m1s4-uzman-kullanici-grup")) $("#m1s4-uzman-kullanici-grup").value = "sistem";
+    if ($("#m1s4-uzman-vnc")) $("#m1s4-uzman-vnc").value = "dahili";
+    if ($("#m1s4-uzman-kalite")) $("#m1s4-uzman-kalite").value = "yuksek";
+    if ($("#m1s4-uzman-port")) $("#m1s4-uzman-port").value = "11100";
+    this.uzmanKomutlariniGuncelle();
+  },
+
+  uzmanKomutlariniGuncelle() {
+    const pre = $("#m1s4-uzman-komutlar");
+    if (!pre) return;
+    const u = this.uzmanAyarlariOku();
+    const anahtarAd = (this.bilgi && this.bilgi.anahtar && this.bilgi.anahtar.ad)
+      || (($("#m1s4-anahtar-adi") && $("#m1s4-anahtar-adi").value.trim()) || "teacher");
+    const vncUuid = u.vnc_sunucu === "harici"
+      ? "{20988c00-025d-4012-907e-258b25a9f704}"
+      : "{39d7a07f-9467-4927-b68c-4b33880d22d8}";
+    const kaliteMap = { yuksek: [0, 2], orta: [1, 1], dusuk: [2, 0] };
+    const [bKalite, iKalite] = kaliteMap[u.goruntu_kalitesi] || [0, 2];
+    const islemGrup = u.kullanici_gruplari === "islem" ? "true" : "false";
+    pre.textContent = [
+      `veyon-cli authkeys import ${anahtarAd}/public /tmp/${anahtarAd}_public_key.pem`,
+      `veyon-cli authkeys setaccessgroup ${anahtarAd}/public ${u.erisim_grubu}`,
+      `veyon-cli config set Authentication/Method ${u.yontem}`,
+      `veyon-cli config set Core/UserGroupsBackend "{4f7d98f0-395a-4f32-9096-188c1e7e982b}"`,
+      `veyon-cli config set AccessControl/ProcessUserGroups ${islemGrup}`,
+      `veyon-cli config set VncServer/Plugin "${vncUuid}"`,
+      `veyon-cli config set BuiltinVncServer/Quality ${bKalite}`,
+      `veyon-cli config set VncServer/ImageQuality ${iKalite}`,
+      `veyon-cli config set Service/PrimaryServicePort ${u.port}`,
+      `veyon-cli service restart`,
+    ].join("\n");
   },
 
   async ac() {
@@ -5502,6 +6173,7 @@ const m1s4 = {
     if (a.onceki) satirlar.push(["Önceki anahtar", `${a.onceki.ad} [${a.onceki.cift_kimligi}] — yedeklendi`]);
     dl.replaceChildren(...satirlar.flatMap(([k, d]) => [el("dt", { metin: k }),
       el("dd", { class: ["SHA-256", "Veyon çift kimliği"].includes(k) ? "mono" : "", metin: d })]));
+    this.uzmanKomutlariniGuncelle();
   },
 
   async anahtarYukle(dosya, onay = false) {
@@ -5595,10 +6267,51 @@ const m1s4 = {
         + (kip !== "kur" ? ", uygulanacak ayarların farkı çıkarılır" : "") + ". Bu adımda hiçbir şey KURULMAZ ve ayar DEĞİŞMEZ.",
       baslatMetni: "Önizlemeyi hazırla" });
     if (!hedefler) return;
-    const kayit = await isBaslat("/api/veyon/plan", { cihazlar: hedefler, kip });
+    const uzman = this.uzmanAyarlariOku();
+    const kayit = await isBaslat("/api/veyon/plan", { cihazlar: hedefler, kip, uzman });
     if (!kayit) return;
     this.sonuclariGoster(kayit);
     if (!yalnizKontrol) await this.onizlemeAc(kayit, kip);
+  },
+
+  async dogrudanUygula(kip) {
+    if (!kip) { bildir("Önce Veyon paketini veya public key'i yükleyin.", true); return; }
+    if (kip !== "yapilandir" && !this.bilgi.secili_sha) { bildir("Önce Veyon .deb paketini yükleyin ve kurulacak paketi seçin (M1-S4-B1 / B2).", true); return; }
+    if (kip !== "kur" && !this.bilgi.anahtar) { bildir("Önce Veyon public key dosyasını yükleyin (M1-S4-B4).", true); return; }
+    let h = null;
+    if (kip !== "kur") h = await this.ogretmenDenetle();
+    const ogretmenSorunu = Boolean(h && h.sorunlar && h.sorunlar.length);
+    const ogretmenOnayKutu = el("input", { type: "checkbox", checked: true });
+    const ek = ogretmenSorunu ? el("div", { class: "uyari-kutusu" },
+      el("label", { class: "onay-kutusu" }, ogretmenOnayKutu,
+        "Öğretmen PC hazırlık denetiminde uyarı var; yine de öğrenci bilgisayarlarında uygulamaya devam et")) : null;
+    const u = this.uzmanAyarlariOku();
+    const kaliteEtiket = { yuksek: "Yüksek", orta: "Orta", dusuk: "Düşük" }[u.goruntu_kalitesi] || "Yüksek";
+    const hedefler = await onayIste({
+      islem: "veyon", cihazlar: Secim.liste(),
+      baslik: VEYON_KIPLERI[kip],
+      aciklama: kip === "ikisi"
+        ? `Seçili bilgisayarlarda Veyon paketi kurulur/güncellenir, public key aktarılır ve tüm Veyon ayarları (Anahtar dosya yetkilendirmesi, erişim grubu: ${u.erisim_grubu}, varsayılan sistem kullanıcı grupları, dahili VNC sunucusu, görüntü kalitesi: ${kaliteEtiket}) tek adımda uzaktan uygulanır.`
+        : kip === "kur"
+          ? "Seçili bilgisayarlarda Veyon paketi kurulur veya güncellenir."
+          : `Seçili bilgisayarlarda Veyon anahtarı ve ayarları (Anahtar dosya yetkilendirmesi, erişim grubu: ${u.erisim_grubu}, dahili VNC, görüntü kalitesi: ${kaliteEtiket}) uzaktan yapılandırılır.`,
+      uyarilar: [
+        "💡 Öneri: İsterseniz işlemden önce “Hazırlığı kontrol et” düğmesiyle kurulum ve yapılandırma farklarını önizleyebilirsiniz. İsterseniz önizleme yapmadan doğrudan uygulayabilirsiniz.",
+        ...(ogretmenSorunu ? [`Öğretmen PC: ${h.sorunlar.join(" ")}`] : []),
+        ...(kip !== "yapilandir" ? ["Paketin kurulum betikleri root yetkisiyle çalışır; yalnız güvendiğiniz Veyon paketini kurun."] : []),
+      ],
+      ek,
+      yikici: true,
+      onayMetni: "Veyon işlemini seçili bilgisayarlarda uygulamayı onaylıyorum",
+      baslatMetni: "Uygula",
+    });
+    if (!hedefler) return;
+    const yeni = await isBaslat("/api/veyon/uygula", {
+      cihazlar: hedefler, kip, plan_is_id: null, onay: true,
+      anahtar_uyarisi_onay: ogretmenSorunu ? ogretmenOnayKutu.checked : true,
+      uzman: u,
+    });
+    if (yeni) this.sonuclariGoster(yeni);
   },
 
   async onizlemeAc(kayit, kip) {
@@ -5606,6 +6319,8 @@ const m1s4 = {
     const digerleri = kayit.hedefler.filter((h) => !(h.veri && h.veri.durum === "hazir"));
     const p = this.secili();
     const a = this.bilgi.anahtar;
+    const u = this.uzmanAyarlariOku();
+    const kaliteEtiket = { yuksek: "Yüksek", orta: "Orta", dusuk: "Düşük" }[u.goruntu_kalitesi] || "Yüksek";
     $("#vo-baslik").textContent = `${VEYON_KIPLERI[kip]} — önizleme`;
     $("#vo-aciklama").textContent = kip === "ikisi"
       ? "Her bilgisayarda önce kurulum yapılır; kurulum başarısız veya yarım kalırsa o bilgisayarda yapılandırmaya geçilmez. Diğer bilgisayarların sonuçları korunur."
@@ -5614,9 +6329,11 @@ const m1s4 = {
     if (kip !== "yapilandir" && p) ayarlar.push(["Kurulacak paket", `${p.paket} ${p.surum} (${p.mimari}) — ${p.dosya_adi}`]);
     if (kip !== "kur" && a) {
       ayarlar.push(["Public key", `${a.ad} — çift kimliği ${a.cift_kimligi} → /etc/veyon/keys/public/${a.ad}/key`],
-        ["Kimlik doğrulama", "Anahtar dosyası (Authentication/Method = 1)"],
-        ["Veyon servisi", "açılışta başlar; ayar değiştiyse yeniden başlatılır"],
-        ["Ağ portu", "11100 (Veyon varsayılanı; değiştirilmez)"],
+        ["Kimlik doğrulama", u.yontem === 0 ? "Oturum parolası (Authentication/Method = 0)" : "Anahtar dosya yetkilendirmesi (Authentication/Method = 1)"],
+        ["Yetkilendirme erişim grubu", `${u.erisim_grubu} (authkeys setaccessgroup ${a.ad}/public ${u.erisim_grubu})`],
+        ["Kullanıcı grupları", u.kullanici_gruplari === "islem" ? "Erişim denetiminde kullanıcı gruplarını işle" : "Varsayılan sistem kullanıcı grupları"],
+        ["VNC ve görüntü kalitesi", `${u.vnc_sunucu === "harici" ? "Harici VNC" : "Dahili VNC sunucusu"} · Görüntü kalitesi: ${kaliteEtiket}`],
+        ["Veyon servisi ve port", `Port ${u.port} · açılışta başlar; ayar değiştiyse yeniden başlatılır`],
         ["Yedek", "önceki Veyon ayarları ve anahtarları öğrenci PC'de yedeklenir (M1-S4-B14 ile geri alınır)"]);
     }
     $("#vo-ayarlar").replaceChildren(...ayarlar.flatMap(([k, d]) => [el("dt", { metin: k }), el("dd", { metin: d })]));
@@ -5633,7 +6350,11 @@ const m1s4 = {
         k.yerine_gececek ? el("span", { class: "alt", metin: `yerine geçecek: ${k.yerine_gececek.join(", ")}` }) : null);
       const yapHucresi = !y ? el("span", { class: "alt", metin: "—" }) : y.veyon_yok
         ? el("span", { class: "alt", metin: "kurulumdan sonra yapılandırılır" })
-        : el("div", { class: "oge-listesi" }, veyonOgeRozeti("anahtar", y.ogeler.anahtar), veyonOgeRozeti("yöntem", y.ogeler.yontem),
+        : el("div", { class: "oge-listesi" },
+          veyonOgeRozeti("anahtar", y.ogeler.anahtar),
+          veyonOgeRozeti("yöntem", y.ogeler.yontem),
+          veyonOgeRozeti("erişim gr.", y.ogeler.erisim_grubu),
+          veyonOgeRozeti("VNC/kalite", y.ogeler.vnc_kalite),
           veyonOgeRozeti("servis", y.ogeler.servis));
       g.append(el("tr", {}, el("td", { metin: h.veri.ad }),
         el("td", { class: "mono", metin: v.durum === "kurulu" ? `${v.surum}${v.parcali ? " (parçalı)" : ""}` : v.durum === "kurulu_degil" ? "kurulu değil" : (v.durum || "?") }),
@@ -5674,7 +6395,7 @@ const m1s4 = {
       if (pencere.returnValue !== "uygula" || $("#vo-uygula").disabled) return;
       const b = this.bekleyen;
       const yeni = await isBaslat("/api/veyon/uygula", { cihazlar: b.hazir, kip: b.kip, plan_is_id: b.kayit.id, onay: true,
-        anahtar_uyarisi_onay: $("#vo-ogretmen").checked });
+        anahtar_uyarisi_onay: $("#vo-ogretmen").checked, uzman: this.uzmanAyarlariOku() });
       if (yeni) this.sonuclariGoster(yeni);
     }, { once: true });
   },
@@ -5834,7 +6555,6 @@ const m2s1 = {
   gecersizKil() {
     this.onizleme = new Map();
     this.onizlemeKapsami = null;
-    $("#m2s1-baslat").disabled = true;
   },
 
   alanlar(c) { return this.istisnalar.get(c.id) || this.genel; },
@@ -5908,22 +6628,25 @@ const m2s1 = {
     const neden = c.uygunluk.temizlik;
     if (neden) return neden;
     if (c.erisim === 0) return "Erişilemiyor";
-    const v = this.onizleme.get(c.id);
-    if (!v || this.onizlemeKapsami !== this.kapsam) return "Önizleme bekleniyor";
-    if (!v.sonuc) return v.neden || "Önizleme başarısız";
-    if (this.kapsam !== "alanlar" && !v.sonuc.yedek.yeterli) return "Yedek için alan yetersiz";
     if (this.kapsam === "alanlar" && !this.alanlar(c).size) return "Alan seçilmedi";
+    const v = this.onizleme.get(c.id);
+    if (v && this.onizlemeKapsami === this.kapsam) {
+      if (!v.sonuc) return v.neden || "Önizleme başarısız";
+      if (this.kapsam !== "alanlar" && !v.sonuc.yedek.yeterli) return "Yedek için alan yetersiz";
+    }
     return null;
   },
 
   uygunlukHucresi(c) {
     const e = this.engel(c);
     const v = this.onizleme.get(c.id);
-    const oturum = v ? v.oturum_acik : c.ogrenci_oturumu === 1;
+    const onizlendi = Boolean(v && this.onizlemeKapsami === this.kapsam);
+    const oturum = onizlendi && "oturum_acik" in v ? v.oturum_acik : c.ogrenci_oturumu === 1;
     if (e) return el("span", { class: "alt", metin: e });
-    if (this.kapsam !== "alanlar" && oturum) return rozet("Oturum kapatılmadan başlamaz", "orta");
-    if (oturum) return rozet("Uygun — oturum açık (uyarı)", "orta");
-    return rozet("Uygun", "iyi");
+    const ekNot = !onizlendi ? el("span", { class: "alt", metin: "önizleme önerilir" }) : null;
+    if (this.kapsam !== "alanlar" && oturum) return el("div", {}, rozet("Oturum kapatılmadan başlamaz", "orta"), ekNot);
+    if (oturum) return el("div", {}, rozet("Uygun — oturum açık (uyarı)", "orta"), ekNot);
+    return el("div", {}, rozet("Uygun", "iyi"), ekNot);
   },
 
   kartlar() {
@@ -5944,7 +6667,7 @@ const m2s1 = {
     const olculen = secili.length - olculemeyen - secili.filter((x) => x.uygunluk.temizlik).length;
     const kartlar = [
       ozetKarti(secili.length, "Seçili bilgisayar"),
-      ozetKarti(uygun.length, "İşleme uygun", this.onizlemeKapsami !== this.kapsam ? "önizleme bekleniyor" : null, true),
+      ozetKarti(uygun.length, "İşleme uygun", this.onizlemeKapsami !== this.kapsam ? "önizleme önerilir" : null, true),
       ozetKarti(!olculen ? "ölçülemedi" : aralik ? `${boyut(enAz)} … ${boyut(enCok)}` : boyut(tek),
         "Öğrenci bilgisayarlarında tahmini açılacak toplam alan",
         [olculemeyen ? `${olculemeyen} bilgisayar ölçülemedi (0 sayılmadı)` : null,
@@ -5971,16 +6694,22 @@ const m2s1 = {
     this.sonuclar = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.onizleme.set(h.veri.cihaz_id, h.veri);
     this.onizlemeKapsami = kapsam;
-    $("#m2s1-baslat").disabled = !Secim.liste().some((id) => !this.engel(Veri.bul(id)));
     this.tablo.ciz();
     this.kartlar();
   },
 
   async baslat() {
     const adaylar = Secim.liste().filter((id) => !this.engel(Veri.bul(id)));
+    if (!adaylar.length) { bildir("Önce uygun bilgisayar seçin.", true); return; }
     const tam = this.kapsam === "tam";
     const sifirlama = this.kapsam !== "alanlar";
-    const acikOturum = adaylar.filter((id) => (this.onizleme.get(id) || {}).oturum_acik);
+    const onizlemeEksik = this.onizlemeKapsami !== this.kapsam || adaylar.some((id) => !this.onizleme.has(id));
+    const acikOturum = adaylar.filter((id) => {
+      const v = this.onizleme.get(id);
+      if (v && "oturum_acik" in v) return v.oturum_acik;
+      const c = Veri.bul(id);
+      return Boolean(c && c.ogrenci_oturumu === 1);
+    });
     const kapatKutusu = el("input", { type: "checkbox", id: "m2s1-oturum-kapat" });
     const ek = sifirlama ? el("div", { class: tam ? "uyari-kutusu kirmizi" : "uyari-kutusu" },
       el("p", { metin: KAPSAM_METNI[this.kapsam] + "." }),
@@ -5994,12 +6723,13 @@ const m2s1 = {
         ? "Her bilgisayarda önce öğrenci PC'ye tam profil yedeği alınır ve doğrulanır; yedek başarısızsa o bilgisayarda silme başlamaz. Sonra standart başlangıç dosyaları (/etc/skel) konur."
         : "Seçilen alanlar silinmez; öğrenci PC'deki karantinaya taşınır ve M2-S1 “Yedekten dön” ile geri alınabilir.",
       uyarilar: [
+        ...(onizlemeEksik ? ["💡 Öneri: İşlemden önce “Önizle” ile tahmini açılacak alanı ve açık oturumları kontrol etmeniz önerilir. İsterseniz önizleme yapmadan da doğrudan başlatabilirsiniz."] : []),
         ...(!sifirlama && acikOturum.length ? [`${acikOturum.length} bilgisayarda öğrenci oturumu açık: kaydedilmemiş veriler kaybolabilir.`] : []),
         "Ödev teslim arşivi (öğretmen PC) bu işleme dahil değildir.",
       ],
       yikici: true, ek,
       onayMetni: tam ? "Belgeler ve tarayıcı verileri dahil ev dizininin tamamının silineceğini anladım"
-        : sifirlama ? "Tarayıcı verileri dahil profil ayarlarının silineceğini anladım" : "Önizlemeyi inceledim; temizliği onaylıyorum",
+        : sifirlama ? "Tarayıcı verileri dahil profil ayarlarının silineceğini anladım" : "Temizlik işlemini onaylıyorum",
       baslatMetni: sifirlama ? "Sıfırlamayı başlat" : "Temizliği başlat",
     });
     if (!hedefler) return;
@@ -6010,7 +6740,6 @@ const m2s1 = {
     if (!kayit) return;
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, h.veri);
     this.istisnalar = new Map();   // istisnalar kaydedilmez
-    $("#m2s1-baslat").disabled = true;
     this.tablo.ciz();
     this.kartlar();
   },
@@ -6128,6 +6857,12 @@ const m2s2 = {
   planIsId: null,
   planlar: new Map(),
   sonuclar: new Map(),
+  sekme: "magaza",
+  katalogKategoriler: [],
+  aktifKategori: "Tümü",
+  araSonuclar: [],
+  kuruluUygulamalar: [],
+  kaldirSecim: new Set(),
   kur() {
     this.tablo = new CihazTablosu($("#m2s2-tablo"), {
       islem: "paket",
@@ -6135,7 +6870,7 @@ const m2s2 = {
         { baslik: "Bilgisayar", hucre: cihazHucresi },
         { baslik: "Pardus", hucre: (c) => c.pardus_surum || "—" },
         { baslik: "Kurulu sürüm", hucre: (c) => { const p = this.planlar.get(c.id); return p && p.plan ? (p.plan.kurulu_surum || "kurulu değil") : "—"; } },
-        { baslik: "Plan", hucre: (c) => this.planHucresi(c) },
+        { baslik: "Plan / Durum", hucre: (c) => this.planHucresi(c) },
         { baslik: "Bağımlılık / indirme", hucre: (c) => this.bagimlilikHucresi(c) },
         { baslik: "Sonuç", hucre: (c) => this.sonucHucresi(c) },
         { baslik: "", hucre: (c) => (this.planlar.has(c.id) ? dugme("Ayrıntı", `M2-S2-B5-${satirKimligi(c)}`, () => this.ayrinti(c), "ikincil kucuk") : "") },
@@ -6147,8 +6882,381 @@ const m2s2 = {
     $("#m2s2-sil").addEventListener("click", () => this.sil());
     $("#m2s2-plan").addEventListener("click", () => this.plan());
     $("#m2s2-kur").addEventListener("click", () => this.kurulum());
+
+    // Sekme geçişleri
+    for (const [ad, id] of [["magaza", "m2s2-sekme-btn-magaza"], ["kaldir", "m2s2-sekme-btn-kaldir"], ["deb", "m2s2-sekme-btn-deb"]]) {
+      const btn = $(`#${id}`);
+      if (btn) btn.addEventListener("click", () => this.sekmeAc(ad));
+    }
+
+    // Mağaza / Repo Kurulum olayları
+    const giris = $("#m2s2-repo-paketler");
+    if (giris) giris.addEventListener("input", () => this.sepetGuncelle());
+    const btnSepetTemizle = $("#m2s2-sepet-temizle");
+    if (btnSepetTemizle) btnSepetTemizle.addEventListener("click", () => {
+      $("#m2s2-repo-paketler").value = "";
+      this.sepetGuncelle();
+    });
+    const btnRepoKur = $("#m2s2-repo-kur");
+    if (btnRepoKur) btnRepoKur.addEventListener("click", () => this.repoKur());
+
+    const btnAra = $("#m2s2-ara-dugme");
+    if (btnAra) btnAra.addEventListener("click", () => this.repoAra());
+    const araGiris = $("#m2s2-ara-giris");
+    if (araGiris) araGiris.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); this.repoAra(); } });
+
+    // Kurulu Uygulamalar / Kaldırma olayları
+    const btnKuruluListele = $("#m2s2-kurulu-listele");
+    if (btnKuruluListele) btnKuruluListele.addEventListener("click", () => this.kuruluListele());
+    const kuruluFiltre = $("#m2s2-kurulu-filtre");
+    if (kuruluFiltre) kuruluFiltre.addEventListener("input", () => this.kuruluTabloCiz());
+    const kuruluTum = $("#m2s2-kurulu-tum");
+    if (kuruluTum) kuruluTum.addEventListener("change", () => { if (this.kuruluUygulamalar.length) this.kuruluListele(); });
+    const btnKaldirTemizle = $("#m2s2-kurulu-secim-temizle");
+    if (btnKaldirTemizle) btnKaldirTemizle.addEventListener("click", () => {
+      this.kaldirSecim.clear();
+      this.kuruluTabloCiz();
+    });
+    const btnKuruluKaldir = $("#m2s2-kurulu-kaldir");
+    if (btnKuruluKaldir) btnKuruluKaldir.addEventListener("click", () => this.repoKaldir());
   },
-  async ac() { await this.listele(); this.tablo.ciz(); Secim.bildir(); erisimTazele(300); },
+  sekmeAc(ad) {
+    this.sekme = ad;
+    const esle = {
+      magaza: ["#m2s2-sekme-btn-magaza", "#m2s2-panel-magaza"],
+      kaldir: ["#m2s2-sekme-btn-kaldir", "#m2s2-panel-kaldir"],
+      deb: ["#m2s2-sekme-btn-deb", "#m2s2-panel-deb"],
+    };
+    for (const [k, [btnSel, panelSel]] of Object.entries(esle)) {
+      const btn = $(btnSel), panel = $(panelSel);
+      const aktif = k === ad;
+      if (btn) {
+        btn.classList.toggle("aktif", aktif);
+        btn.setAttribute("aria-selected", aktif ? "true" : "false");
+      }
+      if (panel) panel.hidden = !aktif;
+    }
+    this.cihazSecicileriGuncelle();
+  },
+  async ac() {
+    this.cihazSecicileriGuncelle();
+    if (!this.katalogKategoriler.length) await this.katalogYukle();
+    await this.listele();
+    this.tablo.ciz();
+    Secim.bildir();
+    erisimTazele(300);
+  },
+  cihazSecicileriGuncelle() {
+    const uygun = Veri.cihazlar.filter((c) => !c.uygunluk.paket);
+    const secililer = Secim.liste();
+    const varsayilan = secililer.find((id) => uygun.some((c) => c.id === id)) || (uygun[0] && uygun[0].id) || "";
+    for (const selId of ["#m2s2-ara-cihaz", "#m2s2-kurulu-cihaz"]) {
+      const sec = $(selId);
+      if (!sec) continue;
+      const onceki = sec.value;
+      sec.replaceChildren(...(uygun.length
+        ? uygun.map((c) => el("option", { value: c.id, metin: `${c.ad} (${c.ip}${c.hostname ? " · " + c.hostname : ""})` }))
+        : [el("option", { value: "", metin: "Hazır bilgisayar yok (önce M1-S2 hazırlığını tamamlayın)" })]));
+      if (onceki && uygun.some((c) => c.id === onceki)) sec.value = onceki;
+      else if (varsayilan) sec.value = varsayilan;
+    }
+  },
+  sepettekiPaketler() {
+    const giris = $("#m2s2-repo-paketler");
+    if (!giris) return [];
+    return [...new Set(giris.value.trim().toLowerCase().split(/[\s,;]+/).filter(Boolean))];
+  },
+  sepetePaketToggle(paketAdi) {
+    const mevcut = new Set(this.sepettekiPaketler());
+    if (mevcut.has(paketAdi)) mevcut.delete(paketAdi);
+    else mevcut.add(paketAdi);
+    const giris = $("#m2s2-repo-paketler");
+    if (giris) giris.value = [...mevcut].join(" ");
+    this.sepetGuncelle();
+  },
+  sepetGuncelle() {
+    const liste = this.sepettekiPaketler();
+    const sayac = $("#m2s2-sepet-sayac");
+    if (sayac) {
+      sayac.textContent = `${liste.length} uygulama seçili`;
+      sayac.className = `rozet ${liste.length ? "iyi" : "notr"}`;
+    }
+    this.katalogCiz();
+    if (this.araSonuclar.length) this.araSonucCiz();
+  },
+  async katalogYukle() {
+    try {
+      const s = await api("/api/paketler/repo/katalog");
+      this.katalogKategoriler = s.kategoriler || [];
+    } catch (_) {
+      this.katalogKategoriler = [];
+    }
+    this.katalogCiz();
+  },
+  katalogCiz() {
+    const katCubuk = $("#m2s2-kategori-cubuk");
+    const kap = $("#m2s2-katalog-kap");
+    if (!kap || !katCubuk) return;
+    const kategoriler = ["Tümü", ...this.katalogKategoriler.map((k) => k.kategori)];
+    katCubuk.replaceChildren(...kategoriler.map((kat) =>
+      el("button", {
+        type: "button",
+        class: `kucuk ${this.aktifKategori === kat ? "birincil" : "ikincil"}`,
+        metin: kat,
+        onclick: () => { this.aktifKategori = kat; this.katalogCiz(); },
+      })
+    ));
+    const seciliKume = new Set(this.sepettekiPaketler());
+    const gosterilecek = [];
+    for (const grup of this.katalogKategoriler) {
+      if (this.aktifKategori !== "Tümü" && grup.kategori !== this.aktifKategori) continue;
+      for (const u of grup.uygulamalar) gosterilecek.push({ ...u, kategori: grup.kategori });
+    }
+    kap.replaceChildren(...gosterilecek.map((u) => {
+      const secili = seciliKume.has(u.paket);
+      return el("div", {
+        class: `magaza-uygulama-kart ${secili ? "secili" : ""}`,
+        onclick: (e) => {
+          if (e.target.closest("button")) return;
+          this.sepetePaketToggle(u.paket);
+        },
+      },
+      el("div", { class: "magaza-kart-ust" },
+        el("span", { class: "magaza-ikon", metin: u.ikon || "📦" }),
+        el("div", { class: "magaza-baslik-alan" },
+          el("strong", { class: "magaza-ad", metin: u.ad }),
+          el("span", { class: "mono alt", metin: u.paket }),
+        ),
+        rozet(secili ? "✓ Sepette" : "+ Seç", secili ? "iyi" : "notr")
+      ),
+      el("p", { class: "magaza-aciklama", metin: u.aciklama }),
+      el("div", { class: "magaza-kart-alt" },
+        el("span", { class: "alt", metin: u.kategori }),
+        el("button", {
+          type: "button",
+          class: "ikincil kucuk",
+          metin: "Hemen Kur",
+          onclick: (e) => {
+            e.stopPropagation();
+            this.repoKur([u.paket]);
+          },
+        })
+      ));
+    }));
+  },
+  async repoAra() {
+    const sorgu = ($("#m2s2-ara-giris").value || "").trim();
+    const cihaz = $("#m2s2-ara-cihaz").value;
+    const durum = $("#m2s2-ara-durum");
+    if (sorgu.length < 2) {
+      bildir("Aramak için en az 2 karakter yazın (örn: gimp, python, pdf).", true);
+      return;
+    }
+    durum.textContent = `“${sorgu}” için bilgisayarın tanımlı APT depoları taranıyor…`;
+    try {
+      const s = await api("/api/paketler/repo/ara", { sorgu, cihaz: cihaz || null });
+      this.araSonuclar = s.sonuclar || [];
+      durum.textContent = `${s.cihaz_ad || "Bilgisayar"} deposunda “${sorgu}” için ${this.araSonuclar.length} paket bulundu.`;
+      this.araSonucCiz();
+    } catch (hata) {
+      durum.textContent = `Arama hatası: ${hata.message}`;
+    }
+  },
+  araSonucCiz() {
+    const kap = $("#m2s2-ara-sonuc");
+    if (!kap) return;
+    if (!this.araSonuclar.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Sonuç bulunamadı." }));
+      return;
+    }
+    const seciliKume = new Set(this.sepettekiPaketler());
+    const tablo = el("table", {},
+      el("thead", {}, el("tr", {}, ...["Paket Adı", "Açıklama", "Durum", "İşlem"].map((b) => el("th", { metin: b }))))
+    );
+    const tbody = el("tbody");
+    for (const p of this.araSonuclar) {
+      const sepette = seciliKume.has(p.paket);
+      tbody.append(el("tr", {},
+        el("td", { class: "mono" }, el("strong", { metin: p.paket })),
+        el("td", { metin: p.aciklama || "—" }),
+        el("td", {}, p.kurulu ? rozet(`Kurulu (${p.kurulu_surum || ""})`, "iyi") : rozet("Kurulu değil", "notr")),
+        el("td", { class: "dugme-grubu" },
+          el("button", {
+            type: "button",
+            class: `kucuk ${sepette ? "birincil" : "ikincil"}`,
+            metin: sepette ? "✓ Sepette" : "+ Sepete Ekle",
+            onclick: () => this.sepetePaketToggle(p.paket),
+          }),
+          el("button", {
+            type: "button",
+            class: "ikincil kucuk",
+            metin: "Hemen Kur",
+            onclick: () => this.repoKur([p.paket]),
+          })
+        )
+      ));
+    }
+    tablo.append(tbody);
+    kap.replaceChildren(tablo);
+  },
+  hedefCihazAdaylari(yedekSeciciId) {
+    const secili = Secim.liste();
+    if (secili.length) return secili;
+    const yedek = yedekSeciciId && $(yedekSeciciId) ? $(yedekSeciciId).value : null;
+    if (yedek) return [yedek];
+    return [];
+  },
+  async repoKur(ozelPaketler = null) {
+    const paketler = ozelPaketler || this.sepettekiPaketler();
+    if (!paketler.length) {
+      bildir("Önce katalogdan veya aramadan kurulacak en az bir uygulama seçin ya da paket adını yazın.", true);
+      return;
+    }
+    const adaylar = this.hedefCihazAdaylari("#m2s2-ara-cihaz");
+    if (!adaylar.length) {
+      bildir("Önce aşağıdaki tablodan (veya üstten) kurulum yapılacak bilgisayarı / bilgisayarları seçin.", true);
+      return;
+    }
+    const guncelle = Boolean($("#m2s2-repo-update") && $("#m2s2-repo-update").checked);
+    const hedefler = await onayIste({
+      islem: "paket",
+      cihazlar: adaylar,
+      baslik: `Pardus Depodan Kur — ${paketler.slice(0, 4).join(", ")}${paketler.length > 4 ? ` (+${paketler.length - 4})` : ""}`,
+      aciklama: `Seçilen bilgisayarlarda tanımlı APT depolarından şu paketler indirilecek ve kurulacak: ${paketler.join(", ")}.`,
+      uyarilar: [
+        "Kurulum --no-remove güvenlik kilidiyle çalışır: mevcut hiçbir sistem paketi kaldırılmaz.",
+        guncelle ? "Kurulumdan önce apt-get update ile depo paket listesi güncellenecek." : "Depo listesi güncellenmeden mevcut önbellekle kurulacak.",
+      ],
+      yikici: true,
+      onayMetni: "Seçilen uygulamaların hedef bilgisayarlara kurulmasını onaylıyorum",
+      baslatMetni: "Depodan Kur",
+    });
+    if (!hedefler) return;
+    const kayit = await isBaslat("/api/paketler/repo/kur", {
+      cihazlar: hedefler,
+      paketler,
+      guncelle,
+      onay: true,
+    });
+    if (!kayit) return;
+    for (const h of kayit.hedefler) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    }
+    this.tablo.ciz();
+  },
+  async kuruluListele() {
+    const cihaz = $("#m2s2-kurulu-cihaz").value;
+    if (!cihaz) {
+      bildir("Önce listesi okunacak hazır bir bilgisayar seçin.", true);
+      return;
+    }
+    const tum = Boolean($("#m2s2-kurulu-tum") && $("#m2s2-kurulu-tum").checked);
+    const durum = $("#m2s2-kurulu-durum");
+    durum.textContent = "Kurulu uygulamalar bilgisayardan okunuyor…";
+    try {
+      const s = await api("/api/paketler/repo/kurulu-listele", { cihaz, tum_paketler: tum });
+      this.kuruluUygulamalar = s.uygulamalar || [];
+      this.kaldirSecim.clear();
+      const korumaliSay = this.kuruluUygulamalar.filter((u) => u.korumali).length;
+      durum.textContent = `${s.cihaz_ad} (${s.ip}) bilgisayarında ${this.kuruluUygulamalar.length} paket listelendi (${korumaliSay} kritik sistem paketi güvenlik kilidiyle korunuyor).`;
+      this.kuruluTabloCiz();
+    } catch (hata) {
+      durum.textContent = `Okuma hatası: ${hata.message}`;
+    }
+  },
+  kuruluTabloCiz() {
+    const kap = $("#m2s2-kurulu-tablo");
+    const bilgi = $("#m2s2-kaldir-secili-bilgi");
+    if (bilgi) {
+      bilgi.textContent = `${this.kaldirSecim.size} uygulama kaldırmak için seçildi`;
+      bilgi.className = `rozet ${this.kaldirSecim.size ? "orta" : "notr"}`;
+    }
+    if (!kap) return;
+    if (!this.kuruluUygulamalar.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Henüz liste okunmadı. Yukarıdan “Kurulu Uygulamaları Getir” düğmesine tıklayın." }));
+      return;
+    }
+    const filtre = ($("#m2s2-kurulu-filtre") && $("#m2s2-kurulu-filtre").value || "").trim().toLowerCase();
+    const suzulen = this.kuruluUygulamalar.filter((u) =>
+      !filtre || u.paket.toLowerCase().includes(filtre) || (u.aciklama || "").toLowerCase().includes(filtre) || (u.bolum || "").toLowerCase().includes(filtre)
+    );
+    const tablo = el("table", {},
+      el("thead", {}, el("tr", {}, ...["Seç", "Paket Adı", "Sürüm", "Boyut", "Açıklama", "Güvenlik / İşlem"].map((b) => el("th", { metin: b }))))
+    );
+    const tbody = el("tbody");
+    for (const u of suzulen) {
+      const isaretli = this.kaldirSecim.has(u.paket);
+      const cb = el("input", {
+        type: "checkbox",
+        checked: isaretli,
+        disabled: Boolean(u.korumali),
+        "aria-label": `${u.paket} kaldır`,
+        onchange: (e) => {
+          if (e.target.checked) this.kaldirSecim.add(u.paket);
+          else this.kaldirSecim.delete(u.paket);
+          this.kuruluTabloCiz();
+        },
+      });
+      tbody.append(el("tr", { class: u.korumali ? "satir-korumali" : (isaretli ? "satir-secili" : "") },
+        el("td", {}, cb),
+        el("td", { class: "mono" }, el("strong", { metin: u.paket })),
+        el("td", { class: "mono alt", metin: u.surum || "—" }),
+        el("td", { class: "alt", metin: u.boyut_kb ? boyut(u.boyut_kb * 1024) : "—" }),
+        el("td", { metin: u.aciklama || "—" }),
+        el("td", {}, u.korumali
+          ? rozet("🔒 Korumalı Sistem Paketi", "notr")
+          : el("button", {
+            type: "button",
+            class: "tehlikeli kucuk",
+            metin: "Kaldır",
+            onclick: () => this.repoKaldir([u.paket]),
+          })
+        )
+      ));
+    }
+    tablo.append(tbody);
+    kap.replaceChildren(tablo);
+  },
+  async repoKaldir(ozelPaketler = null) {
+    const paketler = ozelPaketler || [...this.kaldirSecim];
+    if (!paketler.length) {
+      bildir("Önce tablodan kaldırılacak en az bir uygulama işaretleyin.", true);
+      return;
+    }
+    const adaylar = this.hedefCihazAdaylari("#m2s2-kurulu-cihaz");
+    if (!adaylar.length) {
+      bildir("Önce kaldırılacak bilgisayarı seçin.", true);
+      return;
+    }
+    const purge = Boolean($("#m2s2-kurulu-purge") && $("#m2s2-kurulu-purge").checked);
+    const hedefler = await onayIste({
+      islem: "paket",
+      cihazlar: adaylar,
+      baslik: `Uygulamaları Kaldır — ${paketler.slice(0, 4).join(", ")}${paketler.length > 4 ? ` (+${paketler.length - 4})` : ""}`,
+      aciklama: `Seçilen bilgisayarlardan şu uygulamalar kaldırılacak: ${paketler.join(", ")}.`,
+      uyarilar: [
+        "Güvenlik Denetimi: Kaldırma işleminden önce her bilgisayarda apt benzetimi yapılır; eğer işlem Pardus masaüstü, ağ, SSH, Veyon veya temel sistem paketlerini etkileyecekse otomatik olarak engellenir.",
+        purge ? "Uygulamanın sistem genelindeki yapılandırma dosyaları da (purge) temizlenecek." : "Yalnız uygulama paketleri kaldırılacak (remove).",
+      ],
+      yikici: true,
+      onayMetni: "Seçilen uygulamaların hedef bilgisayarlardan kaldırılmasını onaylıyorum",
+      baslatMetni: "Kaldır",
+    });
+    if (!hedefler) return;
+    const kayit = await isBaslat("/api/paketler/repo/kaldir", {
+      cihazlar: hedefler,
+      paketler,
+      artiklari_temizle: purge,
+      onay: true,
+    });
+    if (!kayit) return;
+    for (const h of kayit.hedefler) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    }
+    this.kaldirSecim.clear();
+    if (this.kuruluUygulamalar.length) await this.kuruluListele();
+    this.tablo.ciz();
+  },
   async listele() {
     try { this.paketler = await api("/api/paketler"); } catch (hata) { bildir(hata.message, true); return; }
     const sec = $("#m2s2-paket");
@@ -6171,7 +7279,7 @@ const m2s2 = {
       ["Açıklama", (k.Description || "").split("\n")[0] || "—"], ["Yüklendi", tarih(p.zaman)]];
     dl.replaceChildren(...satirlar.flatMap(([a, d]) => [el("dt", { metin: a }), el("dd", { class: a === "SHA-256" ? "mono" : "", metin: d })]));
   },
-  sifirla() { this.planlar = new Map(); this.sonuclar = new Map(); this.planIsId = null; $("#m2s2-kur").disabled = true; this.kartlar(); this.tablo.ciz(); },
+  sifirla() { this.planlar = new Map(); this.sonuclar = new Map(); this.planIsId = null; this.kartlar(); this.tablo.ciz(); },
   async yukle(dosya) {
     if (!dosya) return;
     $("#m2s2-yukleme").textContent = `${dosya.name} yükleniyor ve paket yapısı doğrulanıyor…`;
@@ -6203,7 +7311,6 @@ const m2s2 = {
     this.planlar = new Map();
     this.sonuclar = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.planlar.set(h.veri.cihaz_id, h.veri);
-    $("#m2s2-kur").disabled = !this.kurulabilir().length;
     this.kartlar();
     this.tablo.ciz();
   },
@@ -6212,17 +7319,26 @@ const m2s2 = {
   },
   async kurulum() {
     const p = this.paket();
-    const adaylar = this.kurulabilir().filter((id) => Secim.kume.has(id));
-    if (!adaylar.length) { bildir("Seçimde planı “kurulacak/güncellenecek” olan bilgisayar yok.", true); return; }
-    const guncel = adaylar.filter((id) => this.planlar.get(id).plan.durum === "guncellenecek").length;
+    if (!p) { bildir("Önce bir .deb dosyası seçin.", true); return; }
+    const planli = Boolean(this.planIsId && this.planlar.size);
+    const adaylar = planli
+      ? this.kurulabilir().filter((id) => Secim.kume.has(id))
+      : Secim.liste();
+    if (!adaylar.length) {
+      bildir(planli ? "Seçimde planı “kurulacak/güncellenecek” olan bilgisayar yok." : "Önce bilgisayar seçin.", true);
+      return;
+    }
+    const guncel = planli ? adaylar.filter((id) => this.planlar.get(id).plan.durum === "guncellenecek").length : 0;
     const hedefler = await onayIste({ islem: "paket", cihazlar: adaylar, baslik: `Kur — ${p.paket} ${p.surum}`,
-      aciklama: "Yalnız plan denetiminden geçen bilgisayarlara kurulur. Kurulumdan hemen önce denetimler yeniden yapılır; paket kaldırma veya sürüm düşürme gerekirse kurulum durur.",
-      uyarilar: [...(guncel ? [`${guncel} bilgisayarda mevcut sürüm güncellenecek.`] : []),
+      aciklama: "Kurulumdan hemen önce hedef bilgisayarlarda SHA-256, mimari, boş alan ve bağımlılık denetimleri yapılır; paket kaldırma veya sürüm düşürme gerekirse kurulum durur.",
+      uyarilar: [
+        ...(!planli ? ["💡 Öneri: Kurulumdan önce “Kurulum planını hazırla” ile bağımlılık ve sürüm durumunu önizlemeniz önerilir. İsterseniz önizleme yapmadan doğrudan kurabilirsiniz."] : []),
+        ...(guncel ? [`${guncel} bilgisayarda mevcut sürüm güncellenecek.`] : []),
         "Paketin kurulum betikleri root yetkisiyle çalışır; yalnız güvendiğiniz paketleri kurun."],
-      yikici: true, onayMetni: "Kurulum planını inceledim ve onaylıyorum", baslatMetni: "Kur",
-      hedefEk: { baslik: "Plan", hucre: (h) => { const v = this.planlar.get(h.id); return v ? PLAN_ROZETI[v.plan.durum][0] : "—"; } } });
+      yikici: true, onayMetni: "Paketin seçili bilgisayarlara kurulmasını onaylıyorum", baslatMetni: "Kur",
+      hedefEk: planli ? { baslik: "Plan", hucre: (h) => { const v = this.planlar.get(h.id); return v ? PLAN_ROZETI[v.plan.durum][0] : "—"; } } : null });
     if (!hedefler) return;
-    const kayit = await isBaslat(`/api/paketler/${p.sha256}/kur`, { cihazlar: hedefler, plan_is_id: this.planIsId, onay: true });
+    const kayit = await isBaslat(`/api/paketler/${p.sha256}/kur`, { cihazlar: hedefler, plan_is_id: planli ? this.planIsId : null, onay: true });
     if (!kayit) return;
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
     this.kartlar();
@@ -6230,7 +7346,7 @@ const m2s2 = {
   },
   planHucresi(c) {
     const v = this.planlar.get(c.id);
-    if (!v) return c.uygunluk.paket ? el("span", { class: "alt", metin: c.uygunluk.paket }) : "—";
+    if (!v) return c.uygunluk.paket ? el("span", { class: "alt", metin: c.uygunluk.paket }) : rozet("Hazır", "iyi");
     const plan = v.plan || { durum: "hata", neden: "plan alınamadı" };
     const [m, t] = PLAN_ROZETI[plan.durum] || [plan.durum, "notr"];
     const neden = plan.durum === "engellendi" ? (plan.engeller || []).join("; ") : plan.neden;
@@ -6249,8 +7365,18 @@ const m2s2 = {
   sonucHucresi(c) {
     const s = this.sonuclar.get(c.id);
     if (!s) return "—";
-    if (s.durum === "basarili") return el("div", {}, rozet("Kuruldu", "iyi"), el("span", { class: "alt mono", metin: (s.sonuc || {}).kurulu_surum || "" }));
-    if (s.durum === "atlandi") return rozet("Atlandı", "notr");
+    const sn = s.sonuc || {};
+    if (s.durum === "basarili") {
+      if (sn.kaldirilanlar) {
+        return el("div", {}, rozet("Kaldırıldı", "iyi"), el("span", { class: "alt mono", metin: sn.kaldirilanlar.join(", ") }));
+      }
+      if (sn.kurulanlar) {
+        const metin = Object.entries(sn.kurulanlar).map(([k, v]) => `${k} (${v})`).join(", ");
+        return el("div", {}, rozet("Depodan Kuruldu", "iyi"), el("span", { class: "alt mono", metin }));
+      }
+      return el("div", {}, rozet("Kuruldu", "iyi"), el("span", { class: "alt mono", metin: sn.kurulu_surum || "" }));
+    }
+    if (s.durum === "atlandi") return el("div", {}, rozet("Atlandı", "notr"), el("span", { class: "alt", metin: s.mesaj || "" }));
     return el("div", {}, rozet("Başarısız", "kotu"), el("span", { class: "alt", metin: s.mesaj || "" }));
   },
   kartlar() {
@@ -6299,6 +7425,7 @@ const m2s3 = {
   tablo: null,
   sonuclar: new Map(),
   onizlemeVar: false,
+  galeri: { gorsel: null, secili_id: "sablon_pardus_lacivert", ogeler: [] },
   kur() {
     this.tablo = new CihazTablosu($("#m2s3-tablo"), {
       islem: "gorunum",
@@ -6316,41 +7443,159 @@ const m2s3 = {
     });
     secimCubuguKur($("#sayfa-M2-S3 .secim-yeri"), "gorunum", () => this.tablo);
     $("#m2s3-temsili").innerHTML = TEMSILI_SVG;   // sabit çizim; kullanıcı/uzak veri içermez
-    $("#m2s3-gorsel").addEventListener("change", (o) => this.gorselYukle(o.target.files[0]));
+    $("#m2s3-gorsel").addEventListener("change", (o) => this.gorselleriYukle(o.target.files));
+    const koseSec = $("#m2s3-duvar-kose");
+    if (koseSec) {
+      koseSec.addEventListener("change", () => {
+        this.onizlemeVar = false;
+        this.galeriCiz();
+      });
+    }
     for (const id of ["m2s3-duzen", "m2s3-duvar", "m2s3-kilit-ekran", "m2s3-otomatik", "m2s3-gizle", "m2s3-kilitle", "m2s3-yon"]) {
-      $(`#${id}`).addEventListener("change", () => { this.onizlemeVar = false; $("#m2s3-uygula").disabled = true; });
+      $(`#${id}`).addEventListener("change", () => { this.onizlemeVar = false; });
     }
     $("#m2s3-onizle").addEventListener("click", () => this.calistir("onizle"));
     $("#m2s3-uygula").addEventListener("click", () => this.calistir("uygula"));
   },
   async ac() {
     this.tablo.ciz(); Secim.bildir(); erisimTazele(300);
+    await this.galeriYukle();
+  },
+  async galeriYukle() {
     try {
       const b = await api("/api/gorunum");
-      $("#m2s3-gorsel-bilgi").textContent = b.gorsel ? `Yüklü görsel: ${b.gorsel.ad} (${boyut(b.gorsel.bayt)})` : "Henüz görsel yüklenmedi.";
+      this.galeri = {
+        gorsel: b.gorsel || null,
+        secili_id: b.secili_id || (b.gorsel && b.gorsel.id) || "sablon_pardus_lacivert",
+        ogeler: b.ogeler || [],
+      };
+      this.galeriCiz();
     } catch (_) { /* önemsiz */ }
+  },
+  galeriCiz() {
+    const bilgiEl = $("#m2s3-gorsel-bilgi");
+    const kap = $("#m2s3-galeri");
+    const g = this.galeri.gorsel;
+    const kose = ($("#m2s3-duvar-kose") && $("#m2s3-duvar-kose").value) || "sag_ust";
+    const koseAd = { sag_ust: "sağ üst köşede numara", sol_ust: "sol üst köşede numara", yok: "etiketsiz" }[kose] || "sağ üst";
+    if (bilgiEl) {
+      bilgiEl.textContent = g
+        ? `Seçili duvar kâğıdı: ${g.baslik || g.ad} (${boyut(g.bayt)}) · Etiket: ${koseAd}`
+        : "Galeriden bir duvar kâğıdı seçin veya yeni fotoğraf yükleyin.";
+    }
+    if (!kap) return;
+    const ogeler = this.galeri.ogeler || [];
+    if (!ogeler.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Galeri boş. Fotoğraf yükleyin." }));
+      return;
+    }
+    const sablonArkaPlan = {
+      sablon_pardus_lacivert: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
+      sablon_anadolu_turkuaz: "linear-gradient(135deg, #042f2e 0%, #0d9488 100%)",
+      sablon_bilisim_antrasit: "linear-gradient(135deg, #18181b 0%, #3730a3 100%)",
+      hazir_pardus_gece: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
+      hazir_anadolu_turkuaz: "linear-gradient(135deg, #0d3b4c 0%, #0f766e 100%)",
+      hazir_bilisim_mor: "linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%)",
+    };
+    kap.replaceChildren(...ogeler.map((oge) => {
+      const secili = oge.id === this.galeri.secili_id;
+      const onizleme = el("div", {
+        class: "duvar-kart-onizleme",
+        style: sablonArkaPlan[oge.id] ? `background: ${sablonArkaPlan[oge.id]}` : "",
+      },
+      el("img", {
+        src: oge.onizleme_url || `/api/duvar-kagidi/galeri/${encodeURIComponent(oge.id)}/indir`,
+        alt: oge.baslik || oge.ad,
+        loading: "lazy",
+        onerror: (e) => { e.target.style.display = "none"; },
+      }),
+      kose !== "yok"
+        ? el("div", { class: `duvar-kose-rozet ${kose}` },
+          el("span", { class: "duvar-kose-no", metin: "01" }),
+          el("span", { class: "duvar-kose-host", metin: "ogrenci01" }))
+        : null);
+      const altBar = el("div", { class: "duvar-kart-alt" },
+        el("div", { class: "duvar-kart-baslik" },
+          el("strong", { metin: oge.baslik || oge.ad }),
+          el("span", { class: "alt", metin: oge.hazir ? "Hazır şablon" : boyut(oge.bayt) })),
+        el("div", { class: "duvar-kart-eylemler" },
+          rozet(secili ? "✓ Seçili" : "Seç", secili ? "iyi" : "notr"),
+          !oge.hazir ? el("button", {
+            type: "button",
+            class: "ikincil kucuk",
+            metin: "Sil",
+            onclick: (e) => {
+              e.stopPropagation();
+              this.galeriSil(oge);
+            },
+          }) : null));
+      return el("div", {
+        class: `duvar-galeri-kart ${secili ? "secili" : ""}`,
+        onclick: () => this.galeriSec(oge.id),
+      }, onizleme, altBar);
+    }));
+  },
+  async galeriSec(id) {
+    try {
+      const yanit = await api("/api/duvar-kagidi/galeri/sec", { id });
+      if (yanit && yanit.galeri) {
+        this.galeri = yanit.galeri;
+      } else {
+        this.galeri.secili_id = id;
+      }
+      $("#m2s3-duvar").checked = true;
+      this.onizlemeVar = false;
+      this.galeriCiz();
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
+  },
+  async galeriSil(oge) {
+    if (!confirm(`“${oge.baslik || oge.ad}” galeriden silinsin mi?`)) return;
+    try {
+      const yanit = await api(`/api/duvar-kagidi/galeri/${encodeURIComponent(oge.id)}`, null, "DELETE");
+      if (yanit && yanit.galeri) this.galeri = yanit.galeri;
+      else await this.galeriYukle();
+      this.galeriCiz();
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
   },
   secenekler() {
     const yon = $("#m2s3-yon").value;
     const s = {};
     const esle = { duzen: "m2s3-duzen", duvar: "m2s3-duvar", ekran_kilidi: "m2s3-kilit-ekran", otomatik_giris: "m2s3-otomatik", gizle: "m2s3-gizle" };
     for (const [ad, id] of Object.entries(esle)) if ($(`#${id}`).checked) s[ad] = yon;
+    if (s.duvar) {
+      s.duvar_kose = ($("#m2s3-duvar-kose") && $("#m2s3-duvar-kose").value) || "sag_ust";
+      if (this.galeri && this.galeri.secili_id) s.duvar_id = this.galeri.secili_id;
+    }
     s.kilit = $("#m2s3-kilitle").checked;
     return s;
   },
-  async gorselYukle(dosya) {
-    if (!dosya) return;
-    const b64 = await new Promise((coz, reddet) => {
-      const o = new FileReader();
-      o.onload = () => coz(o.result.split(",")[1]);
-      o.onerror = reddet;
-      o.readAsDataURL(dosya);
-    });
-    try {
-      await api("/api/duvar-kagidi/gorsel", { icerik_b64: b64, uzanti: dosya.name.toLowerCase().endsWith(".png") ? ".png" : ".jpg" });
-      $("#m2s3-gorsel-bilgi").textContent = `Yüklü görsel: ${dosya.name} (${boyut(dosya.size)})`;
-      $("#m2s3-duvar").checked = true;
-    } catch (hata) { bildir(hata.message, true); }
+  async gorselleriYukle(dosyaListesi) {
+    const dosyalar = [...(dosyaListesi || [])];
+    if (!dosyalar.length) return;
+    for (const dosya of dosyalar) {
+      const b64 = await new Promise((coz, reddet) => {
+        const o = new FileReader();
+        o.onload = () => coz(o.result.split(",")[1]);
+        o.onerror = reddet;
+        o.readAsDataURL(dosya);
+      });
+      try {
+        const uzanti = dosya.name.toLowerCase().endsWith(".png") ? ".png" : ".jpg";
+        const yanit = await api("/api/duvar-kagidi/gorsel", { icerik_b64: b64, uzanti, ad: dosya.name });
+        if (yanit && yanit.galeri) {
+          this.galeri = yanit.galeri;
+        }
+        $("#m2s3-duvar").checked = true;
+      } catch (hata) {
+        bildir(`${dosya.name}: ${hata.message}`, true);
+      }
+    }
+    this.onizlemeVar = false;
+    await this.galeriYukle();
     $("#m2s3-gorsel").value = "";
   },
   sonucHucresi(c) {
@@ -6377,6 +7622,7 @@ const m2s3 = {
       hedefler = await onayIste({ islem: "gorunum", cihazlar: hedefler, baslik: "Görünüm ve giriş ayarlarını uygula",
         aciklama: "Ayarlar dconf sistem veritabanına ve GDM ayarlarına yazılır. Masaüstü ortamı değiştirilmez; XFCE bilgisayarlar kapsam dışıdır.",
         uyarilar: [
+          ...(!this.onizlemeVar ? ["💡 Öneri: Uygulamadan önce “Önizle” ile bilgisayarların mevcut şema ve görünüm durumunu kontrol etmeniz önerilir. İsterseniz önizleme yapmadan doğrudan uygulayabilirsiniz."] : []),
           ...(acik.length ? [`Öğrenci oturumu açık: ${acik.join(", ")} — kilitli ayarlar bu oturumlarda hemen değişebilir; düzenin tamamı sonraki girişte görünür.`] : []),
           ...(secenekler.otomatik_giris ? ["Otomatik giriş bir sonraki açılışta veya giriş ekranı yeniden başladığında etkinleşir."] : []),
           ...(secenekler.gizle ? ["Yönetim hesabı yalnız giriş ekranı listesinden gizlenir; hesap ve SSH erişimi korunur. Gerçek giriş ekranında görsel doğrulama yapılmaz."] : []),
@@ -6389,7 +7635,6 @@ const m2s3 = {
     this.sonuclar = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, mesaj: h.mesaj });
     this.onizlemeVar = kip === "onizle";
-    $("#m2s3-uygula").disabled = !(kip === "onizle" && kayit.hedefler.some((h) => h.durum === "basarili"));
     this.tablo.ciz();
   },
 };
@@ -6441,8 +7686,9 @@ const TEMSILI_SVG = `
     <text x="312" y="214" font-size="7" fill="#4E5D6C">Yönetim hesabı (hp/pardus) listelenmez;</text>
     <text x="312" y="224" font-size="7" fill="#4E5D6C">SSH ile yönetim sürer.</text>
   </g>
-  <rect x="352" y="8" width="120" height="18" rx="4" fill="#FFE7A8"/>
-  <text x="360" y="20" font-family="Ubuntu, sans-serif" font-size="8.5" font-weight="bold" fill="#6B4100">TEMSİLİ ÇİZİM</text>
+  <rect x="382" y="10" width="84" height="54" rx="10" fill="#0F172A" fill-opacity=".9" stroke="#38BDF8" stroke-width="1.5"/>
+  <text x="424" y="42" text-anchor="middle" font-family="Ubuntu, sans-serif" font-size="24" font-weight="bold" fill="#38BDF8">01</text>
+  <text x="424" y="56" text-anchor="middle" font-family="Ubuntu, sans-serif" font-size="7.5" font-weight="bold" fill="#E2E8F0">ogrenci01</text>
 </svg>`;
 
 sayfaKaydet("M2-S1", m2s1);

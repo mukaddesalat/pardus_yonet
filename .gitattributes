@@ -6,3 +6,4 @@
 paketleme/debian/* text eol=lf
 paketleme/dosyalar/* text eol=lf
 *.deb binary
+graphify-out/graph.json merge=graphify

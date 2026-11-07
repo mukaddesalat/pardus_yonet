@@ -877,4 +877,271 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
   color: #0F172A;
 }
 
+/* Pardus Yazılım Merkezi / Repo Mağazası (M2-S2) */
+.magaza-sekmeler {
+  margin-bottom: 14px;
+}
+.magaza-panel {
+  margin-bottom: 16px;
+}
+.magaza-sepet-karti {
+  border-left: 4px solid var(--c-primary, #1B5FC1);
+  margin-bottom: 14px;
+}
+.magaza-sepet-ust {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.magaza-kur-cubuk {
+  margin-top: 8px;
+}
+.magaza-paket-giris {
+  flex: 1;
+  min-width: 260px;
+}
+.magaza-bolum-baslik {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.magaza-kategoriler {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.magaza-katalog-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+  gap: 10px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.magaza-uygulama-kart {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.magaza-uygulama-kart:hover {
+  border-color: #93C5FD;
+  background: #FFFFFF;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+}
+.magaza-uygulama-kart.secili {
+  border-color: var(--c-primary, #1B5FC1);
+  background: #EFF6FF;
+  box-shadow: 0 0 0 2px rgba(27, 95, 193, 0.15);
+}
+.magaza-kart-ust {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.magaza-ikon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.magaza-baslik-alan {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.magaza-ad {
+  font-size: 0.9rem;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.magaza-aciklama {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.35;
+}
+.magaza-kart-alt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed #E2E8F0;
+}
+.magaza-ara-giris {
+  flex: 1;
+  min-width: 200px;
+}
+.magaza-ara-sonuc {
+  max-height: 360px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.magaza-kurulu-kap {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.satir-korumali {
+  opacity: 0.78;
+  background: #F8FAFC;
+}
+.satir-secili {
+  background: #FEF2F2;
+}
+.alt-tablo-baslik {
+  font-size: 1rem;
+  margin: 12px 0 8px;
+}
+
+/* M1-S4 Uzman Ayarları */
+.uzman-ayarlari {
+  margin-bottom: 14px;
+}
+.uzman-ayarlari > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 2px;
+  list-style: none;
+  user-select: none;
+}
+.uzman-ayarlari > summary::-webkit-details-marker {
+  display: none;
+}
+.uzman-govde {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #E2E8F0;
+}
+.uzman-izgara {
+  grid-template-columns: minmax(220px, 280px) 1fr;
+}
+
+/* M2-S3 Duvar Kağıdı Galerisi ve Köşe Numarası Rozeti */
+.duvar-ayar-kutusu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  margin: 6px 0 10px;
+}
+.duvar-galeri-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.duvar-galeri-kart {
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+.duvar-galeri-kart:hover {
+  border-color: #60A5FA;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+.duvar-galeri-kart.secili {
+  border-color: var(--c-primary, #1B5FC1);
+  box-shadow: 0 0 0 2px rgba(27, 95, 193, 0.2);
+}
+.duvar-kart-onizleme {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, #0F172A, #1E3A8A);
+  overflow: hidden;
+}
+.duvar-kart-onizleme img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.duvar-kose-rozet {
+  position: absolute;
+  top: 6px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1.5px solid #38BDF8;
+  border-radius: 7px;
+  padding: 2px 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.05;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.duvar-kose-rozet.sag_ust {
+  right: 6px;
+}
+.duvar-kose-rozet.sol_ust {
+  left: 6px;
+}
+.duvar-kose-no {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #38BDF8;
+  letter-spacing: 0.02em;
+}
+.duvar-kose-host {
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+.duvar-kart-alt {
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.duvar-kart-baslik {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.duvar-kart-baslik strong {
+  font-size: 0.78rem;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.duvar-kart-eylemler {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+
+
 

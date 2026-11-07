@@ -3,6 +3,38 @@
 Bu dosya [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) biçimini izler ve
 sürüm numaraları [Anlamsal Sürümleme](https://semver.org/lang/tr/) ile verilir.
 
+## [0.8.0] — 2026-11-07
+
+### Eklenen
+- **Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası (M2-S3):**
+  - Çoklu görsel yükleme, önizleme, seçme ve silme özelliklerine sahip etkileşimli Duvar Kâğıdı Galerisi.
+  - 3 adet hazır kurumsal laboratuvar şablonu (*Pardus Gece Mavisi*, *Anadolu Turkuazı*, *Bilişim Atölyesi*).
+  - Seçilen duvar kâğıdına bilgisayarın `hostname` rakamlarını (örn: `ogrenci01` → **01**) sağ üst veya sol üst köşeye yüksek kontrastlı rozet olarak otomatik işleme; uzaktan bakıldığında her bilgisayarın anında tanınabilmesi.
+- **Pardus Yazılım Merkezi / APT Depodan Uygulama Kurulum & Kaldırma (M2-S2):**
+  - Tanımlı APT depolarında arama yapma ve kategorize edilmiş eğitim/kodlama/tasarım mağaza vitrininden uygulama seçme.
+  - Seçili tek veya birden çok bilgisayara depodan tek tıkla toplu uygulama kurma.
+  - Kurulu uygulamaları listeleme ve kritik sistem paketlerini (`gdm3`, `network-manager`, `sudo`, `openssh-server` vb.) kazara kaldırılmaya karşı koruyarak güvenle kaldırma.
+- **Veyon Uzman Ayarları Paneli (M1-S4):**
+  - İleri düzey sistem yöneticileri için katlanabilir `veyon-cli` yapılandırma paneli.
+  - Kimlik yöntemi, yetkilendirme anahtarı erişim grubu, kullanıcı grupları arka ucu, VNC sunucusu ve görüntü kalitesi parametrelerini önceden tanımlı güvenli varsayılanlarla inceleme ve özelleştirme.
+- **"Bana Bakın" Ekran Kilidinde Görünür Bilgisayar Numarası & Hostname (M1-S1):**
+  - Tam ekran kilit katmanında sağ üst köşede devasa (`108pt`) bilgisayar numarası rozeti ve ekranın ortasında yüksek kontrastlı hostname kartı (`🖥️ 01 · ogrenci01`).
+  - Kilit süresince monitörün kapanmasını veya kararmasını engelleyen otomatik DPMS koruması.
+
+### Değişen
+- **Bilgisayar Detay Özeti (M1-S1):**
+  - Açılır pencerede gereksiz SSH portu kaldırıldı; yerine **Hostname** (bilgisayar adı) ve **IP adresi** öne çıkarıldı.
+  - Bilgisayar düzenleme formundan bilgisayar adı (hostname) değiştirilebilir hale getirildi ve uzak istemcide `hostnamectl set-hostname` ile anında güncellenmesi sağlandı.
+  - Cihaz işlemlerinde (kurulum, güç, duvar kağıdı) önizleme zorunluluğu esnetildi; kullanıcıya öneride bulunulup doğrudan uygulama esnekliği sağlandı.
+- **Veyon Kurulum ve Yapılandırma Standartları (M1-S4):**
+  - Paket ve public key yüklü olduğunda "Kur ve yapılandır" işlemi artık soru sormadan tüm Veyon ayarlarını otomatik tamamlar.
+  - Kimlik doğrulama varsayılan olarak **Anahtar dosya yetkilendirmesi** (`Authentication/Method=1`), erişim grubu `root`, kullanıcı grupları varsayılan POSIX sistem grupları, VNC sunucusu **Dahili VNC** ve görüntü kalitesi **Yüksek** olarak uygulandı.
+- **Güç ve Ekran Koruyucu Yönetimi (M2-S4):**
+  - Ekran kapanma süresi varsayılan olarak **`0` ("Hiç kapanmasın — ekran hep açık kalır")** olarak belirlendi.
+  - GNOME `idle-dim`, `idle-activation-enabled`, `lock-enabled` kapatıldı; GDM `idle-delay=0` kilitlendi.
+  - X11 DPMS donanımsal monitör kapanmasını engelleyen `/etc/X11/xorg.conf.d/90-pardus-sinif-dpms.conf` ve açık oturumlarda `xset -dpms` uygulayan autostart servisi eklendi.
+  - `systemd-logind` HUP sinyali ile oturumlar kesilmeden yeni güç yapılandırmasını anında devreye alacak şekilde güncellendi.
+
 ## [0.7.0] — 2026-10-19
 
 ### Eklenen

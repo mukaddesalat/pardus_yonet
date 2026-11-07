@@ -1,14 +1,14 @@
 # Lab Kaptanı (Pardus Sınıf Yönetimi) — Yönetici Kılavuzu
 
 Sistem yöneticileri için kurulum, mimari, veri konumları, güvenlik modeli ve kurtarma.
-Sürüm 0.7.0.
+Sürüm 0.8.0.
 
 ## Kurulum
 
 Öğretmen bilgisayarında (Pardus 23 EDU) tek komut yeterlidir:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.7.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.8.0_amd64.deb
 ```
 
 Paket kendi Python çalışma ortamını ve tüm kütüphaneleri içerir; kurulum
@@ -52,7 +52,7 @@ Arayüzün örnek verili, sunucusuz önizlemesi pakette de vardır:
 
 | Konum | İçerik |
 | --- | --- |
-| Öğretmen: `/var/lib/pardus-sinif-yonetimi/` | `envanter.db` (SQLite), `anahtar/uygulama_ed25519(.pub)`, duvar kâğıdı görseli, `paketler/<sha256>.deb` (öğretmenin yüklediği paketler) |
+| Öğretmen: `/var/lib/pardus-sinif-yonetimi/` | `envanter.db` (SQLite), `anahtar/uygulama_ed25519(.pub)`, `duvar_kagidi/galeri/` (duvar kâğıdı görselleri ve `galeri.json`), `paketler/<sha256>.deb` (öğretmenin yüklediği paketler) |
 | Öğretmen: `/etc/pardus-sinif-yonetimi/ortam` | Seçilen yerel port (`PSY_PORT`) ve portal ayarları |
 | Öğrenci: `/var/lib/pardus-sinif-yonetimi/yedek/` | Profil yedekleri: `ogrenci-<tarih>.tar.gz` + `.sha256` (root, 0700) |
 | Öğrenci: `/var/lib/pardus-sinif-yonetimi/karantina/` | Ders sonu temizliğinde taşınan dosyalar: `<tarih>-ogrenci/manifest.json` + `veri/` |
@@ -61,7 +61,9 @@ Arayüzün örnek verili, sunucusuz önizlemesi pakette de vardır:
 | Öğrenci: `/var/cache/pardus-sinif-yonetimi/` | Kurulum için aktarılan `.deb` (başarılı kurulumdan sonra silinir) |
 | Öğrenci: `/etc/sudoers.d/pardus-sinif-yonetimi` | Yönetim hesabına parolasız sudo (0440) |
 | Öğrenci: `/etc/ssh/sshd_config.d/pardus-sinif-yonetimi.conf` | Yalnız sshd'de AllowUsers/AllowGroups kısıtı varsa: yönetim hesabının izni |
-| Öğrenci: `/etc/dconf/db/local.d/91-…duvar`, `92-…gorunum`, `93-…ekran-kilidi` (+ `locks/`) | Duvar kâğıdı, Windows 10 benzeri düzen, ekran kilidi |
+| Öğrenci: `/etc/dconf/db/local.d/91-…duvar`, `92-…gorunum`, `93-…ekran-kilidi` (+ `locks/`) | Duvar kâğıdı (köşede hostname numarası işlenmiş), Windows 10 benzeri düzen, ekran kilidi |
+| Öğrenci: `/etc/X11/xorg.conf.d/90-pardus-sinif-dpms.conf` | Donanımsal DPMS monitör kapanmasını engelleme yapılandırması |
+| Öğrenci: `/etc/xdg/autostart/pardus-sinif-dpms.desktop` | Açık/yeni oturumlarda ekran kararmasını engelleyen `xset` başlatıcısı |
 | Öğrenci: `/var/lib/AccountsService/users/<hesap>` | Yönetim hesabını giriş ekranında gizleme (`SystemAccount=true`) |
 | Öğrenci: `/etc/gdm3/daemon.conf` | `ogrenci` otomatik girişi (`[daemon]` bölümü) |
 
@@ -87,6 +89,12 @@ Bilgisayar kayıtlarının tek yönetim noktasıdır. Başka menülerde ayrı li
   `/etc/os-release` veya kurulu paketlerde ETAP izi bulunursa kendiliğinden
   işaretlenir. Korunan cihaz seçilemez ve hiçbir işleme girmez; yalnız listeden
   çıkarılabilir.
+- **Hostname ve IP Odaklı Cihaz Özeti:** Ekran kutucuğundaki monitör simgesine veya ada
+  tıklandığında açılan özet pencerede SSH portu yerine doğrudan **Hostname** ve **IP adresi**
+  gösterilir.
+- **Canlı Hostname Değiştirme (B7):** Düzenleme penceresinden bilgisayarın adı (hostname)
+  değiştirilebilir; Lab Kaptanı parolasız sudo yetkisiyle `hostnamectl set-hostname <yeni_ad>`
+  komutunu çalıştırarak uzak bilgisayar adını anında günceller.
 - Yönetim hesabı değiştirilirse anahtar yeni hesapta olmadığından bilgisayar
   “Hazırlık gerekli” olur. IP düzenlenemez; farklı adres yeni kayıttır.
 - Çıkarırken isteğe bağlı olarak uygulama anahtarı da kaldırılır (yalnız uygulamanın
@@ -246,7 +254,12 @@ canlı listeler; öğretmen birini seçip tamamına geri döner.
 - Saklama sınırı (varsayılan 5, **M5-S1**) profil yedekleri ve karantina için ayrı
   uygulanır; yerel yedek o bilgisayarın disk arızasına karşı koruma sağlamaz.
 
-## Yerel .deb dağıtımı (M2-S2)
+## Yerel .deb Dağıtımı ve Pardus Yazılım Merkezi (M2-S2)
+
+M2-S2 menüsü iki ana yetenek sunar: öğretmenin yüklediği yerel `.deb` paketlerinin dağıtımı ve
+hedef bilgisayarların tanımlı APT depolarından uygulama arama/kurma/kaldırma.
+
+### 1. Yerel .deb Dağıtımı
 
 Öğretmenin yüklediği `.deb` dosyasına özel yetkidir (karar 24); öğrenci ödev
 portalına yüklenen dosyalar bu akışa giremez (paketler yalnız yönetim arayüzünden
@@ -271,6 +284,25 @@ yüklenir, API dosya yolu kabul etmez, portal servisi yönetim verisine erişeme
    Sonuç bilgisayar bazında iş kaydındadır.
 
 Paketin kurulum betikleri root yetkisiyle çalışır: yalnız güvenilen paketleri kurun.
+
+### 2. Pardus Yazılım Merkezi ve APT Depo Yönetimi
+
+Yöneticiler veya yetkili öğretmenler, öğrenci bilgisayarlarına doğrudan tanımlı APT
+depolarından (Pardus / Debian resmi depoları) paket kurabilir veya kaldırabilir:
+
+![Yazılım Merkezi ve Depo Uygulamaları](gorseller/10_yazilim_merkezi.png)
+
+- **Katalog ve Depoda Arama (B8):** Sistemde popüler eğitim, kodlama, robotik, ofis ve tasarım
+  uygulamaları (Thonny, Arduino, Blender, Inkscape, GIMP, Krita, LibreOffice vb.) kategorize
+  kartlar halinde listelenir. Arama çubuğu ile hedef bilgisayardaki APT önbelleğinde (`apt-cache search`)
+  canlı sorgu yapılır.
+- **Toplu Depo Kurulumu (B9):** Sepete eklenen paketler seçili tek veya çoklu bilgisayara
+  `apt-get install -y --no-remove` komutuyla arka planda kurulur ve doğrulanır.
+- **Kurulu Uygulamalar ve Güvenli Kaldırma (B10 / B11):** Hedefte kurulu uygulamalar
+  listelenir. Kritik masaüstü ve sistem bileşenleri (`gdm3`, `gnome-shell`, `network-manager`,
+  `openssh-server`, `sudo`, `pardus-software`, `pardus-welcome`, `veyon`) **korumalı** olarak
+  işaretlenir ve kazara kaldırılması engellenir. Kullanıcının kurduğu diğer paketler
+  seçilerek güvenle kaldırılabilir (`apt-get remove -y`).
 
 ## Veyon kurulum ve yapılandırma (M1-S4)
 
@@ -316,12 +348,28 @@ hata verir) ve iki sayfanın paket seçimi birbirini etkilemez.
   sonra her bilgisayarda önce kurulum, başarılıysa yapılandırma yapılır; kurulum
   başarısız veya yarım kalırsa o bilgisayarda yapılandırmaya geçilmez, diğerlerinin
   sonuçları korunur. Öğretmen PC hiçbir zaman hedef olmaz.
+- **Sıfırdan Tek Tıkla Standart Yapılandırma:** Paket ve public key yüklüyse, öğretmen
+  ek soru yanıtlamak zorunda kalmadan "Kur ve yapılandır" dediğinde aşağıdaki kurumsal
+  standartlar uzaktan otomatik uygulanır:
+  * **Kimlik Yöntemi:** Anahtar dosya yetkilendirmesi (`Authentication/Method = 1`).
+  * **Yetkilendirme Erişim Grubu:** `root` (`veyon-cli authkeys setaccessgroup <ad>/public root` + `chgrp root`).
+  * **Kullanıcı Grupları:** Varsayılan POSIX sistem grupları (`Core/UserGroupsBackend = {4f7d98f0-395a-4f32-9096-188c1e7e982b}`, `AccessControl/ProcessUserGroups = false`).
+  * **VNC Sunucusu:** Dahili VNC sunucusu (`VncServer/Plugin = {39d7a07f-9467-4927-b68c-4b33880d22d8}`).
+  * **Görüntü Kalitesi:** Yüksek kalite (`BuiltinVncServer/Quality = 0`, `VncServer/ImageQuality = 2`).
+  * **Port:** 11100.
+- **Uzman Ayarları Paneli (M1-S4-B21 / B22):** İleri düzey sistem yöneticileri için
+  katlanabilir bir panel olarak tasarlanmıştır. Varsayılan olarak kapalıdır; tıklandığında
+  yukarıdaki parametreler placeholder ve seçili değerleriyle incelenebilir veya
+  özelleştirilebilir. **B22** tek tıkla varsayılanlara sıfırlar.
+
+![Veyon Uzman Ayarları](gorseller/11_veyon_uzman.png)
+
 - **Uygulanan ayarlar:** önce hedefteki `/etc/xdg/Veyon Solutions/Veyon.conf`,
   `/etc/veyon/keys/public` ve servis durumu `/var/lib/pardus-sinif-yonetimi/veyon-yedek/<zaman>/`
   altına yedeklenir (son 5 yedek). Ardından `veyon-cli authkeys import <ad>/public`,
   `veyon-cli config set Authentication/Method 1` (anahtar dosyası) ve
   `systemctl enable` + `restart veyon` yapılır; her adım geri okunarak doğrulanır.
-  Ağ portu (11100) değiştirilmez.
+  Ağ portu (11100) korunur.
 - **B12 Bağlantıyı doğrula:** kurulum, servis, yöntem, anahtar eşleşmesi ve sunucunun
   11100 portunu dinlemesi hedefte; ardından öğretmen PC'den 11100'e bağlanılıp Veyon
   sunucusunun RFB karşılaması okunur. Anahtarla gerçek oturum yalnız Veyon Master'da
@@ -347,6 +395,19 @@ servis kapalı gelir; bu sürümde öğrenci oturumundaki sunucu başlayıp heme
 Hedef, Pardus Karşılayıcı'daki **Windows 10 benzeri** düzendir (karar 23). Ayar
 anahtarları uydurulmaz; her bilgisayarın kendisinden okunur:
 
+![Duvar Kâğıdı Galerisi ve Düzen](gorseller/09_duvar_kagidi_galeri.png)
+
+- **Duvar Kâğıdı Galerisi (M2-S3-B2 / B3):** Öğretmen bilgisayarında
+  `/var/lib/pardus-sinif-yonetimi/duvar_kagidi/galeri/` dizininde çoklu görsel saklanır
+  ve `galeri.json` ile indekslenir. Sistemde harici kütüphane bağımlılığı olmadan saf Python
+  ile üretilen 3 adet kurumsal şablon (`hazir_pardus_gece`, `hazir_anadolu_turkuaz`, `hazir_bilisim_mor`)
+  hazır gelir. Yüklenen fotoğraflar kırpılmadan ve bozulmadan korunur.
+- **Köşede Bilgisayar Numarası Etiketi (M2-S3-B11):** Duvar kâğıdı öğrenci bilgisayarlarına
+  aktarılırken, hedef bilgisayarın kendi `hostname` (veya etiket) bilgisindeki rakamlar
+  (örn. `ogrenci01` → **`01`**, `LAB-PC-12` → **`12`**) tespit edilir. Uzak istemcide
+  yerleşik `GdkPixbuf` ve `cairo` (veya PIL fallback) kullanılarak seçilen köşeye
+  (**Sağ üst**, **Sol üst** veya **Etiketsiz**) yüksek kontrastlı modern bir rozet olarak
+  işlenir. Böylece laboratuvara uzaktan bakıldığında her bilgisayarın numarası doğrudan tanınır.
 - Düzen: `/usr/share/pardus/pardus-gnome-greeter/data/layout_config.json` içindeki
   `"10"` düzeni (dash-to-panel alt görev çubuğu + ArcMenu “Windows” menüsü). Her
   anahtar kurulu GSettings şemasında var mı ve değer türü uyuyor mu diye denetlenir;
@@ -383,18 +444,20 @@ anahtarları uydurulmaz; her bilgisayarın kendisinden okunur:
 **Şimdi** bölümü seçili bilgisayarları yeniden başlatır veya kapatır (komut gönderildi ile
 kapandı/yeniden açıldı ayrı raporlanır).
 
-**Uyku ve ekran koruyucu** ayarı, bilgisayarların boşta kalınca uykuya geçip yönetim için
-erişilemez olmasını önler. Bilgisayar boşta **uykuya geçmez ve kendiliğinden kapanmaz**;
-yalnız ekran kararır (süre **M2-S4-B3**: 5/10/15/30/60 dk veya hiç). **B4 Önizle** salt
-okunurdur; **B5 Uyku modunu kapat** uygular; **B6 Varsayılana dön** yalnız bu uygulamanın
-yaptıklarını geri alır.
+**Uyku ve ekran kapanmasını önleme** ayarı, bilgisayarların boşta kalınca uykuya geçip yönetim için
+erişilemez olmasını veya ekranlarının kararmasını önler. Bilgisayar boşta **uykuya geçmez, kendiliğinden kapanmaz
+ve öğretmen istemediği sürece ekranları kararmaz** (süre **M2-S4-B3**: varsayılan **0 dk — Hiç Kapanmasın**,
+isteğe bağlı 5/10/15/30/60 dk). **B4 Önizle** salt okunurdur; **B5 Uyku ve ekran kapanmasını kapat** uygular;
+**B6 Varsayılana dön** yalnız bu uygulamanın yaptıklarını geri alır.
 
 | Ne yapılır | Nerede |
 | --- | --- |
 | `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, `suspend-then-hibernate` hedefleri maskelenir (oturum, giriş ekranı, güç tuşu dahil hiçbir yol uyku başlatamaz) | `systemctl mask` (maskelediklerimiz `/var/lib/pardus-sinif-yonetimi/guc.json`'da kayıtlı; geri alınca yalnız onlar açılır) |
-| Boşta uyku türü `nothing`, zaman aşımı 0; ekran koruyucu `idle-delay` | `/etc/dconf/db/local.d/94-pardus-sinif-guc` + `locks/` (öğrenci değiştiremez) |
-| Giriş ekranı (GDM) boşta uyumaz | `/etc/dconf/db/gdm.d/94-pardus-sinif-guc` + `locks/`. Pardus/Debian'ın `/usr/share/dconf/profile/gdm` profili `system-db:gdm` okumadığı için, `/etc/dconf/profile/gdm` yoksa onun kopyası `system-db:gdm` eklenerek yazılır (ilk satırdaki imzayla tanınır; geri alınca yalnız bizim yazdığımız silinir). Başkasının `/etc` profili değiştirilmez. Giriş ekranı yeniden açılınca geçerli olur |
-| Boşta eylem, uyku/hazırda bekleme tuşu ve kapak yok sayılır | `/etc/systemd/logind.conf.d/pardus-sinif-guc.conf` (tam etkisi bir sonraki açılışta) |
+| Boşta uyku türü `nothing`, zaman aşımı 0; ekran koruyucu `idle-delay=0`, `idle-dim=false`, `idle-activation-enabled=false` | `/etc/dconf/db/local.d/94-pardus-sinif-guc` + `locks/` (öğrenci değiştiremez) |
+| Giriş ekranı (GDM) boşta uyumaz (`idle-delay=0`) | `/etc/dconf/db/gdm.d/94-pardus-sinif-guc` + `locks/`. Pardus/Debian'ın `/usr/share/dconf/profile/gdm` profili `system-db:gdm` okumadığı için, `/etc/dconf/profile/gdm` yoksa onun kopyası `system-db:gdm` eklenerek yazılır (ilk satırdaki imzayla tanınır; geri alınca yalnız bizim yazdığımız silinir). Başkasının `/etc` profili değiştirilmez. |
+| Donanımsal X11 DPMS monitör kapanmasının engellenmesi | `/etc/X11/xorg.conf.d/90-pardus-sinif-dpms.conf` (`Option "DPMS" "false"`, `Option "BlankTime" "0"`) |
+| Açık ve yeni oturumlar için anında ekran koruyucu iptali | `/etc/xdg/autostart/pardus-sinif-dpms.desktop` (`xset s off -dpms s noblank`) ve aktif oturumlara canlı `xset` gönderimi |
+| Boşta eylem, uyku/hazırda bekleme tuşu ve kapak yok sayılır | `/etc/systemd/logind.conf.d/pardus-sinif-guc.conf` (`systemd-logind` HUP sinyaliyle oturumlar kesilmeden hemen devreye alınır) |
 
 Her ayar uygulandıktan sonra geri okunarak doğrulanır (maske durumu ve derlenmiş dconf
 değeri). Durum M1-S1 kutucuklarında “uyku yok / uyku açık” rozetiyle de görünür.

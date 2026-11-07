@@ -40,12 +40,26 @@ KILIT_GUNLUGU = Path("/run/psy-bana-bakin.log")
 # pencere kapatılamaz; öğretmen "Ekran Kilitlerini Aç" deyince SIGTERM ile kapanır.
 # Güvenlik ağı: öğretmen PC'ye ulaşılamazsa bile `sure_dk` dakika sonra kendiliğinden açılır.
 KATMAN_KODU = r'''
-import json, os, signal, sys
+import json, os, re, signal, socket, subprocess, sys
 p = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
 BASLIK = p.get("baslik") or "Bana Bakın"
 MESAJ = p.get("mesaj") or "Lütfen öğretmeninizi dinleyin."
 OKUL = p.get("okul") or ""
 SURE_SN = max(1, int(p.get("sure_dk") or 60)) * 60
+HOSTNAME = (p.get("hostname") or socket.gethostname() or "PC").strip()
+NUMARA = (p.get("numara") or "").strip()
+if not NUMARA:
+    _r = re.findall(r"\d+", HOSTNAME)
+    NUMARA = (_r[-1].zfill(2) if len(_r[-1]) == 1 else _r[-1]) if _r else HOSTNAME.upper()[:10]
+ORTA_ETIKET = f"\U0001F5A5\uFE0F  {NUMARA}  \u00B7  {HOSTNAME}" if NUMARA.lower() != HOSTNAME.lower() else f"\U0001F5A5\uFE0F  {HOSTNAME}"
+
+
+def _ekran_acik_tut():
+    try:
+        subprocess.run(["xset", "s", "off", "-dpms", "s", "noblank"],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3)
+    except Exception:
+        pass
 
 
 def gtk_katman():
@@ -53,14 +67,31 @@ def gtk_katman():
     gi.require_version("Gtk", "3.0")
     gi.require_version("Gdk", "3.0")
     from gi.repository import Gdk, GLib, Gtk
+    _ekran_acik_tut()
     css = Gtk.CssProvider()
     css.load_from_data(b"""
       window.psy-katman { background-color: #0F172A; }
-      .psy-ikon { font-size: 96px; }
+      .psy-kose-kutu {
+        background-color: #1E293B;
+        border: 3px solid #38BDF8;
+        border-radius: 22px;
+        padding: 16px 34px;
+        margin: 32px;
+      }
+      .psy-kose-no { color: #38BDF8; font-size: 108px; font-weight: 900; }
+      .psy-kose-host { color: #E2E8F0; font-size: 24px; font-weight: 700; }
+      .psy-cihaz-kart {
+        background-color: #1E293B;
+        border: 2px solid #F59E0B;
+        border-radius: 18px;
+        padding: 12px 32px;
+      }
+      .psy-cihaz-etiket { color: #FBBF24; font-size: 46px; font-weight: 900; }
+      .psy-ikon { font-size: 84px; }
       .psy-baslik { color: #FFFFFF; font-size: 60px; font-weight: 800; }
       .psy-mesaj { color: #E2E8F0; font-size: 28px; }
       .psy-okul { color: #93C5FD; font-size: 20px; font-weight: 700; }
-      .psy-alt { color: #64748B; font-size: 14px; }
+      .psy-alt { color: #64748B; font-size: 15px; }
     """)
     Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css,
                                              Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
@@ -74,9 +105,22 @@ def gtk_katman():
         w.set_default_size(geo.width, geo.height)
         w.set_size_request(geo.width, geo.height)
         w.connect("delete-event", lambda *a: True)
+
+        katman = Gtk.Overlay()
+
         kutu = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
         kutu.set_valign(Gtk.Align.CENTER)
         kutu.set_halign(Gtk.Align.CENTER)
+
+        # Ortada uzaktan okunabilir yüksek kontrastlı Hostname & Numara kartı
+        cihaz_kutu = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        cihaz_kutu.set_halign(Gtk.Align.CENTER)
+        cihaz_kutu.get_style_context().add_class("psy-cihaz-kart")
+        lbl_cihaz = Gtk.Label(label=ORTA_ETIKET)
+        lbl_cihaz.get_style_context().add_class("psy-cihaz-etiket")
+        cihaz_kutu.pack_start(lbl_cihaz, False, False, 0)
+        kutu.pack_start(cihaz_kutu, False, False, 4)
+
         for metin, sinif in (("\U0001F512", "psy-ikon"), (BASLIK, "psy-baslik"), (MESAJ, "psy-mesaj"),
                              (OKUL, "psy-okul"), ("Ekran öğretmen tarafından kilitlendi · Lab Kaptanı", "psy-alt")):
             if not metin:
@@ -87,12 +131,32 @@ def gtk_katman():
             e.set_max_width_chars(48)
             e.get_style_context().add_class(sinif)
             kutu.pack_start(e, False, False, 0)
-        w.add(kutu)
+
+        katman.add(kutu)
+
+        # Sağ üst köşede dev bilgisayar numarası ve hostname rozeti
+        kose = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        kose.set_halign(Gtk.Align.END)
+        kose.set_valign(Gtk.Align.START)
+        kose.get_style_context().add_class("psy-kose-kutu")
+        lbl_no = Gtk.Label(label=NUMARA)
+        lbl_no.get_style_context().add_class("psy-kose-no")
+        kose.pack_start(lbl_no, False, False, 0)
+        lbl_host = Gtk.Label(label=HOSTNAME)
+        lbl_host.get_style_context().add_class("psy-kose-host")
+        kose.pack_start(lbl_host, False, False, 0)
+        katman.add_overlay(kose)
+
+        w.add(katman)
         w.show_all()
         pencereler.append(w)
     koltuk = ekran.get_default_seat()
+    sayac = {"adim": 0}
 
     def tut():
+        sayac["adim"] += 1
+        if sayac["adim"] % 40 == 0:
+            _ekran_acik_tut()
         for w in pencereler:
             gw = w.get_window()
             if gw is not None:
@@ -111,6 +175,7 @@ def gtk_katman():
 
 def tk_katman():
     import tkinter as tk
+    _ekran_acik_tut()
     kok = tk.Tk()
     kok.configure(bg="#0F172A")
     gen, yuk = kok.winfo_screenwidth(), kok.winfo_screenheight()
@@ -118,9 +183,21 @@ def tk_katman():
     kok.overrideredirect(True)
     kok.attributes("-topmost", True)
     kok.protocol("WM_DELETE_WINDOW", lambda: None)
+
+    # Sağ üst köşe dev numara rozeti
+    kose = tk.Frame(kok, bg="#1E293B", highlightbackground="#38BDF8", highlightthickness=3, padx=26, pady=12)
+    kose.place(relx=0.97, rely=0.04, anchor="ne")
+    tk.Label(kose, text=NUMARA, fg="#38BDF8", bg="#1E293B", font=("Sans", 76, "bold")).pack()
+    tk.Label(kose, text=HOSTNAME, fg="#E2E8F0", bg="#1E293B", font=("Sans", 18, "bold")).pack()
+
     cerceve = tk.Frame(kok, bg="#0F172A")
     cerceve.place(relx=0.5, rely=0.5, anchor="center")
-    for metin, renk, boy in (("\U0001F512", "#FFFFFF", 72), (BASLIK, "#FFFFFF", 48), (MESAJ, "#E2E8F0", 24),
+
+    cihaz_cerceve = tk.Frame(cerceve, bg="#1E293B", highlightbackground="#F59E0B", highlightthickness=2, padx=24, pady=10)
+    cihaz_cerceve.pack(pady=10)
+    tk.Label(cihaz_cerceve, text=ORTA_ETIKET, fg="#FBBF24", bg="#1E293B", font=("Sans", 34, "bold")).pack()
+
+    for metin, renk, boy in (("\U0001F512", "#FFFFFF", 64), (BASLIK, "#FFFFFF", 48), (MESAJ, "#E2E8F0", 24),
                              (OKUL, "#93C5FD", 16)):
         if metin:
             tk.Label(cerceve, text=metin, fg=renk, bg="#0F172A", font=("Sans", boy, "bold"),
@@ -279,6 +356,18 @@ def _katmani_kapat() -> int:
     return 1
 
 
+def hostname_etiket_cikar(hostname: str = "", yedek_etiket: str = "") -> tuple[str, str]:
+    sistem_ad = ""
+    try:
+        sistem_ad = os.uname().nodename
+    except AttributeError:
+        pass
+    tam_ad = (hostname or "").strip() or (sistem_ad or "").strip() or (yedek_etiket or "").strip() or "PC"
+    rakamlar = re.findall(r"\d+", tam_ad) or re.findall(r"\d+", yedek_etiket or "")
+    numara = (rakamlar[-1].zfill(2) if len(rakamlar[-1]) == 1 else rakamlar[-1]) if rakamlar else tam_ad.upper()[:10]
+    return numara, tam_ad
+
+
 def ekran_kilit(p: dict) -> dict:
     eylem = p.get("eylem", "kilitle")
     mesaj = (p.get("mesaj") or "Lütfen öğretmeninizi dinleyin.").strip()[:300]
@@ -294,8 +383,16 @@ def ekran_kilit(p: dict) -> dict:
     _katmani_kapat()  # yeniden kilitlemede mesaj güncellensin
     KILIT_BETIGI.write_text(KATMAN_KODU, encoding="utf-8")
     os.chmod(KILIT_BETIGI, 0o644)
+    numara, hostname = hostname_etiket_cikar(p.get("cihaz_hostname") or "", p.get("cihaz_etiket") or "")
+    xset = _arac("xset")
+    if xset and "DISPLAY" in ortam:
+        try:
+            _calistir(_ogrenci_komutu([xset, "s", "off", "-dpms", "s", "noblank"], ortam))
+        except Exception:
+            pass
     parametre = json.dumps({"baslik": "Bana Bakın", "mesaj": mesaj, "okul": p.get("okul") or "",
-                            "sure_dk": p.get("sure_dk") or 60}, ensure_ascii=False)
+                            "sure_dk": p.get("sure_dk") or 60,
+                            "hostname": hostname, "numara": numara}, ensure_ascii=False)
     systemd_run = _arac("systemd-run")
     if systemd_run:
         cmd = [
@@ -307,11 +404,13 @@ def ekran_kilit(p: dict) -> dict:
         ]
         r = _calistir(cmd)
         if r.returncode == 0:
-            return {"tamam": True, "eylem": "kilitle", "mesaj": "Ekran kilitlendi (Bana Bakın)"}
+            return {"tamam": True, "eylem": "kilitle", "hostname": hostname, "numara": numara,
+                    "mesaj": f"Ekran kilitlendi (Bana Bakın — {numara} · {hostname})"}
 
     # Yedek yöntem: runuser ile arka planda
     _arka_planda(_ogrenci_komutu([python, str(KILIT_BETIGI), parametre], ortam), KILIT_GUNLUGU)
-    return {"tamam": True, "eylem": "kilitle", "mesaj": "Ekran kilitlendi (Bana Bakın)"}
+    return {"tamam": True, "eylem": "kilitle", "hostname": hostname, "numara": numara,
+            "mesaj": f"Ekran kilitlendi (Bana Bakın — {numara} · {hostname})"}
 
 
 def duyuru(p: dict) -> dict:

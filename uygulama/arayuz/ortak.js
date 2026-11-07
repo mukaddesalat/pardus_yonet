@@ -1148,13 +1148,16 @@ function cihazOzetPenceresi(c) {
   }
 
   const elLab = $("#co-lab");
-  if (elLab) elLab.textContent = c.grup || "Laboratuvar";
+  if (elLab) elLab.textContent = c.laboratuvar || c.grup || "Laboratuvar";
 
   const elHesap = $("#co-hesap");
   if (elHesap) elHesap.textContent = c.baglanti_hesabi || "Otomatik (pardus/hp)";
 
-  const elPort = $("#co-port");
-  if (elPort) elPort.textContent = String(c.ssh_port || 22);
+  const elHostname = $("#co-hostname");
+  if (elHostname) {
+    const ipMetin = c.ssh_port === 22 ? c.ip : `${c.ip}:${c.ssh_port}`;
+    elHostname.textContent = `${c.hostname || "Okunmadı"} · ${ipMetin}`;
+  }
 
   const elSurum = $("#co-surum");
   if (elSurum) {

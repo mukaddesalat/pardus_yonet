@@ -141,14 +141,70 @@ def ini_oku(yol):
     return sonuc
 
 
+VARSAYILAN_UZMAN = {
+    "kimlik_yontemi": 1,               # 1 = Anahtar dosyası yetkilendirmesi, 0 = Oturum açma yetkilendirmesi
+    "erisim_grubu": "root",            # Yetkilendirme anahtarı erişim grubu (authkeys setaccessgroup <ad>/public root)
+    "kullanici_gruplari": "sistem",    # Varsayılan sistem kullanıcı grupları (POSIX)
+    "vnc_sunucusu": "dahili",          # Dahili VNC sunucusu (BuiltinVncServer)
+    "goruntu_kalitesi": "yuksek",      # Uzak erişim görüntü kalitesi: yuksek | orta | dusuk
+    "port": PORT,                      # Veyon birincil servis portu (11100)
+}
+DAHILI_VNC_UUID = "{39d7a07f-9467-4927-b68c-4b33880d22d8}"
+HARICI_VNC_UUID = "{e625e74f-9b29-4a1d-a027-449540e71987}"
+SISTEM_GRUP_UUID = "{4f7d98f0-395a-4f32-9096-188c1e7e982b}"
+GRUP_DESENI = re.compile(r"^[a-z_][a-z0-9_-]{0,31}$")
+
+
+def ini_yaz(yol, guncellemeler):
+    """Veyon.conf INI dosyasına güvenli bölüm/anahtar güncellemesi yazar."""
+    mevcut = ini_oku(yol) or {}
+    for bolum, anahtarlar in guncellemeler.items():
+        hedef_bolum = mevcut.setdefault(bolum, {})
+        for k, v in anahtarlar.items():
+            if v is None:
+                hedef_bolum.pop(k, None)
+            else:
+                hedef_bolum[k] = str(v)
+    os.makedirs(os.path.dirname(yol), exist_ok=True)
+    satirlar = []
+    for bolum, anahtarlar in mevcut.items():
+        if not anahtarlar:
+            continue
+        satirlar.append("[%s]" % bolum)
+        for k, v in anahtarlar.items():
+            satirlar.append("%s=%s" % (k, v))
+        satirlar.append("")
+    gecici = yol + ".psy-yeni"
+    with open(gecici, "w", encoding="utf-8") as f:
+        f.write("\n".join(satirlar).rstrip() + "\n")
+    os.chmod(gecici, 0o644)
+    os.replace(gecici, yol)
+
+
 def konf_oku():
     ini = ini_oku(KONF)
     if ini is None:
-        return {"var": False, "yontem": None, "anahtar_dizini": None}
+        return {"var": False, "yontem": None, "anahtar_dizini": None,
+                "erisim_grubu": "root", "kullanici_gruplari": "sistem",
+                "vnc_sunucusu": "dahili", "goruntu_kalitesi": "yuksek", "port": PORT}
     kimlik = ini.get("Authentication", {})
     yontem = kimlik.get("Method")
+    vnc = ini.get("VncServer", {})
+    dahili_vnc = ini.get("BuiltinVncServer", {})
+    ag_bolum = ini.get("Network", {})
+    port_deger = ag_bolum.get("VeyonServerPort") or ag_bolum.get("PrimaryServicePort")
+    vnc_eklenti = vnc.get("Plugin") or ""
+    vnc_tur = "harici" if vnc_eklenti == HARICI_VNC_UUID else "dahili"
+    kalite_kod = str(dahili_vnc.get("Quality") or vnc.get("ImageQuality") or "0")
+    kalite_tur = {"0": "yuksek", "2": "yuksek", "yuksek": "yuksek",
+                  "1": "orta", "orta": "orta", "dusuk": "dusuk"}.get(kalite_kod.lower(), "yuksek")
     return {"var": True, "yontem": int(yontem) if yontem and yontem.isdigit() else None,
-            "anahtar_dizini": kimlik.get("PublicKeyBaseDir")}
+            "anahtar_dizini": kimlik.get("PublicKeyBaseDir"),
+            "erisim_grubu": kimlik.get("AccessGroup") or kimlik.get("KeyFileAccessGroup") or "root",
+            "kullanici_gruplari": "sistem",
+            "vnc_sunucusu": vnc_tur,
+            "goruntu_kalitesi": kalite_tur,
+            "port": int(port_deger) if port_deger and str(port_deger).isdigit() else PORT}
 
 
 def qt_ozet(veri):
@@ -257,9 +313,101 @@ def yedek_al(mevcut):
 
 # ---------------------------------------------------------------- yapılandırma
 
+def uzman_normalle(ham):
+    u = {**VARSAYILAN_UZMAN, **(ham or {})}
+    ham_yontem = u.get("yontem") if "yontem" in (ham or {}) else u.get("kimlik_yontemi", 1)
+    yontem = int(ham_yontem) if str(ham_yontem) in ("0", "1") else 1
+    grup = str(u.get("erisim_grubu") or "root").strip()
+    if not GRUP_DESENI.match(grup):
+        grup = "root"
+    kul_grup = "islem" if str(u.get("kullanici_gruplari") or "sistem") == "islem" else "sistem"
+    ham_vnc = u.get("vnc_sunucu") or u.get("vnc_sunucusu") or "dahili"
+    vnc = "harici" if str(ham_vnc) == "harici" else "dahili"
+    kalite = str(u.get("goruntu_kalitesi") or "yuksek").lower()
+    if kalite not in ("yuksek", "orta", "dusuk"):
+        kalite = "yuksek"
+    try:
+        port = int(u.get("port") or PORT)
+        if not 1024 <= port <= 65535:
+            port = PORT
+    except (ValueError, TypeError):
+        port = PORT
+    return {
+        "kimlik_yontemi": yontem,
+        "yontem": yontem,
+        "erisim_grubu": grup,
+        "kullanici_gruplari": kul_grup,
+        "vnc_sunucusu": vnc,
+        "vnc_sunucu": vnc,
+        "goruntu_kalitesi": kalite,
+        "port": port,
+    }
+
+
+def uzman_cli_uygula(ad, uzman, ortam):
+    """Veyon uzman parametrelerini veyon-cli ve Veyon.conf üzerinden uygular:
+    - Yetkilendirme anahtarı erişim grubu: root (veyon-cli authkeys setaccessgroup <ad>/public <grup>)
+    - Kullanıcı grupları arka ucu: varsayılan sistem kullanıcı grupları
+    - VNC sunucusu: dahili VNC sunucusu (BuiltinVncServer)
+    - Uzak erişim görüntü kalitesi: yüksek
+    """
+    grup = uzman["erisim_grubu"]
+    # 1. Yetkilendirme anahtarı erişim grubu
+    calistir(["veyon-cli", "authkeys", "setaccessgroup", ad + "/public", grup], ortam=ortam)
+    anahtar_dosyasi = os.path.join(ACIK_KOK, ad, "key")
+    if os.path.exists(anahtar_dosyasi):
+        calistir(["chgrp", grup, anahtar_dosyasi], ortam=ortam)
+        try:
+            os.chmod(anahtar_dosyasi, 0o644)
+        except OSError:
+            pass
+
+    # 2. VNC sunucusu, görüntü kalitesi ve sistem kullanıcı grupları
+    vnc_uuid = HARICI_VNC_UUID if uzman["vnc_sunucusu"] == "harici" else DAHILI_VNC_UUID
+    kalite_deger = {"yuksek": "0", "orta": "1", "dusuk": "2"}[uzman["goruntu_kalitesi"]]
+    kalite_etiket = {"yuksek": "2", "orta": "1", "dusuk": "0"}[uzman["goruntu_kalitesi"]]
+    islem_grup = "true" if uzman["kullanici_gruplari"] == "islem" else "false"
+
+    for anahtar, deger in (
+        ("VncServer/Plugin", vnc_uuid),
+        ("Core/UserGroupsBackend", SISTEM_GRUP_UUID),
+        ("AccessControl/ProcessUserGroups", islem_grup),
+        ("BuiltinVncServer/Quality", kalite_deger),
+        ("Network/VeyonServerPort", str(uzman["port"])),
+    ):
+        calistir(["veyon-cli", "config", "set", anahtar, deger], ortam=ortam)
+
+    # Veyon.conf INI dosyasında da tüm alanların tam karşılığını garanti altına al
+    ini_yaz(KONF, {
+        "Authentication": {
+            "Method": str(uzman["kimlik_yontemi"]),
+            "AccessGroup": grup,
+            "KeyFileAccessGroup": grup,
+        },
+        "Core": {
+            "UserGroupsBackend": SISTEM_GRUP_UUID,
+        },
+        "AccessControl": {
+            "ProcessUserGroups": islem_grup,
+        },
+        "VncServer": {
+            "Plugin": vnc_uuid,
+            "ImageQuality": kalite_etiket,
+        },
+        "BuiltinVncServer": {
+            "Quality": kalite_deger,
+        },
+        "Network": {
+            "VeyonServerPort": str(uzman["port"]),
+        },
+    })
+
+
 def yapilandir(p):
     ad, pem = p.get("anahtar_adi", ""), p.get("anahtar_pem", "")
     beklenen, uygula = p.get("parmak_izi", ""), bool(p.get("uygula"))
+    uzman = uzman_normalle(p.get("uzman"))
+    hedef_yontem = uzman["kimlik_yontemi"]
     if not AD_DESENI.match(ad):
         return {"hata": "geçersiz anahtar adı"}
     if not pem.startswith("-----BEGIN PUBLIC KEY-----"):
@@ -278,9 +426,11 @@ def yapilandir(p):
     ogeler = {
         "anahtar": {"ad": ad, "hedef_kimlik": hedef["cift_kimligi"],
                     "mevcut_kimlik": a.get("cift_kimligi") if a else None,
+                    "erisim_grubu": uzman["erisim_grubu"],
                     "durum": ("zaten" if a and a.get("parmak_izi") == beklenen
                               else "degistirilecek" if a else "eklenecek")},
-        "yontem": {"mevcut": mevcut["yontem"], "durum": "zaten" if mevcut["yontem"] == 1 else "ayarlanacak"},
+        "yontem": {"mevcut": mevcut["yontem"], "hedef": hedef_yontem,
+                   "durum": "zaten" if mevcut["yontem"] == hedef_yontem else "ayarlanacak"},
         "servis": {"mevcut": mevcut["servis"],
                    "durum": ("zaten" if mevcut["servis"].get("etkin") and mevcut["servis"].get("calisiyor")
                              else "etkinlestirilecek")},
@@ -293,10 +443,10 @@ def yapilandir(p):
     if not mevcut["veyon_cli"]:
         if uygula:
             return {"hata": "veyon_yok"}
-        return {"onizleme": True, "veyon_yok": True, "ogeler": ogeler, "uyarilar": uyarilar,
-                "durum": mevcut}
+        return {"onizleme": True, "veyon_yok": True, "ogeler": ogeler, "uzman": uzman,
+                "uyarilar": uyarilar, "durum": mevcut}
     if not uygula:
-        return {"onizleme": True, "ogeler": ogeler, "uyarilar": uyarilar, "durum": mevcut}
+        return {"onizleme": True, "ogeler": ogeler, "uzman": uzman, "uyarilar": uyarilar, "durum": mevcut}
 
     yedek = yedek_al(mevcut)
     gecici = tempfile.mkdtemp(prefix="psy-veyon-")
@@ -326,16 +476,18 @@ def yapilandir(p):
             else:
                 og["durum"] = "uygulandi"
         oy = ogeler["yontem"]
+        rc, c, h = calistir(["veyon-cli", "config", "set", "Authentication/Method", str(hedef_yontem)], ortam=ortam)
+        # Uzman ayarlarını (erişim grubu root, sistem kullanıcı grupları, dahili VNC, yüksek görüntü kalitesi) uygula
+        uzman_cli_uygula(ad, uzman, ortam)
+        sonra = konf_oku()["yontem"]
+        oy["sonra"] = sonra
         if oy["durum"] != "zaten":
-            rc, c, h = calistir(["veyon-cli", "config", "set", "Authentication/Method", "1"], ortam=ortam)
-            sonra = konf_oku()["yontem"]
-            oy["sonra"] = sonra
-            if rc != 0 or sonra != 1:
-                oy["durum"], oy["neden"] = "hata", (h or c).strip()[-300:] or "geri okunan değer 1 değil"
+            if rc != 0 or sonra != hedef_yontem:
+                oy["durum"], oy["neden"] = "hata", (h or c).strip()[-300:] or ("geri okunan değer %d değil" % hedef_yontem)
             else:
                 oy["durum"] = "uygulandi"
         os_ = ogeler["servis"]
-        degisti = og["durum"] == "uygulandi" or oy["durum"] == "uygulandi"
+        degisti = True  # uzman ayarları ve erişim grubu uygulandığından servis her zaman yenilenir
         if os_["durum"] != "zaten" or degisti:
             calistir(["systemctl", "enable", SERVIS])
             calistir(["systemctl", "restart", SERVIS], zaman=90)
@@ -351,7 +503,7 @@ def yapilandir(p):
     finally:
         shutil.rmtree(gecici, ignore_errors=True)
     son = durum(p)
-    return {"uygulandi": True, "ogeler": ogeler, "uyarilar": uyarilar, "yedek": yedek, "durum": son,
+    return {"uygulandi": True, "ogeler": ogeler, "uzman": uzman, "uyarilar": uyarilar, "yedek": yedek, "durum": son,
             "hata_var": any(o["durum"] == "hata" for o in ogeler.values())}
 
 

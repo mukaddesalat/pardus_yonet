@@ -19,12 +19,59 @@ from . import ag, anahtar, ayarlar, ssh_araclari, veritabani
 
 # Debian/Pardus kullanıcı adı kuralı (useradd NAME_REGEX varsayılanı)
 _HESAP_DESENI = re.compile(r"^[a-z_][a-z0-9_-]{0,31}$")
+_HOSTNAME_DESENI = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$")
 _METIN_SINIRI = 40
 EN_FAZLA_ICE_AKTARMA = 500
 
 
 class EnvanterHatasi(ValueError):
     """Kullanıcıya olduğu gibi gösterilebilecek doğrulama hatası."""
+
+
+def hostname_dogrula(deger: str | None) -> str | None:
+    deger = (deger or "").strip()
+    if not deger:
+        return None
+    if len(deger) > 63 or not _HOSTNAME_DESENI.match(deger):
+        raise EnvanterHatasi(
+            "Geçersiz hostname (bilgisayar adı): yalnızca İngilizce harf, rakam ve tire (-) "
+            "içerebilir, en çok 63 karakter olabilir")
+    return deger
+
+
+def _uzak_hostname_degistir(cihaz: dict, yeni_hostname: str) -> bool:
+    """Bilgisayar SSH ile yönetime hazırsa uzaktan hostnamectl ve /etc/hosts günceller."""
+    from . import yonetim
+    try:
+        istemci = yonetim.baglan(cihaz)
+    except Exception:
+        return False
+    try:
+        rc, _, _ = ssh_araclari.sudo_komut(istemci, ["hostnamectl", "set-hostname", yeni_hostname], zaman=15)
+        if rc != 0:
+            rc, _, _ = ssh_araclari.sudo_komut(istemci, ["hostname", yeni_hostname], zaman=10)
+            if rc != 0:
+                return False
+        # /etc/hostname ve /etc/hosts (127.0.1.1) kaydını güvenli şekilde güncelle
+        betik = (
+            "import pathlib, re, sys\n"
+            "hn = sys.argv[1]\n"
+            "pathlib.Path('/etc/hostname').write_text(hn + '\\n', encoding='utf-8')\n"
+            "p = pathlib.Path('/etc/hosts')\n"
+            "if p.exists():\n"
+            "    s = p.read_text(encoding='utf-8', errors='replace')\n"
+            "    if re.search(r'^127\\.0\\.1\\.1\\s+', s, re.M):\n"
+            "        s = re.sub(r'^127\\.0\\.1\\.1\\s+.*$', f'127.0.1.1\\t{hn}', s, flags=re.M)\n"
+            "    else:\n"
+            "        s = s.rstrip('\\n') + f'\\n127.0.1.1\\t{hn}\\n'\n"
+            "    p.write_text(s, encoding='utf-8')\n"
+        )
+        ssh_araclari.sudo_komut(istemci, ["python3", "-c", betik, yeni_hostname], zaman=15)
+        return True
+    except Exception:
+        return False
+    finally:
+        istemci.close()
 
 
 def hesap_dogrula(hesap: str | None) -> str | None:
@@ -68,7 +115,7 @@ def _adres(ip: str, port: int) -> tuple[str, int]:
 
 def cihaz_ekle(ip: str, port: int = 22, etiket: str | None = None,
                grup: str | None = None, hesap: str | None = None,
-               korunan: bool = False) -> str:
+               korunan: bool = False, hostname: str | None = None) -> str:
     """Yalnız kayıt oluşturur; hiçbir ağ bağlantısı kurmaz."""
     ip, port = _adres(ip, port)
     if veritabani.tek("SELECT id FROM cihaz WHERE ip=? AND ssh_port=?", (ip, port)):
@@ -77,6 +124,9 @@ def cihaz_ekle(ip: str, port: int = 22, etiket: str | None = None,
                "grup": _metin(grup, "Laboratuvar") or "Laboratuvar",
                "baglanti_hesabi": hesap_dogrula(hesap),
                "durum": "Kimlik okunmadı"}
+    hn = hostname_dogrula(hostname)
+    if hn:
+        alanlar["hostname"] = hn
     if korunan:
         alanlar.update(korunan=1, korunan_neden="Öğretmen işaretledi")
     cihaz_id = veritabani.cihaz_bul_veya_olustur(ip, port)
@@ -85,12 +135,21 @@ def cihaz_ekle(ip: str, port: int = 22, etiket: str | None = None,
 
 
 def cihaz_duzenle(cihaz_id: str, degisiklik: dict) -> dict:
-    """İzinli alanlar: etiket, grup, baglanti_hesabi, korunan. IP/port değiştirilemez;
-    farklı bir adres yeni bir cihaz demektir (istem §5)."""
+    """İzinli alanlar: ip, port, etiket, hostname, grup, baglanti_hesabi, korunan."""
     cihaz = veritabani.cihaz(cihaz_id)
     if not cihaz:
         raise EnvanterHatasi("Bilgisayar bulunamadı")
     guncel = {}
+    if "ip" in degisiklik or "port" in degisiklik:
+        yeni_ip = degisiklik.get("ip") or cihaz["ip"]
+        yeni_port = degisiklik.get("port") if degisiklik.get("port") is not None else cihaz["ssh_port"]
+        yeni_ip, yeni_port = _adres(yeni_ip, yeni_port)
+        if (yeni_ip, yeni_port) != (cihaz["ip"], cihaz["ssh_port"]):
+            if veritabani.tek("SELECT id FROM cihaz WHERE ip=? AND ssh_port=? AND id<>?",
+                              (yeni_ip, yeni_port, cihaz_id)):
+                raise EnvanterHatasi(f"{yeni_ip}:{yeni_port} zaten envanterde")
+            guncel["ip"] = yeni_ip
+            guncel["ssh_port"] = yeni_port
     if "etiket" in degisiklik:
         guncel["etiket"] = _metin(degisiklik["etiket"], "Görünen ad")
     if "grup" in degisiklik:
@@ -107,8 +166,37 @@ def cihaz_duzenle(cihaz_id: str, degisiklik: dict) -> dict:
             guncel["sudo_durumu"] = None
             if cihaz["parmak_izi_onay"]:
                 guncel["durum"] = "Hazırlık gerekli"
+    hostname_degisti = False
+    hostname_uzak = False
+    hostname_mesaj = None
+    if "hostname" in degisiklik:
+        yeni_hn = hostname_dogrula(degisiklik["hostname"])
+        if yeni_hn != cihaz.get("hostname"):
+            guncel["hostname"] = yeni_hn
+            hostname_degisti = True
+            hazir = (cihaz.get("anahtar_durumu") == "ok" and
+                     cihaz.get("sudo_durumu") == "parolasiz" and
+                     not guncel.get("korunan", cihaz.get("korunan")) and
+                     "baglanti_hesabi" not in guncel)
+            if yeni_hn and hazir:
+                hedef_cihaz = {**cihaz, **guncel}
+                hostname_uzak = _uzak_hostname_degistir(hedef_cihaz, yeni_hn)
+                if hostname_uzak:
+                    hostname_mesaj = f"Uzak bilgisayarda ve envanterde hostname '{yeni_hn}' olarak güncellendi."
+                else:
+                    hostname_mesaj = (
+                        f"Hostname '{yeni_hn}' envantere kaydedildi "
+                        "(uzak bilgisayara şu an ulaşılamadığı için yalnız yerel kayıt güncellendi)."
+                    )
+            elif yeni_hn:
+                hostname_mesaj = f"Hostname '{yeni_hn}' envantere kaydedildi."
     veritabani.cihaz_guncelle(cihaz_id, **guncel)
-    return {"hesap_degisti": "baglanti_hesabi" in guncel}
+    return {
+        "hesap_degisti": "baglanti_hesabi" in guncel,
+        "hostname_degisti": hostname_degisti,
+        "hostname_uzak": hostname_uzak,
+        "hostname_mesaj": hostname_mesaj,
+    }
 
 
 # ---------------------------------------------------------------- içe aktarma

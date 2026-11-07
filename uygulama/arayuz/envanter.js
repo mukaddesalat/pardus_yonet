@@ -220,9 +220,11 @@ function cihazPenceresi(c) {
     (c.hostname ? ` — bilgisayar adı: ${c.hostname}` : "") + (c.korunan_neden ? ` — ${c.korunan_neden}` : "") : "";
   $("#cf-ip").value = c ? c.ip : "";
   $("#cf-port").value = c ? c.ssh_port : 22;
-  $("#cf-ip").disabled = Boolean(c);
-  $("#cf-port").disabled = Boolean(c);
+  $("#cf-ip").disabled = false;
+  $("#cf-port").disabled = false;
   $("#cf-ad").value = c ? (c.etiket || "") : "";
+  const elHn = $("#cf-hostname");
+  if (elHn) elHn.value = c ? (c.hostname || "") : "";
   $("#cf-lab").value = c ? c.laboratuvar : (Secim.lab || "Laboratuvar");
   const hesap = $("#cf-hesap");
   hesap.value = c ? (c.baglanti_hesabi || "") : "";
@@ -242,14 +244,25 @@ $("#cf-hesap").addEventListener("change", () => {
 
 $("#cihaz-penceresi").addEventListener("close", async () => {
   if ($("#cihaz-penceresi").returnValue !== "kaydet") return;
-  const govde = { etiket: $("#cf-ad").value.trim() || null, grup: $("#cf-lab").value.trim() || null,
-    baglanti_hesabi: $("#cf-hesap").value || null, korunan: $("#cf-korunan").checked };
+  const elHn = $("#cf-hostname");
+  const govde = {
+    ip: $("#cf-ip").value.trim(),
+    port: Number($("#cf-port").value) || 22,
+    etiket: $("#cf-ad").value.trim() || null,
+    hostname: elHn ? (elHn.value.trim() || null) : null,
+    grup: $("#cf-lab").value.trim() || null,
+    baglanti_hesabi: $("#cf-hesap").value || null,
+    korunan: $("#cf-korunan").checked,
+  };
   try {
     if (duzenlenenCihaz) {
       const s = await api(`/api/cihazlar/${duzenlenenCihaz.id}`, govde, "PATCH");
-      bildir(s.hesap_degisti ? "Kaydedildi. Yönetim hesabı değişti: bu bilgisayarı M1-S2'den yeniden hazırlayın." : "Kaydedildi.");
+      const mesajlar = ["Kaydedildi."];
+      if (s.hostname_mesaj) mesajlar.push(s.hostname_mesaj);
+      if (s.hesap_degisti) mesajlar.push("Yönetim hesabı değişti: bu bilgisayarı M1-S2'den yeniden hazırlayın.");
+      bildir(mesajlar.join(" "));
     } else {
-      await api("/api/cihazlar", { ...govde, ip: $("#cf-ip").value.trim(), port: Number($("#cf-port").value) || 22 });
+      await api("/api/cihazlar", govde);
       bildir("Eklendi. Bağlantı kurulmadı; sunucu kimliğini M1-S2'de okuyup onaylayın.");
     }
     await cihazlariYukle();
@@ -367,16 +380,20 @@ const m1s2 = {
   },
   korunacakHucresi(c) {
     const o = this.tekOnizleme.get(c.id);
-    if (!o || !o.oneri) return "—";
-    const var_olan = Object.entries(o.hesaplar).filter(([, v]) => v).map(([h]) => h);
+    const var_olan = o && o.hesaplar
+      ? Object.entries(o.hesaplar).filter(([, v]) => v).map(([h]) => h)
+      : (c.yonetim_hesaplari || []);
+    if (var_olan.length < 2) return "—";
+    const oneri = (o && o.oneri) || (var_olan.includes("pardus") ? "pardus" : var_olan[0]);
     const sec = el("select", { "data-ui-id": `M1-S2-B6-${satirKimligi(c)}`, "aria-label": `${c.ad} korunacak hesap`,
       onchange: (e) => this.korunacak.set(c.id, e.target.value) },
     ...var_olan.map((h) => el("option", { value: h, metin: `${h} korunsun` })));
-    sec.value = this.korunacak.get(c.id) || o.oneri;
+    sec.value = this.korunacak.get(c.id) || oneri;
     const sil = var_olan.find((h) => h !== sec.value);
-    const bilgi = o.hesaplar[sil];
+    const bilgi = o && o.hesaplar ? o.hesaplar[sil] : null;
     return el("div", {}, sec, bilgi ? el("span", { class: "alt",
-      metin: `Silinecek ${sil}: ${boyut(bilgi.ev_bayt)} ev dizini, ${bilgi.anahtar_sayisi} anahtar${bilgi.oturum ? ", AÇIK OTURUM" : ""}` }) : null);
+      metin: `Silinecek ${sil}: ${boyut(bilgi.ev_bayt)} ev dizini, ${bilgi.anahtar_sayisi} anahtar${bilgi.oturum ? ", AÇIK OTURUM" : ""}` })
+      : el("span", { class: "alt", metin: `Silinecek: ${sil} (boyut için “Önce göster” önerilir)` }));
   },
   async kimlikOku() {
     const hedefler = await onayIste({ islem: "durum", cihazlar: Secim.liste(), baslik: "Sunucu kimliklerini oku",
@@ -407,22 +424,35 @@ const m1s2 = {
     if (!kayit) return;
     this.tekOnizleme = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.oneri) this.tekOnizleme.set(h.veri.cihaz_id, h.veri);
-    $("#m1s2-tek-uygula").disabled = !this.tekOnizleme.size;
     bildir(this.tekOnizleme.size
       ? `${this.tekOnizleme.size} bilgisayarda hp ve pardus birlikte var. Tabloda korunacak hesabı seçip B5 ile uygulayın.`
       : "Seçili bilgisayarlarda tekilleştirme gerektiren durum yok.");
     this.tablo.ciz();
   },
   async tekUygula() {
-    const adaylar = Secim.liste().filter((id) => this.tekOnizleme.has(id));
-    if (!adaylar.length) { bildir("Önizlemesi yapılmış ve seçili bilgisayar yok.", true); return; }
-    const secim = (id) => this.korunacak.get(id) || this.tekOnizleme.get(id).oneri;
+    const adaylar = Secim.liste().filter((id) => {
+      const c = Veri.bul(id);
+      return this.tekOnizleme.has(id) || (c && (c.yonetim_hesaplari || []).length > 1);
+    });
+    if (!adaylar.length) { bildir("Seçimde iki yönetim hesabı (pardus + hp) olan bilgisayar yok.", true); return; }
+    const onizlemeEksik = adaylar.some((id) => !this.tekOnizleme.has(id));
+    const secim = (id) => {
+      if (this.korunacak.get(id)) return this.korunacak.get(id);
+      const o = this.tekOnizleme.get(id);
+      if (o && o.oneri) return o.oneri;
+      const c = Veri.bul(id);
+      const yh = (c && c.yonetim_hesaplari) || [];
+      return yh.includes("pardus") ? "pardus" : (yh[0] || "pardus");
+    };
     const hedefler = await onayIste({
       islem: "tekillestirme", cihazlar: adaylar, baslik: "hp / pardus tekilleştirme",
       aciklama: "Her bilgisayarda seçilen hesap korunur. Diğer hesabın ev dizini ve hesap kayıtları öğrenci bilgisayarında yedeklenir, sonra hesap silinir.",
-      uyarilar: ["Korunacak hesapla yeni oturumda anahtar ve parolasız sudo doğrulanmadan silme yapılmaz.",
+      uyarilar: [
+        ...(onizlemeEksik ? ["💡 Öneri: İşlemden önce “Önce göster” ile silinecek hesabın ev dizini boyutunu ve açık oturum durumunu önizlemeniz önerilir. İsterseniz önizleme yapmadan da devam edebilirsiniz."] : []),
+        "Korunacak hesapla yeni oturumda anahtar ve parolasız sudo doğrulanmadan silme yapılmaz.",
         "Silinecek hesapta açık oturum varsa o bilgisayar atlanır.",
-        "Envanter ve Ansible dışa aktarımı korunacak hesaba geçer."],
+        "Envanter ve Ansible dışa aktarımı korunacak hesaba geçer.",
+      ],
       yikici: true, onayMetni: "Seçilen yönetim hesaplarının silineceğini anladım", baslatMetni: "Tekilleştir",
       hedefEk: { baslik: "Korunacak → silinecek", hucre: (h) => { const k = secim(h.id); return `${k} korunur → ${k === "pardus" ? "hp" : "pardus"} silinir`; } },
     });
@@ -430,7 +460,6 @@ const m1s2 = {
     const korunacaklar = Object.fromEntries(hedefler.map((id) => [id, secim(id)]));
     await isBaslat("/api/tekillestirme/uygula", { korunacaklar, onay: true });
     this.tekOnizleme = new Map();
-    $("#m1s2-tek-uygula").disabled = true;
   },
   ac() { this.sayaclar(); this.tablo.ciz(); Secim.bildir(); },
   sayaclar() {

@@ -49,16 +49,83 @@ const m1s4 = {
     $("#m1s4-anahtar-dosya").addEventListener("change", (o) => this.anahtarYukle(o.target.files[0]));
     $("#m1s4-anahtar-sil").addEventListener("click", () => this.anahtarSil());
     $("#m1s4-ogretmen").addEventListener("click", () => this.ogretmenDenetle());
-    $("#m1s4-kontrol").addEventListener("click", () => this.plan(this.kontrolKipi(), true));
-    $("#m1s4-kur").addEventListener("click", () => this.plan("kur"));
-    $("#m1s4-yapilandir").addEventListener("click", () => this.plan("yapilandir"));
-    $("#m1s4-ikisi").addEventListener("click", () => this.plan("ikisi"));
+    $("#m1s4-kontrol").addEventListener("click", () => this.plan(this.kontrolKipi(), false));
+    $("#m1s4-kur").addEventListener("click", () => this.dogrudanUygula("kur"));
+    $("#m1s4-yapilandir").addEventListener("click", () => this.dogrudanUygula("yapilandir"));
+    $("#m1s4-ikisi").addEventListener("click", () => this.dogrudanUygula("ikisi"));
     $("#m1s4-dogrula").addEventListener("click", () => this.dogrula());
     $("#m1s4-surumler").addEventListener("click", () => this.surumler());
     $("#m1s4-geri").addEventListener("click", () => this.geriAl());
     $("#vo-onay").addEventListener("change", () => this.onayDurumu());
     $("#vo-ogretmen").addEventListener("change", () => this.onayDurumu());
+    for (const id of [
+      "m1s4-uzman-yontem", "m1s4-uzman-grup", "m1s4-uzman-kullanici-grup",
+      "m1s4-uzman-vnc", "m1s4-uzman-kalite", "m1s4-uzman-port",
+    ]) {
+      const inp = $(`#${id}`);
+      if (inp) {
+        inp.addEventListener("change", () => this.uzmanKomutlariniGuncelle());
+        inp.addEventListener("input", () => this.uzmanKomutlariniGuncelle());
+      }
+    }
+    const sifirlaBtn = $("#m1s4-uzman-sifirla");
+    if (sifirlaBtn) sifirlaBtn.addEventListener("click", () => this.uzmanAyarlariSifirla());
+    this.uzmanKomutlariniGuncelle();
     Veri.dinleyiciler.add(() => this.kartlar());
+  },
+
+  uzmanAyarlariOku() {
+    const yontem = Number(($("#m1s4-uzman-yontem") && $("#m1s4-uzman-yontem").value) || "1");
+    const erisimGrubu = (($("#m1s4-uzman-grup") && $("#m1s4-uzman-grup").value) || "").trim() || "root";
+    const kullaniciGruplari = (($("#m1s4-uzman-kullanici-grup") && $("#m1s4-uzman-kullanici-grup").value) || "sistem");
+    const vncSunucu = (($("#m1s4-uzman-vnc") && $("#m1s4-uzman-vnc").value) || "dahili");
+    const goruntuKalitesi = (($("#m1s4-uzman-kalite") && $("#m1s4-uzman-kalite").value) || "yuksek");
+    const portHam = Number(($("#m1s4-uzman-port") && $("#m1s4-uzman-port").value) || "11100");
+    const port = Number.isFinite(portHam) && portHam >= 1024 && portHam <= 65535 ? portHam : 11100;
+    return {
+      yontem: yontem === 0 ? 0 : 1,
+      erisim_grubu: erisimGrubu,
+      kullanici_gruplari: kullaniciGruplari,
+      vnc_sunucu: vncSunucu,
+      goruntu_kalitesi: goruntuKalitesi,
+      port,
+    };
+  },
+
+  uzmanAyarlariSifirla() {
+    if ($("#m1s4-uzman-yontem")) $("#m1s4-uzman-yontem").value = "1";
+    if ($("#m1s4-uzman-grup")) $("#m1s4-uzman-grup").value = "root";
+    if ($("#m1s4-uzman-kullanici-grup")) $("#m1s4-uzman-kullanici-grup").value = "sistem";
+    if ($("#m1s4-uzman-vnc")) $("#m1s4-uzman-vnc").value = "dahili";
+    if ($("#m1s4-uzman-kalite")) $("#m1s4-uzman-kalite").value = "yuksek";
+    if ($("#m1s4-uzman-port")) $("#m1s4-uzman-port").value = "11100";
+    this.uzmanKomutlariniGuncelle();
+  },
+
+  uzmanKomutlariniGuncelle() {
+    const pre = $("#m1s4-uzman-komutlar");
+    if (!pre) return;
+    const u = this.uzmanAyarlariOku();
+    const anahtarAd = (this.bilgi && this.bilgi.anahtar && this.bilgi.anahtar.ad)
+      || (($("#m1s4-anahtar-adi") && $("#m1s4-anahtar-adi").value.trim()) || "teacher");
+    const vncUuid = u.vnc_sunucu === "harici"
+      ? "{20988c00-025d-4012-907e-258b25a9f704}"
+      : "{39d7a07f-9467-4927-b68c-4b33880d22d8}";
+    const kaliteMap = { yuksek: [0, 2], orta: [1, 1], dusuk: [2, 0] };
+    const [bKalite, iKalite] = kaliteMap[u.goruntu_kalitesi] || [0, 2];
+    const islemGrup = u.kullanici_gruplari === "islem" ? "true" : "false";
+    pre.textContent = [
+      `veyon-cli authkeys import ${anahtarAd}/public /tmp/${anahtarAd}_public_key.pem`,
+      `veyon-cli authkeys setaccessgroup ${anahtarAd}/public ${u.erisim_grubu}`,
+      `veyon-cli config set Authentication/Method ${u.yontem}`,
+      `veyon-cli config set Core/UserGroupsBackend "{4f7d98f0-395a-4f32-9096-188c1e7e982b}"`,
+      `veyon-cli config set AccessControl/ProcessUserGroups ${islemGrup}`,
+      `veyon-cli config set VncServer/Plugin "${vncUuid}"`,
+      `veyon-cli config set BuiltinVncServer/Quality ${bKalite}`,
+      `veyon-cli config set VncServer/ImageQuality ${iKalite}`,
+      `veyon-cli config set Service/PrimaryServicePort ${u.port}`,
+      `veyon-cli service restart`,
+    ].join("\n");
   },
 
   async ac() {
@@ -164,6 +231,7 @@ const m1s4 = {
     if (a.onceki) satirlar.push(["Önceki anahtar", `${a.onceki.ad} [${a.onceki.cift_kimligi}] — yedeklendi`]);
     dl.replaceChildren(...satirlar.flatMap(([k, d]) => [el("dt", { metin: k }),
       el("dd", { class: ["SHA-256", "Veyon çift kimliği"].includes(k) ? "mono" : "", metin: d })]));
+    this.uzmanKomutlariniGuncelle();
   },
 
   async anahtarYukle(dosya, onay = false) {
@@ -257,10 +325,51 @@ const m1s4 = {
         + (kip !== "kur" ? ", uygulanacak ayarların farkı çıkarılır" : "") + ". Bu adımda hiçbir şey KURULMAZ ve ayar DEĞİŞMEZ.",
       baslatMetni: "Önizlemeyi hazırla" });
     if (!hedefler) return;
-    const kayit = await isBaslat("/api/veyon/plan", { cihazlar: hedefler, kip });
+    const uzman = this.uzmanAyarlariOku();
+    const kayit = await isBaslat("/api/veyon/plan", { cihazlar: hedefler, kip, uzman });
     if (!kayit) return;
     this.sonuclariGoster(kayit);
     if (!yalnizKontrol) await this.onizlemeAc(kayit, kip);
+  },
+
+  async dogrudanUygula(kip) {
+    if (!kip) { bildir("Önce Veyon paketini veya public key'i yükleyin.", true); return; }
+    if (kip !== "yapilandir" && !this.bilgi.secili_sha) { bildir("Önce Veyon .deb paketini yükleyin ve kurulacak paketi seçin (M1-S4-B1 / B2).", true); return; }
+    if (kip !== "kur" && !this.bilgi.anahtar) { bildir("Önce Veyon public key dosyasını yükleyin (M1-S4-B4).", true); return; }
+    let h = null;
+    if (kip !== "kur") h = await this.ogretmenDenetle();
+    const ogretmenSorunu = Boolean(h && h.sorunlar && h.sorunlar.length);
+    const ogretmenOnayKutu = el("input", { type: "checkbox", checked: true });
+    const ek = ogretmenSorunu ? el("div", { class: "uyari-kutusu" },
+      el("label", { class: "onay-kutusu" }, ogretmenOnayKutu,
+        "Öğretmen PC hazırlık denetiminde uyarı var; yine de öğrenci bilgisayarlarında uygulamaya devam et")) : null;
+    const u = this.uzmanAyarlariOku();
+    const kaliteEtiket = { yuksek: "Yüksek", orta: "Orta", dusuk: "Düşük" }[u.goruntu_kalitesi] || "Yüksek";
+    const hedefler = await onayIste({
+      islem: "veyon", cihazlar: Secim.liste(),
+      baslik: VEYON_KIPLERI[kip],
+      aciklama: kip === "ikisi"
+        ? `Seçili bilgisayarlarda Veyon paketi kurulur/güncellenir, public key aktarılır ve tüm Veyon ayarları (Anahtar dosya yetkilendirmesi, erişim grubu: ${u.erisim_grubu}, varsayılan sistem kullanıcı grupları, dahili VNC sunucusu, görüntü kalitesi: ${kaliteEtiket}) tek adımda uzaktan uygulanır.`
+        : kip === "kur"
+          ? "Seçili bilgisayarlarda Veyon paketi kurulur veya güncellenir."
+          : `Seçili bilgisayarlarda Veyon anahtarı ve ayarları (Anahtar dosya yetkilendirmesi, erişim grubu: ${u.erisim_grubu}, dahili VNC, görüntü kalitesi: ${kaliteEtiket}) uzaktan yapılandırılır.`,
+      uyarilar: [
+        "💡 Öneri: İsterseniz işlemden önce “Hazırlığı kontrol et” düğmesiyle kurulum ve yapılandırma farklarını önizleyebilirsiniz. İsterseniz önizleme yapmadan doğrudan uygulayabilirsiniz.",
+        ...(ogretmenSorunu ? [`Öğretmen PC: ${h.sorunlar.join(" ")}`] : []),
+        ...(kip !== "yapilandir" ? ["Paketin kurulum betikleri root yetkisiyle çalışır; yalnız güvendiğiniz Veyon paketini kurun."] : []),
+      ],
+      ek,
+      yikici: true,
+      onayMetni: "Veyon işlemini seçili bilgisayarlarda uygulamayı onaylıyorum",
+      baslatMetni: "Uygula",
+    });
+    if (!hedefler) return;
+    const yeni = await isBaslat("/api/veyon/uygula", {
+      cihazlar: hedefler, kip, plan_is_id: null, onay: true,
+      anahtar_uyarisi_onay: ogretmenSorunu ? ogretmenOnayKutu.checked : true,
+      uzman: u,
+    });
+    if (yeni) this.sonuclariGoster(yeni);
   },
 
   async onizlemeAc(kayit, kip) {
@@ -268,6 +377,8 @@ const m1s4 = {
     const digerleri = kayit.hedefler.filter((h) => !(h.veri && h.veri.durum === "hazir"));
     const p = this.secili();
     const a = this.bilgi.anahtar;
+    const u = this.uzmanAyarlariOku();
+    const kaliteEtiket = { yuksek: "Yüksek", orta: "Orta", dusuk: "Düşük" }[u.goruntu_kalitesi] || "Yüksek";
     $("#vo-baslik").textContent = `${VEYON_KIPLERI[kip]} — önizleme`;
     $("#vo-aciklama").textContent = kip === "ikisi"
       ? "Her bilgisayarda önce kurulum yapılır; kurulum başarısız veya yarım kalırsa o bilgisayarda yapılandırmaya geçilmez. Diğer bilgisayarların sonuçları korunur."
@@ -276,9 +387,11 @@ const m1s4 = {
     if (kip !== "yapilandir" && p) ayarlar.push(["Kurulacak paket", `${p.paket} ${p.surum} (${p.mimari}) — ${p.dosya_adi}`]);
     if (kip !== "kur" && a) {
       ayarlar.push(["Public key", `${a.ad} — çift kimliği ${a.cift_kimligi} → /etc/veyon/keys/public/${a.ad}/key`],
-        ["Kimlik doğrulama", "Anahtar dosyası (Authentication/Method = 1)"],
-        ["Veyon servisi", "açılışta başlar; ayar değiştiyse yeniden başlatılır"],
-        ["Ağ portu", "11100 (Veyon varsayılanı; değiştirilmez)"],
+        ["Kimlik doğrulama", u.yontem === 0 ? "Oturum parolası (Authentication/Method = 0)" : "Anahtar dosya yetkilendirmesi (Authentication/Method = 1)"],
+        ["Yetkilendirme erişim grubu", `${u.erisim_grubu} (authkeys setaccessgroup ${a.ad}/public ${u.erisim_grubu})`],
+        ["Kullanıcı grupları", u.kullanici_gruplari === "islem" ? "Erişim denetiminde kullanıcı gruplarını işle" : "Varsayılan sistem kullanıcı grupları"],
+        ["VNC ve görüntü kalitesi", `${u.vnc_sunucu === "harici" ? "Harici VNC" : "Dahili VNC sunucusu"} · Görüntü kalitesi: ${kaliteEtiket}`],
+        ["Veyon servisi ve port", `Port ${u.port} · açılışta başlar; ayar değiştiyse yeniden başlatılır`],
         ["Yedek", "önceki Veyon ayarları ve anahtarları öğrenci PC'de yedeklenir (M1-S4-B14 ile geri alınır)"]);
     }
     $("#vo-ayarlar").replaceChildren(...ayarlar.flatMap(([k, d]) => [el("dt", { metin: k }), el("dd", { metin: d })]));
@@ -295,7 +408,11 @@ const m1s4 = {
         k.yerine_gececek ? el("span", { class: "alt", metin: `yerine geçecek: ${k.yerine_gececek.join(", ")}` }) : null);
       const yapHucresi = !y ? el("span", { class: "alt", metin: "—" }) : y.veyon_yok
         ? el("span", { class: "alt", metin: "kurulumdan sonra yapılandırılır" })
-        : el("div", { class: "oge-listesi" }, veyonOgeRozeti("anahtar", y.ogeler.anahtar), veyonOgeRozeti("yöntem", y.ogeler.yontem),
+        : el("div", { class: "oge-listesi" },
+          veyonOgeRozeti("anahtar", y.ogeler.anahtar),
+          veyonOgeRozeti("yöntem", y.ogeler.yontem),
+          veyonOgeRozeti("erişim gr.", y.ogeler.erisim_grubu),
+          veyonOgeRozeti("VNC/kalite", y.ogeler.vnc_kalite),
           veyonOgeRozeti("servis", y.ogeler.servis));
       g.append(el("tr", {}, el("td", { metin: h.veri.ad }),
         el("td", { class: "mono", metin: v.durum === "kurulu" ? `${v.surum}${v.parcali ? " (parçalı)" : ""}` : v.durum === "kurulu_degil" ? "kurulu değil" : (v.durum || "?") }),
@@ -336,7 +453,7 @@ const m1s4 = {
       if (pencere.returnValue !== "uygula" || $("#vo-uygula").disabled) return;
       const b = this.bekleyen;
       const yeni = await isBaslat("/api/veyon/uygula", { cihazlar: b.hazir, kip: b.kip, plan_is_id: b.kayit.id, onay: true,
-        anahtar_uyarisi_onay: $("#vo-ogretmen").checked });
+        anahtar_uyarisi_onay: $("#vo-ogretmen").checked, uzman: this.uzmanAyarlariOku() });
       if (yeni) this.sonuclariGoster(yeni);
     }, { once: true });
   },

@@ -19,13 +19,16 @@ PAGES = [
         "03_cihaz_ozeti.png",
         "#M1-S1",
         "1366,850",
-        "setTimeout(() => { const el = document.querySelector('.ekran-gorseli') || document.querySelector('.cihaz-ad-link'); if (el) el.click(); }, 1200);",
+        "setTimeout(() => { if (window.Veri && window.Veri.cihazlar && window.Veri.cihazlar.length) { window.cihazOzetiniGoster(window.Veri.cihazlar[0]); } else { const el = document.querySelector('.ekran-gorseli') || document.querySelector('.cihaz-ad-link'); if (el) el.click(); } }, 800);",
     ),
     ("04_hazirlik.png", "#M1-S2", "1366,850", ""),
     ("05_bakim_ve_guc.png", "#M2-S4", "1366,850", ""),
     ("06_komut_merkezi.png", "#M2-S6", "1366,850", ""),
     ("07_odevler.png", "#M3-S1", "1366,850", ""),
     ("08_okul_ve_ogretmen.png", "#M5-S2", "1366,850", ""),
+    ("09_duvar_kagidi_galeri.png", "#M2-S3", "1366,920", ""),
+    ("10_yazilim_merkezi.png", "#M2-S2", "1366,920", ""),
+    ("11_veyon_uzman.png", "#M1-S4", "1366,980", "setTimeout(() => { const p = document.querySelector('#m1s4-uzman-panel'); if (p) { p.open = true; p.scrollIntoView(); } }, 600);"),
 ]
 
 

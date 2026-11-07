@@ -97,7 +97,6 @@ const m2s1 = {
   gecersizKil() {
     this.onizleme = new Map();
     this.onizlemeKapsami = null;
-    $("#m2s1-baslat").disabled = true;
   },
 
   alanlar(c) { return this.istisnalar.get(c.id) || this.genel; },
@@ -171,22 +170,25 @@ const m2s1 = {
     const neden = c.uygunluk.temizlik;
     if (neden) return neden;
     if (c.erisim === 0) return "Erişilemiyor";
-    const v = this.onizleme.get(c.id);
-    if (!v || this.onizlemeKapsami !== this.kapsam) return "Önizleme bekleniyor";
-    if (!v.sonuc) return v.neden || "Önizleme başarısız";
-    if (this.kapsam !== "alanlar" && !v.sonuc.yedek.yeterli) return "Yedek için alan yetersiz";
     if (this.kapsam === "alanlar" && !this.alanlar(c).size) return "Alan seçilmedi";
+    const v = this.onizleme.get(c.id);
+    if (v && this.onizlemeKapsami === this.kapsam) {
+      if (!v.sonuc) return v.neden || "Önizleme başarısız";
+      if (this.kapsam !== "alanlar" && !v.sonuc.yedek.yeterli) return "Yedek için alan yetersiz";
+    }
     return null;
   },
 
   uygunlukHucresi(c) {
     const e = this.engel(c);
     const v = this.onizleme.get(c.id);
-    const oturum = v ? v.oturum_acik : c.ogrenci_oturumu === 1;
+    const onizlendi = Boolean(v && this.onizlemeKapsami === this.kapsam);
+    const oturum = onizlendi && "oturum_acik" in v ? v.oturum_acik : c.ogrenci_oturumu === 1;
     if (e) return el("span", { class: "alt", metin: e });
-    if (this.kapsam !== "alanlar" && oturum) return rozet("Oturum kapatılmadan başlamaz", "orta");
-    if (oturum) return rozet("Uygun — oturum açık (uyarı)", "orta");
-    return rozet("Uygun", "iyi");
+    const ekNot = !onizlendi ? el("span", { class: "alt", metin: "önizleme önerilir" }) : null;
+    if (this.kapsam !== "alanlar" && oturum) return el("div", {}, rozet("Oturum kapatılmadan başlamaz", "orta"), ekNot);
+    if (oturum) return el("div", {}, rozet("Uygun — oturum açık (uyarı)", "orta"), ekNot);
+    return el("div", {}, rozet("Uygun", "iyi"), ekNot);
   },
 
   kartlar() {
@@ -207,7 +209,7 @@ const m2s1 = {
     const olculen = secili.length - olculemeyen - secili.filter((x) => x.uygunluk.temizlik).length;
     const kartlar = [
       ozetKarti(secili.length, "Seçili bilgisayar"),
-      ozetKarti(uygun.length, "İşleme uygun", this.onizlemeKapsami !== this.kapsam ? "önizleme bekleniyor" : null, true),
+      ozetKarti(uygun.length, "İşleme uygun", this.onizlemeKapsami !== this.kapsam ? "önizleme önerilir" : null, true),
       ozetKarti(!olculen ? "ölçülemedi" : aralik ? `${boyut(enAz)} … ${boyut(enCok)}` : boyut(tek),
         "Öğrenci bilgisayarlarında tahmini açılacak toplam alan",
         [olculemeyen ? `${olculemeyen} bilgisayar ölçülemedi (0 sayılmadı)` : null,
@@ -234,16 +236,22 @@ const m2s1 = {
     this.sonuclar = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.onizleme.set(h.veri.cihaz_id, h.veri);
     this.onizlemeKapsami = kapsam;
-    $("#m2s1-baslat").disabled = !Secim.liste().some((id) => !this.engel(Veri.bul(id)));
     this.tablo.ciz();
     this.kartlar();
   },
 
   async baslat() {
     const adaylar = Secim.liste().filter((id) => !this.engel(Veri.bul(id)));
+    if (!adaylar.length) { bildir("Önce uygun bilgisayar seçin.", true); return; }
     const tam = this.kapsam === "tam";
     const sifirlama = this.kapsam !== "alanlar";
-    const acikOturum = adaylar.filter((id) => (this.onizleme.get(id) || {}).oturum_acik);
+    const onizlemeEksik = this.onizlemeKapsami !== this.kapsam || adaylar.some((id) => !this.onizleme.has(id));
+    const acikOturum = adaylar.filter((id) => {
+      const v = this.onizleme.get(id);
+      if (v && "oturum_acik" in v) return v.oturum_acik;
+      const c = Veri.bul(id);
+      return Boolean(c && c.ogrenci_oturumu === 1);
+    });
     const kapatKutusu = el("input", { type: "checkbox", id: "m2s1-oturum-kapat" });
     const ek = sifirlama ? el("div", { class: tam ? "uyari-kutusu kirmizi" : "uyari-kutusu" },
       el("p", { metin: KAPSAM_METNI[this.kapsam] + "." }),
@@ -257,12 +265,13 @@ const m2s1 = {
         ? "Her bilgisayarda önce öğrenci PC'ye tam profil yedeği alınır ve doğrulanır; yedek başarısızsa o bilgisayarda silme başlamaz. Sonra standart başlangıç dosyaları (/etc/skel) konur."
         : "Seçilen alanlar silinmez; öğrenci PC'deki karantinaya taşınır ve M2-S1 “Yedekten dön” ile geri alınabilir.",
       uyarilar: [
+        ...(onizlemeEksik ? ["💡 Öneri: İşlemden önce “Önizle” ile tahmini açılacak alanı ve açık oturumları kontrol etmeniz önerilir. İsterseniz önizleme yapmadan da doğrudan başlatabilirsiniz."] : []),
         ...(!sifirlama && acikOturum.length ? [`${acikOturum.length} bilgisayarda öğrenci oturumu açık: kaydedilmemiş veriler kaybolabilir.`] : []),
         "Ödev teslim arşivi (öğretmen PC) bu işleme dahil değildir.",
       ],
       yikici: true, ek,
       onayMetni: tam ? "Belgeler ve tarayıcı verileri dahil ev dizininin tamamının silineceğini anladım"
-        : sifirlama ? "Tarayıcı verileri dahil profil ayarlarının silineceğini anladım" : "Önizlemeyi inceledim; temizliği onaylıyorum",
+        : sifirlama ? "Tarayıcı verileri dahil profil ayarlarının silineceğini anladım" : "Temizlik işlemini onaylıyorum",
       baslatMetni: sifirlama ? "Sıfırlamayı başlat" : "Temizliği başlat",
     });
     if (!hedefler) return;
@@ -273,7 +282,6 @@ const m2s1 = {
     if (!kayit) return;
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, h.veri);
     this.istisnalar = new Map();   // istisnalar kaydedilmez
-    $("#m2s1-baslat").disabled = true;
     this.tablo.ciz();
     this.kartlar();
   },
@@ -391,6 +399,12 @@ const m2s2 = {
   planIsId: null,
   planlar: new Map(),
   sonuclar: new Map(),
+  sekme: "magaza",
+  katalogKategoriler: [],
+  aktifKategori: "Tümü",
+  araSonuclar: [],
+  kuruluUygulamalar: [],
+  kaldirSecim: new Set(),
   kur() {
     this.tablo = new CihazTablosu($("#m2s2-tablo"), {
       islem: "paket",
@@ -398,7 +412,7 @@ const m2s2 = {
         { baslik: "Bilgisayar", hucre: cihazHucresi },
         { baslik: "Pardus", hucre: (c) => c.pardus_surum || "—" },
         { baslik: "Kurulu sürüm", hucre: (c) => { const p = this.planlar.get(c.id); return p && p.plan ? (p.plan.kurulu_surum || "kurulu değil") : "—"; } },
-        { baslik: "Plan", hucre: (c) => this.planHucresi(c) },
+        { baslik: "Plan / Durum", hucre: (c) => this.planHucresi(c) },
         { baslik: "Bağımlılık / indirme", hucre: (c) => this.bagimlilikHucresi(c) },
         { baslik: "Sonuç", hucre: (c) => this.sonucHucresi(c) },
         { baslik: "", hucre: (c) => (this.planlar.has(c.id) ? dugme("Ayrıntı", `M2-S2-B5-${satirKimligi(c)}`, () => this.ayrinti(c), "ikincil kucuk") : "") },
@@ -410,8 +424,381 @@ const m2s2 = {
     $("#m2s2-sil").addEventListener("click", () => this.sil());
     $("#m2s2-plan").addEventListener("click", () => this.plan());
     $("#m2s2-kur").addEventListener("click", () => this.kurulum());
+
+    // Sekme geçişleri
+    for (const [ad, id] of [["magaza", "m2s2-sekme-btn-magaza"], ["kaldir", "m2s2-sekme-btn-kaldir"], ["deb", "m2s2-sekme-btn-deb"]]) {
+      const btn = $(`#${id}`);
+      if (btn) btn.addEventListener("click", () => this.sekmeAc(ad));
+    }
+
+    // Mağaza / Repo Kurulum olayları
+    const giris = $("#m2s2-repo-paketler");
+    if (giris) giris.addEventListener("input", () => this.sepetGuncelle());
+    const btnSepetTemizle = $("#m2s2-sepet-temizle");
+    if (btnSepetTemizle) btnSepetTemizle.addEventListener("click", () => {
+      $("#m2s2-repo-paketler").value = "";
+      this.sepetGuncelle();
+    });
+    const btnRepoKur = $("#m2s2-repo-kur");
+    if (btnRepoKur) btnRepoKur.addEventListener("click", () => this.repoKur());
+
+    const btnAra = $("#m2s2-ara-dugme");
+    if (btnAra) btnAra.addEventListener("click", () => this.repoAra());
+    const araGiris = $("#m2s2-ara-giris");
+    if (araGiris) araGiris.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); this.repoAra(); } });
+
+    // Kurulu Uygulamalar / Kaldırma olayları
+    const btnKuruluListele = $("#m2s2-kurulu-listele");
+    if (btnKuruluListele) btnKuruluListele.addEventListener("click", () => this.kuruluListele());
+    const kuruluFiltre = $("#m2s2-kurulu-filtre");
+    if (kuruluFiltre) kuruluFiltre.addEventListener("input", () => this.kuruluTabloCiz());
+    const kuruluTum = $("#m2s2-kurulu-tum");
+    if (kuruluTum) kuruluTum.addEventListener("change", () => { if (this.kuruluUygulamalar.length) this.kuruluListele(); });
+    const btnKaldirTemizle = $("#m2s2-kurulu-secim-temizle");
+    if (btnKaldirTemizle) btnKaldirTemizle.addEventListener("click", () => {
+      this.kaldirSecim.clear();
+      this.kuruluTabloCiz();
+    });
+    const btnKuruluKaldir = $("#m2s2-kurulu-kaldir");
+    if (btnKuruluKaldir) btnKuruluKaldir.addEventListener("click", () => this.repoKaldir());
   },
-  async ac() { await this.listele(); this.tablo.ciz(); Secim.bildir(); erisimTazele(300); },
+  sekmeAc(ad) {
+    this.sekme = ad;
+    const esle = {
+      magaza: ["#m2s2-sekme-btn-magaza", "#m2s2-panel-magaza"],
+      kaldir: ["#m2s2-sekme-btn-kaldir", "#m2s2-panel-kaldir"],
+      deb: ["#m2s2-sekme-btn-deb", "#m2s2-panel-deb"],
+    };
+    for (const [k, [btnSel, panelSel]] of Object.entries(esle)) {
+      const btn = $(btnSel), panel = $(panelSel);
+      const aktif = k === ad;
+      if (btn) {
+        btn.classList.toggle("aktif", aktif);
+        btn.setAttribute("aria-selected", aktif ? "true" : "false");
+      }
+      if (panel) panel.hidden = !aktif;
+    }
+    this.cihazSecicileriGuncelle();
+  },
+  async ac() {
+    this.cihazSecicileriGuncelle();
+    if (!this.katalogKategoriler.length) await this.katalogYukle();
+    await this.listele();
+    this.tablo.ciz();
+    Secim.bildir();
+    erisimTazele(300);
+  },
+  cihazSecicileriGuncelle() {
+    const uygun = Veri.cihazlar.filter((c) => !c.uygunluk.paket);
+    const secililer = Secim.liste();
+    const varsayilan = secililer.find((id) => uygun.some((c) => c.id === id)) || (uygun[0] && uygun[0].id) || "";
+    for (const selId of ["#m2s2-ara-cihaz", "#m2s2-kurulu-cihaz"]) {
+      const sec = $(selId);
+      if (!sec) continue;
+      const onceki = sec.value;
+      sec.replaceChildren(...(uygun.length
+        ? uygun.map((c) => el("option", { value: c.id, metin: `${c.ad} (${c.ip}${c.hostname ? " · " + c.hostname : ""})` }))
+        : [el("option", { value: "", metin: "Hazır bilgisayar yok (önce M1-S2 hazırlığını tamamlayın)" })]));
+      if (onceki && uygun.some((c) => c.id === onceki)) sec.value = onceki;
+      else if (varsayilan) sec.value = varsayilan;
+    }
+  },
+  sepettekiPaketler() {
+    const giris = $("#m2s2-repo-paketler");
+    if (!giris) return [];
+    return [...new Set(giris.value.trim().toLowerCase().split(/[\s,;]+/).filter(Boolean))];
+  },
+  sepetePaketToggle(paketAdi) {
+    const mevcut = new Set(this.sepettekiPaketler());
+    if (mevcut.has(paketAdi)) mevcut.delete(paketAdi);
+    else mevcut.add(paketAdi);
+    const giris = $("#m2s2-repo-paketler");
+    if (giris) giris.value = [...mevcut].join(" ");
+    this.sepetGuncelle();
+  },
+  sepetGuncelle() {
+    const liste = this.sepettekiPaketler();
+    const sayac = $("#m2s2-sepet-sayac");
+    if (sayac) {
+      sayac.textContent = `${liste.length} uygulama seçili`;
+      sayac.className = `rozet ${liste.length ? "iyi" : "notr"}`;
+    }
+    this.katalogCiz();
+    if (this.araSonuclar.length) this.araSonucCiz();
+  },
+  async katalogYukle() {
+    try {
+      const s = await api("/api/paketler/repo/katalog");
+      this.katalogKategoriler = s.kategoriler || [];
+    } catch (_) {
+      this.katalogKategoriler = [];
+    }
+    this.katalogCiz();
+  },
+  katalogCiz() {
+    const katCubuk = $("#m2s2-kategori-cubuk");
+    const kap = $("#m2s2-katalog-kap");
+    if (!kap || !katCubuk) return;
+    const kategoriler = ["Tümü", ...this.katalogKategoriler.map((k) => k.kategori)];
+    katCubuk.replaceChildren(...kategoriler.map((kat) =>
+      el("button", {
+        type: "button",
+        class: `kucuk ${this.aktifKategori === kat ? "birincil" : "ikincil"}`,
+        metin: kat,
+        onclick: () => { this.aktifKategori = kat; this.katalogCiz(); },
+      })
+    ));
+    const seciliKume = new Set(this.sepettekiPaketler());
+    const gosterilecek = [];
+    for (const grup of this.katalogKategoriler) {
+      if (this.aktifKategori !== "Tümü" && grup.kategori !== this.aktifKategori) continue;
+      for (const u of grup.uygulamalar) gosterilecek.push({ ...u, kategori: grup.kategori });
+    }
+    kap.replaceChildren(...gosterilecek.map((u) => {
+      const secili = seciliKume.has(u.paket);
+      return el("div", {
+        class: `magaza-uygulama-kart ${secili ? "secili" : ""}`,
+        onclick: (e) => {
+          if (e.target.closest("button")) return;
+          this.sepetePaketToggle(u.paket);
+        },
+      },
+      el("div", { class: "magaza-kart-ust" },
+        el("span", { class: "magaza-ikon", metin: u.ikon || "📦" }),
+        el("div", { class: "magaza-baslik-alan" },
+          el("strong", { class: "magaza-ad", metin: u.ad }),
+          el("span", { class: "mono alt", metin: u.paket }),
+        ),
+        rozet(secili ? "✓ Sepette" : "+ Seç", secili ? "iyi" : "notr")
+      ),
+      el("p", { class: "magaza-aciklama", metin: u.aciklama }),
+      el("div", { class: "magaza-kart-alt" },
+        el("span", { class: "alt", metin: u.kategori }),
+        el("button", {
+          type: "button",
+          class: "ikincil kucuk",
+          metin: "Hemen Kur",
+          onclick: (e) => {
+            e.stopPropagation();
+            this.repoKur([u.paket]);
+          },
+        })
+      ));
+    }));
+  },
+  async repoAra() {
+    const sorgu = ($("#m2s2-ara-giris").value || "").trim();
+    const cihaz = $("#m2s2-ara-cihaz").value;
+    const durum = $("#m2s2-ara-durum");
+    if (sorgu.length < 2) {
+      bildir("Aramak için en az 2 karakter yazın (örn: gimp, python, pdf).", true);
+      return;
+    }
+    durum.textContent = `“${sorgu}” için bilgisayarın tanımlı APT depoları taranıyor…`;
+    try {
+      const s = await api("/api/paketler/repo/ara", { sorgu, cihaz: cihaz || null });
+      this.araSonuclar = s.sonuclar || [];
+      durum.textContent = `${s.cihaz_ad || "Bilgisayar"} deposunda “${sorgu}” için ${this.araSonuclar.length} paket bulundu.`;
+      this.araSonucCiz();
+    } catch (hata) {
+      durum.textContent = `Arama hatası: ${hata.message}`;
+    }
+  },
+  araSonucCiz() {
+    const kap = $("#m2s2-ara-sonuc");
+    if (!kap) return;
+    if (!this.araSonuclar.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Sonuç bulunamadı." }));
+      return;
+    }
+    const seciliKume = new Set(this.sepettekiPaketler());
+    const tablo = el("table", {},
+      el("thead", {}, el("tr", {}, ...["Paket Adı", "Açıklama", "Durum", "İşlem"].map((b) => el("th", { metin: b }))))
+    );
+    const tbody = el("tbody");
+    for (const p of this.araSonuclar) {
+      const sepette = seciliKume.has(p.paket);
+      tbody.append(el("tr", {},
+        el("td", { class: "mono" }, el("strong", { metin: p.paket })),
+        el("td", { metin: p.aciklama || "—" }),
+        el("td", {}, p.kurulu ? rozet(`Kurulu (${p.kurulu_surum || ""})`, "iyi") : rozet("Kurulu değil", "notr")),
+        el("td", { class: "dugme-grubu" },
+          el("button", {
+            type: "button",
+            class: `kucuk ${sepette ? "birincil" : "ikincil"}`,
+            metin: sepette ? "✓ Sepette" : "+ Sepete Ekle",
+            onclick: () => this.sepetePaketToggle(p.paket),
+          }),
+          el("button", {
+            type: "button",
+            class: "ikincil kucuk",
+            metin: "Hemen Kur",
+            onclick: () => this.repoKur([p.paket]),
+          })
+        )
+      ));
+    }
+    tablo.append(tbody);
+    kap.replaceChildren(tablo);
+  },
+  hedefCihazAdaylari(yedekSeciciId) {
+    const secili = Secim.liste();
+    if (secili.length) return secili;
+    const yedek = yedekSeciciId && $(yedekSeciciId) ? $(yedekSeciciId).value : null;
+    if (yedek) return [yedek];
+    return [];
+  },
+  async repoKur(ozelPaketler = null) {
+    const paketler = ozelPaketler || this.sepettekiPaketler();
+    if (!paketler.length) {
+      bildir("Önce katalogdan veya aramadan kurulacak en az bir uygulama seçin ya da paket adını yazın.", true);
+      return;
+    }
+    const adaylar = this.hedefCihazAdaylari("#m2s2-ara-cihaz");
+    if (!adaylar.length) {
+      bildir("Önce aşağıdaki tablodan (veya üstten) kurulum yapılacak bilgisayarı / bilgisayarları seçin.", true);
+      return;
+    }
+    const guncelle = Boolean($("#m2s2-repo-update") && $("#m2s2-repo-update").checked);
+    const hedefler = await onayIste({
+      islem: "paket",
+      cihazlar: adaylar,
+      baslik: `Pardus Depodan Kur — ${paketler.slice(0, 4).join(", ")}${paketler.length > 4 ? ` (+${paketler.length - 4})` : ""}`,
+      aciklama: `Seçilen bilgisayarlarda tanımlı APT depolarından şu paketler indirilecek ve kurulacak: ${paketler.join(", ")}.`,
+      uyarilar: [
+        "Kurulum --no-remove güvenlik kilidiyle çalışır: mevcut hiçbir sistem paketi kaldırılmaz.",
+        guncelle ? "Kurulumdan önce apt-get update ile depo paket listesi güncellenecek." : "Depo listesi güncellenmeden mevcut önbellekle kurulacak.",
+      ],
+      yikici: true,
+      onayMetni: "Seçilen uygulamaların hedef bilgisayarlara kurulmasını onaylıyorum",
+      baslatMetni: "Depodan Kur",
+    });
+    if (!hedefler) return;
+    const kayit = await isBaslat("/api/paketler/repo/kur", {
+      cihazlar: hedefler,
+      paketler,
+      guncelle,
+      onay: true,
+    });
+    if (!kayit) return;
+    for (const h of kayit.hedefler) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    }
+    this.tablo.ciz();
+  },
+  async kuruluListele() {
+    const cihaz = $("#m2s2-kurulu-cihaz").value;
+    if (!cihaz) {
+      bildir("Önce listesi okunacak hazır bir bilgisayar seçin.", true);
+      return;
+    }
+    const tum = Boolean($("#m2s2-kurulu-tum") && $("#m2s2-kurulu-tum").checked);
+    const durum = $("#m2s2-kurulu-durum");
+    durum.textContent = "Kurulu uygulamalar bilgisayardan okunuyor…";
+    try {
+      const s = await api("/api/paketler/repo/kurulu-listele", { cihaz, tum_paketler: tum });
+      this.kuruluUygulamalar = s.uygulamalar || [];
+      this.kaldirSecim.clear();
+      const korumaliSay = this.kuruluUygulamalar.filter((u) => u.korumali).length;
+      durum.textContent = `${s.cihaz_ad} (${s.ip}) bilgisayarında ${this.kuruluUygulamalar.length} paket listelendi (${korumaliSay} kritik sistem paketi güvenlik kilidiyle korunuyor).`;
+      this.kuruluTabloCiz();
+    } catch (hata) {
+      durum.textContent = `Okuma hatası: ${hata.message}`;
+    }
+  },
+  kuruluTabloCiz() {
+    const kap = $("#m2s2-kurulu-tablo");
+    const bilgi = $("#m2s2-kaldir-secili-bilgi");
+    if (bilgi) {
+      bilgi.textContent = `${this.kaldirSecim.size} uygulama kaldırmak için seçildi`;
+      bilgi.className = `rozet ${this.kaldirSecim.size ? "orta" : "notr"}`;
+    }
+    if (!kap) return;
+    if (!this.kuruluUygulamalar.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Henüz liste okunmadı. Yukarıdan “Kurulu Uygulamaları Getir” düğmesine tıklayın." }));
+      return;
+    }
+    const filtre = ($("#m2s2-kurulu-filtre") && $("#m2s2-kurulu-filtre").value || "").trim().toLowerCase();
+    const suzulen = this.kuruluUygulamalar.filter((u) =>
+      !filtre || u.paket.toLowerCase().includes(filtre) || (u.aciklama || "").toLowerCase().includes(filtre) || (u.bolum || "").toLowerCase().includes(filtre)
+    );
+    const tablo = el("table", {},
+      el("thead", {}, el("tr", {}, ...["Seç", "Paket Adı", "Sürüm", "Boyut", "Açıklama", "Güvenlik / İşlem"].map((b) => el("th", { metin: b }))))
+    );
+    const tbody = el("tbody");
+    for (const u of suzulen) {
+      const isaretli = this.kaldirSecim.has(u.paket);
+      const cb = el("input", {
+        type: "checkbox",
+        checked: isaretli,
+        disabled: Boolean(u.korumali),
+        "aria-label": `${u.paket} kaldır`,
+        onchange: (e) => {
+          if (e.target.checked) this.kaldirSecim.add(u.paket);
+          else this.kaldirSecim.delete(u.paket);
+          this.kuruluTabloCiz();
+        },
+      });
+      tbody.append(el("tr", { class: u.korumali ? "satir-korumali" : (isaretli ? "satir-secili" : "") },
+        el("td", {}, cb),
+        el("td", { class: "mono" }, el("strong", { metin: u.paket })),
+        el("td", { class: "mono alt", metin: u.surum || "—" }),
+        el("td", { class: "alt", metin: u.boyut_kb ? boyut(u.boyut_kb * 1024) : "—" }),
+        el("td", { metin: u.aciklama || "—" }),
+        el("td", {}, u.korumali
+          ? rozet("🔒 Korumalı Sistem Paketi", "notr")
+          : el("button", {
+            type: "button",
+            class: "tehlikeli kucuk",
+            metin: "Kaldır",
+            onclick: () => this.repoKaldir([u.paket]),
+          })
+        )
+      ));
+    }
+    tablo.append(tbody);
+    kap.replaceChildren(tablo);
+  },
+  async repoKaldir(ozelPaketler = null) {
+    const paketler = ozelPaketler || [...this.kaldirSecim];
+    if (!paketler.length) {
+      bildir("Önce tablodan kaldırılacak en az bir uygulama işaretleyin.", true);
+      return;
+    }
+    const adaylar = this.hedefCihazAdaylari("#m2s2-kurulu-cihaz");
+    if (!adaylar.length) {
+      bildir("Önce kaldırılacak bilgisayarı seçin.", true);
+      return;
+    }
+    const purge = Boolean($("#m2s2-kurulu-purge") && $("#m2s2-kurulu-purge").checked);
+    const hedefler = await onayIste({
+      islem: "paket",
+      cihazlar: adaylar,
+      baslik: `Uygulamaları Kaldır — ${paketler.slice(0, 4).join(", ")}${paketler.length > 4 ? ` (+${paketler.length - 4})` : ""}`,
+      aciklama: `Seçilen bilgisayarlardan şu uygulamalar kaldırılacak: ${paketler.join(", ")}.`,
+      uyarilar: [
+        "Güvenlik Denetimi: Kaldırma işleminden önce her bilgisayarda apt benzetimi yapılır; eğer işlem Pardus masaüstü, ağ, SSH, Veyon veya temel sistem paketlerini etkileyecekse otomatik olarak engellenir.",
+        purge ? "Uygulamanın sistem genelindeki yapılandırma dosyaları da (purge) temizlenecek." : "Yalnız uygulama paketleri kaldırılacak (remove).",
+      ],
+      yikici: true,
+      onayMetni: "Seçilen uygulamaların hedef bilgisayarlardan kaldırılmasını onaylıyorum",
+      baslatMetni: "Kaldır",
+    });
+    if (!hedefler) return;
+    const kayit = await isBaslat("/api/paketler/repo/kaldir", {
+      cihazlar: hedefler,
+      paketler,
+      artiklari_temizle: purge,
+      onay: true,
+    });
+    if (!kayit) return;
+    for (const h of kayit.hedefler) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    }
+    this.kaldirSecim.clear();
+    if (this.kuruluUygulamalar.length) await this.kuruluListele();
+    this.tablo.ciz();
+  },
   async listele() {
     try { this.paketler = await api("/api/paketler"); } catch (hata) { bildir(hata.message, true); return; }
     const sec = $("#m2s2-paket");
@@ -434,7 +821,7 @@ const m2s2 = {
       ["Açıklama", (k.Description || "").split("\n")[0] || "—"], ["Yüklendi", tarih(p.zaman)]];
     dl.replaceChildren(...satirlar.flatMap(([a, d]) => [el("dt", { metin: a }), el("dd", { class: a === "SHA-256" ? "mono" : "", metin: d })]));
   },
-  sifirla() { this.planlar = new Map(); this.sonuclar = new Map(); this.planIsId = null; $("#m2s2-kur").disabled = true; this.kartlar(); this.tablo.ciz(); },
+  sifirla() { this.planlar = new Map(); this.sonuclar = new Map(); this.planIsId = null; this.kartlar(); this.tablo.ciz(); },
   async yukle(dosya) {
     if (!dosya) return;
     $("#m2s2-yukleme").textContent = `${dosya.name} yükleniyor ve paket yapısı doğrulanıyor…`;
@@ -466,7 +853,6 @@ const m2s2 = {
     this.planlar = new Map();
     this.sonuclar = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.planlar.set(h.veri.cihaz_id, h.veri);
-    $("#m2s2-kur").disabled = !this.kurulabilir().length;
     this.kartlar();
     this.tablo.ciz();
   },
@@ -475,17 +861,26 @@ const m2s2 = {
   },
   async kurulum() {
     const p = this.paket();
-    const adaylar = this.kurulabilir().filter((id) => Secim.kume.has(id));
-    if (!adaylar.length) { bildir("Seçimde planı “kurulacak/güncellenecek” olan bilgisayar yok.", true); return; }
-    const guncel = adaylar.filter((id) => this.planlar.get(id).plan.durum === "guncellenecek").length;
+    if (!p) { bildir("Önce bir .deb dosyası seçin.", true); return; }
+    const planli = Boolean(this.planIsId && this.planlar.size);
+    const adaylar = planli
+      ? this.kurulabilir().filter((id) => Secim.kume.has(id))
+      : Secim.liste();
+    if (!adaylar.length) {
+      bildir(planli ? "Seçimde planı “kurulacak/güncellenecek” olan bilgisayar yok." : "Önce bilgisayar seçin.", true);
+      return;
+    }
+    const guncel = planli ? adaylar.filter((id) => this.planlar.get(id).plan.durum === "guncellenecek").length : 0;
     const hedefler = await onayIste({ islem: "paket", cihazlar: adaylar, baslik: `Kur — ${p.paket} ${p.surum}`,
-      aciklama: "Yalnız plan denetiminden geçen bilgisayarlara kurulur. Kurulumdan hemen önce denetimler yeniden yapılır; paket kaldırma veya sürüm düşürme gerekirse kurulum durur.",
-      uyarilar: [...(guncel ? [`${guncel} bilgisayarda mevcut sürüm güncellenecek.`] : []),
+      aciklama: "Kurulumdan hemen önce hedef bilgisayarlarda SHA-256, mimari, boş alan ve bağımlılık denetimleri yapılır; paket kaldırma veya sürüm düşürme gerekirse kurulum durur.",
+      uyarilar: [
+        ...(!planli ? ["💡 Öneri: Kurulumdan önce “Kurulum planını hazırla” ile bağımlılık ve sürüm durumunu önizlemeniz önerilir. İsterseniz önizleme yapmadan doğrudan kurabilirsiniz."] : []),
+        ...(guncel ? [`${guncel} bilgisayarda mevcut sürüm güncellenecek.`] : []),
         "Paketin kurulum betikleri root yetkisiyle çalışır; yalnız güvendiğiniz paketleri kurun."],
-      yikici: true, onayMetni: "Kurulum planını inceledim ve onaylıyorum", baslatMetni: "Kur",
-      hedefEk: { baslik: "Plan", hucre: (h) => { const v = this.planlar.get(h.id); return v ? PLAN_ROZETI[v.plan.durum][0] : "—"; } } });
+      yikici: true, onayMetni: "Paketin seçili bilgisayarlara kurulmasını onaylıyorum", baslatMetni: "Kur",
+      hedefEk: planli ? { baslik: "Plan", hucre: (h) => { const v = this.planlar.get(h.id); return v ? PLAN_ROZETI[v.plan.durum][0] : "—"; } } : null });
     if (!hedefler) return;
-    const kayit = await isBaslat(`/api/paketler/${p.sha256}/kur`, { cihazlar: hedefler, plan_is_id: this.planIsId, onay: true });
+    const kayit = await isBaslat(`/api/paketler/${p.sha256}/kur`, { cihazlar: hedefler, plan_is_id: planli ? this.planIsId : null, onay: true });
     if (!kayit) return;
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
     this.kartlar();
@@ -493,7 +888,7 @@ const m2s2 = {
   },
   planHucresi(c) {
     const v = this.planlar.get(c.id);
-    if (!v) return c.uygunluk.paket ? el("span", { class: "alt", metin: c.uygunluk.paket }) : "—";
+    if (!v) return c.uygunluk.paket ? el("span", { class: "alt", metin: c.uygunluk.paket }) : rozet("Hazır", "iyi");
     const plan = v.plan || { durum: "hata", neden: "plan alınamadı" };
     const [m, t] = PLAN_ROZETI[plan.durum] || [plan.durum, "notr"];
     const neden = plan.durum === "engellendi" ? (plan.engeller || []).join("; ") : plan.neden;
@@ -512,8 +907,18 @@ const m2s2 = {
   sonucHucresi(c) {
     const s = this.sonuclar.get(c.id);
     if (!s) return "—";
-    if (s.durum === "basarili") return el("div", {}, rozet("Kuruldu", "iyi"), el("span", { class: "alt mono", metin: (s.sonuc || {}).kurulu_surum || "" }));
-    if (s.durum === "atlandi") return rozet("Atlandı", "notr");
+    const sn = s.sonuc || {};
+    if (s.durum === "basarili") {
+      if (sn.kaldirilanlar) {
+        return el("div", {}, rozet("Kaldırıldı", "iyi"), el("span", { class: "alt mono", metin: sn.kaldirilanlar.join(", ") }));
+      }
+      if (sn.kurulanlar) {
+        const metin = Object.entries(sn.kurulanlar).map(([k, v]) => `${k} (${v})`).join(", ");
+        return el("div", {}, rozet("Depodan Kuruldu", "iyi"), el("span", { class: "alt mono", metin }));
+      }
+      return el("div", {}, rozet("Kuruldu", "iyi"), el("span", { class: "alt mono", metin: sn.kurulu_surum || "" }));
+    }
+    if (s.durum === "atlandi") return el("div", {}, rozet("Atlandı", "notr"), el("span", { class: "alt", metin: s.mesaj || "" }));
     return el("div", {}, rozet("Başarısız", "kotu"), el("span", { class: "alt", metin: s.mesaj || "" }));
   },
   kartlar() {
@@ -562,6 +967,7 @@ const m2s3 = {
   tablo: null,
   sonuclar: new Map(),
   onizlemeVar: false,
+  galeri: { gorsel: null, secili_id: "sablon_pardus_lacivert", ogeler: [] },
   kur() {
     this.tablo = new CihazTablosu($("#m2s3-tablo"), {
       islem: "gorunum",
@@ -579,41 +985,159 @@ const m2s3 = {
     });
     secimCubuguKur($("#sayfa-M2-S3 .secim-yeri"), "gorunum", () => this.tablo);
     $("#m2s3-temsili").innerHTML = TEMSILI_SVG;   // sabit çizim; kullanıcı/uzak veri içermez
-    $("#m2s3-gorsel").addEventListener("change", (o) => this.gorselYukle(o.target.files[0]));
+    $("#m2s3-gorsel").addEventListener("change", (o) => this.gorselleriYukle(o.target.files));
+    const koseSec = $("#m2s3-duvar-kose");
+    if (koseSec) {
+      koseSec.addEventListener("change", () => {
+        this.onizlemeVar = false;
+        this.galeriCiz();
+      });
+    }
     for (const id of ["m2s3-duzen", "m2s3-duvar", "m2s3-kilit-ekran", "m2s3-otomatik", "m2s3-gizle", "m2s3-kilitle", "m2s3-yon"]) {
-      $(`#${id}`).addEventListener("change", () => { this.onizlemeVar = false; $("#m2s3-uygula").disabled = true; });
+      $(`#${id}`).addEventListener("change", () => { this.onizlemeVar = false; });
     }
     $("#m2s3-onizle").addEventListener("click", () => this.calistir("onizle"));
     $("#m2s3-uygula").addEventListener("click", () => this.calistir("uygula"));
   },
   async ac() {
     this.tablo.ciz(); Secim.bildir(); erisimTazele(300);
+    await this.galeriYukle();
+  },
+  async galeriYukle() {
     try {
       const b = await api("/api/gorunum");
-      $("#m2s3-gorsel-bilgi").textContent = b.gorsel ? `Yüklü görsel: ${b.gorsel.ad} (${boyut(b.gorsel.bayt)})` : "Henüz görsel yüklenmedi.";
+      this.galeri = {
+        gorsel: b.gorsel || null,
+        secili_id: b.secili_id || (b.gorsel && b.gorsel.id) || "sablon_pardus_lacivert",
+        ogeler: b.ogeler || [],
+      };
+      this.galeriCiz();
     } catch (_) { /* önemsiz */ }
+  },
+  galeriCiz() {
+    const bilgiEl = $("#m2s3-gorsel-bilgi");
+    const kap = $("#m2s3-galeri");
+    const g = this.galeri.gorsel;
+    const kose = ($("#m2s3-duvar-kose") && $("#m2s3-duvar-kose").value) || "sag_ust";
+    const koseAd = { sag_ust: "sağ üst köşede numara", sol_ust: "sol üst köşede numara", yok: "etiketsiz" }[kose] || "sağ üst";
+    if (bilgiEl) {
+      bilgiEl.textContent = g
+        ? `Seçili duvar kâğıdı: ${g.baslik || g.ad} (${boyut(g.bayt)}) · Etiket: ${koseAd}`
+        : "Galeriden bir duvar kâğıdı seçin veya yeni fotoğraf yükleyin.";
+    }
+    if (!kap) return;
+    const ogeler = this.galeri.ogeler || [];
+    if (!ogeler.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Galeri boş. Fotoğraf yükleyin." }));
+      return;
+    }
+    const sablonArkaPlan = {
+      sablon_pardus_lacivert: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
+      sablon_anadolu_turkuaz: "linear-gradient(135deg, #042f2e 0%, #0d9488 100%)",
+      sablon_bilisim_antrasit: "linear-gradient(135deg, #18181b 0%, #3730a3 100%)",
+      hazir_pardus_gece: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
+      hazir_anadolu_turkuaz: "linear-gradient(135deg, #0d3b4c 0%, #0f766e 100%)",
+      hazir_bilisim_mor: "linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%)",
+    };
+    kap.replaceChildren(...ogeler.map((oge) => {
+      const secili = oge.id === this.galeri.secili_id;
+      const onizleme = el("div", {
+        class: "duvar-kart-onizleme",
+        style: sablonArkaPlan[oge.id] ? `background: ${sablonArkaPlan[oge.id]}` : "",
+      },
+      el("img", {
+        src: oge.onizleme_url || `/api/duvar-kagidi/galeri/${encodeURIComponent(oge.id)}/indir`,
+        alt: oge.baslik || oge.ad,
+        loading: "lazy",
+        onerror: (e) => { e.target.style.display = "none"; },
+      }),
+      kose !== "yok"
+        ? el("div", { class: `duvar-kose-rozet ${kose}` },
+          el("span", { class: "duvar-kose-no", metin: "01" }),
+          el("span", { class: "duvar-kose-host", metin: "ogrenci01" }))
+        : null);
+      const altBar = el("div", { class: "duvar-kart-alt" },
+        el("div", { class: "duvar-kart-baslik" },
+          el("strong", { metin: oge.baslik || oge.ad }),
+          el("span", { class: "alt", metin: oge.hazir ? "Hazır şablon" : boyut(oge.bayt) })),
+        el("div", { class: "duvar-kart-eylemler" },
+          rozet(secili ? "✓ Seçili" : "Seç", secili ? "iyi" : "notr"),
+          !oge.hazir ? el("button", {
+            type: "button",
+            class: "ikincil kucuk",
+            metin: "Sil",
+            onclick: (e) => {
+              e.stopPropagation();
+              this.galeriSil(oge);
+            },
+          }) : null));
+      return el("div", {
+        class: `duvar-galeri-kart ${secili ? "secili" : ""}`,
+        onclick: () => this.galeriSec(oge.id),
+      }, onizleme, altBar);
+    }));
+  },
+  async galeriSec(id) {
+    try {
+      const yanit = await api("/api/duvar-kagidi/galeri/sec", { id });
+      if (yanit && yanit.galeri) {
+        this.galeri = yanit.galeri;
+      } else {
+        this.galeri.secili_id = id;
+      }
+      $("#m2s3-duvar").checked = true;
+      this.onizlemeVar = false;
+      this.galeriCiz();
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
+  },
+  async galeriSil(oge) {
+    if (!confirm(`“${oge.baslik || oge.ad}” galeriden silinsin mi?`)) return;
+    try {
+      const yanit = await api(`/api/duvar-kagidi/galeri/${encodeURIComponent(oge.id)}`, null, "DELETE");
+      if (yanit && yanit.galeri) this.galeri = yanit.galeri;
+      else await this.galeriYukle();
+      this.galeriCiz();
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
   },
   secenekler() {
     const yon = $("#m2s3-yon").value;
     const s = {};
     const esle = { duzen: "m2s3-duzen", duvar: "m2s3-duvar", ekran_kilidi: "m2s3-kilit-ekran", otomatik_giris: "m2s3-otomatik", gizle: "m2s3-gizle" };
     for (const [ad, id] of Object.entries(esle)) if ($(`#${id}`).checked) s[ad] = yon;
+    if (s.duvar) {
+      s.duvar_kose = ($("#m2s3-duvar-kose") && $("#m2s3-duvar-kose").value) || "sag_ust";
+      if (this.galeri && this.galeri.secili_id) s.duvar_id = this.galeri.secili_id;
+    }
     s.kilit = $("#m2s3-kilitle").checked;
     return s;
   },
-  async gorselYukle(dosya) {
-    if (!dosya) return;
-    const b64 = await new Promise((coz, reddet) => {
-      const o = new FileReader();
-      o.onload = () => coz(o.result.split(",")[1]);
-      o.onerror = reddet;
-      o.readAsDataURL(dosya);
-    });
-    try {
-      await api("/api/duvar-kagidi/gorsel", { icerik_b64: b64, uzanti: dosya.name.toLowerCase().endsWith(".png") ? ".png" : ".jpg" });
-      $("#m2s3-gorsel-bilgi").textContent = `Yüklü görsel: ${dosya.name} (${boyut(dosya.size)})`;
-      $("#m2s3-duvar").checked = true;
-    } catch (hata) { bildir(hata.message, true); }
+  async gorselleriYukle(dosyaListesi) {
+    const dosyalar = [...(dosyaListesi || [])];
+    if (!dosyalar.length) return;
+    for (const dosya of dosyalar) {
+      const b64 = await new Promise((coz, reddet) => {
+        const o = new FileReader();
+        o.onload = () => coz(o.result.split(",")[1]);
+        o.onerror = reddet;
+        o.readAsDataURL(dosya);
+      });
+      try {
+        const uzanti = dosya.name.toLowerCase().endsWith(".png") ? ".png" : ".jpg";
+        const yanit = await api("/api/duvar-kagidi/gorsel", { icerik_b64: b64, uzanti, ad: dosya.name });
+        if (yanit && yanit.galeri) {
+          this.galeri = yanit.galeri;
+        }
+        $("#m2s3-duvar").checked = true;
+      } catch (hata) {
+        bildir(`${dosya.name}: ${hata.message}`, true);
+      }
+    }
+    this.onizlemeVar = false;
+    await this.galeriYukle();
     $("#m2s3-gorsel").value = "";
   },
   sonucHucresi(c) {
@@ -640,6 +1164,7 @@ const m2s3 = {
       hedefler = await onayIste({ islem: "gorunum", cihazlar: hedefler, baslik: "Görünüm ve giriş ayarlarını uygula",
         aciklama: "Ayarlar dconf sistem veritabanına ve GDM ayarlarına yazılır. Masaüstü ortamı değiştirilmez; XFCE bilgisayarlar kapsam dışıdır.",
         uyarilar: [
+          ...(!this.onizlemeVar ? ["💡 Öneri: Uygulamadan önce “Önizle” ile bilgisayarların mevcut şema ve görünüm durumunu kontrol etmeniz önerilir. İsterseniz önizleme yapmadan doğrudan uygulayabilirsiniz."] : []),
           ...(acik.length ? [`Öğrenci oturumu açık: ${acik.join(", ")} — kilitli ayarlar bu oturumlarda hemen değişebilir; düzenin tamamı sonraki girişte görünür.`] : []),
           ...(secenekler.otomatik_giris ? ["Otomatik giriş bir sonraki açılışta veya giriş ekranı yeniden başladığında etkinleşir."] : []),
           ...(secenekler.gizle ? ["Yönetim hesabı yalnız giriş ekranı listesinden gizlenir; hesap ve SSH erişimi korunur. Gerçek giriş ekranında görsel doğrulama yapılmaz."] : []),
@@ -652,7 +1177,6 @@ const m2s3 = {
     this.sonuclar = new Map();
     for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, mesaj: h.mesaj });
     this.onizlemeVar = kip === "onizle";
-    $("#m2s3-uygula").disabled = !(kip === "onizle" && kayit.hedefler.some((h) => h.durum === "basarili"));
     this.tablo.ciz();
   },
 };
@@ -704,8 +1228,9 @@ const TEMSILI_SVG = `
     <text x="312" y="214" font-size="7" fill="#4E5D6C">Yönetim hesabı (hp/pardus) listelenmez;</text>
     <text x="312" y="224" font-size="7" fill="#4E5D6C">SSH ile yönetim sürer.</text>
   </g>
-  <rect x="352" y="8" width="120" height="18" rx="4" fill="#FFE7A8"/>
-  <text x="360" y="20" font-family="Ubuntu, sans-serif" font-size="8.5" font-weight="bold" fill="#6B4100">TEMSİLİ ÇİZİM</text>
+  <rect x="382" y="10" width="84" height="54" rx="10" fill="#0F172A" fill-opacity=".9" stroke="#38BDF8" stroke-width="1.5"/>
+  <text x="424" y="42" text-anchor="middle" font-family="Ubuntu, sans-serif" font-size="24" font-weight="bold" fill="#38BDF8">01</text>
+  <text x="424" y="56" text-anchor="middle" font-family="Ubuntu, sans-serif" font-size="7.5" font-weight="bold" fill="#E2E8F0">ogrenci01</text>
 </svg>`;
 
 sayfaKaydet("M2-S1", m2s1);

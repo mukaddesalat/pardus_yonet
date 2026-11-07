@@ -270,3 +270,286 @@ def _kur(is_id: str, cihaz: dict, paket: dict) -> None:
     finally:
         istemci.close()
 
+
+# ---------------------------------------------------------------- Pardus Yazılım Merkezi / Repo (APT)
+
+import re
+from .uzak import paket as uzak_paket
+
+_PAKET_ADI_RE = re.compile(r"^[a-z0-9][a-z0-9+.-]{0,79}$")
+
+REPO_KATALOG = [
+    {
+        "kategori": "Kodlama ve Robotik",
+        "ikon": "💻",
+        "uygulamalar": [
+            {"paket": "thonny", "ad": "Thonny Python IDE", "ikon": "🐍",
+             "aciklama": "Öğrenciler için adım adım hata ayıklamalı kolay Python geliştirme ortamı"},
+            {"paket": "arduino", "ad": "Arduino IDE", "ikon": "🤖",
+             "aciklama": "Robotik kodlama ve mikrodenetleyici kart programlama ortamı"},
+            {"paket": "fritzing", "ad": "Fritzing", "ikon": "🔌",
+             "aciklama": "Elektronik devre şeması ve breadboard prototipleme tasarımı"},
+            {"paket": "geany", "ad": "Geany", "ikon": "📝",
+             "aciklama": "Hızlı ve hafif C, C++, Python, HTML/JS kod düzenleyici"},
+            {"paket": "codeblocks", "ad": "Code::Blocks", "ikon": "⚙️",
+             "aciklama": "C ve C++ dersleri için tümleşik geliştirme ortamı (IDE)"},
+            {"paket": "sqlitebrowser", "ad": "DB Browser for SQLite", "ikon": "🗄️",
+             "aciklama": "Veritabanı dersleri için görsel SQLite tablo ve SQL sorgu aracı"},
+            {"paket": "git", "ad": "Git", "ikon": "🌿",
+             "aciklama": "Dağıtık sürüm kontrol ve proje takip sistemi"},
+            {"paket": "python3-pip", "ad": "Python3 Pip", "ikon": "📦",
+             "aciklama": "Python kütüphane ve paket kurulum yöneticisi"},
+        ],
+    },
+    {
+        "kategori": "Tasarım, Grafik ve Medya",
+        "ikon": "🎨",
+        "uygulamalar": [
+            {"paket": "gimp", "ad": "GIMP", "ikon": "🖌️",
+             "aciklama": "Profesyonel fotoğraf işleme ve görsel tasarım programı"},
+            {"paket": "inkscape", "ad": "Inkscape", "ikon": "✒️",
+             "aciklama": "Vektörel grafik, logo ve afiş tasarım uygulaması (SVG)"},
+            {"paket": "krita", "ad": "Krita", "ikon": "🎨",
+             "aciklama": "Dijital boyama, illüstrasyon ve 2B animasyon stüdyosu"},
+            {"paket": "kolourpaint", "ad": "KolourPaint", "ikon": "🖼️",
+             "aciklama": "Hızlı ve sade resim/çizim programı (MS Paint benzeri)"},
+            {"paket": "blender", "ad": "Blender", "ikon": "🧊",
+             "aciklama": "3B modelleme, animasyon, simülasyon ve render stüdyosu"},
+            {"paket": "kdenlive", "ad": "Kdenlive", "ikon": "🎬",
+             "aciklama": "Çok katmanlı video kurgu ve montaj programı"},
+            {"paket": "audacity", "ad": "Audacity", "ikon": "🎙️",
+             "aciklama": "Ses kaydetme, kesme ve efekt düzenleme stüdyosu"},
+            {"paket": "vlc", "ad": "VLC Media Player", "ikon": "▶️",
+             "aciklama": "Tüm video ve ses biçimlerini oynatan medya oynatıcı"},
+        ],
+    },
+    {
+        "kategori": "Ofis, Eğitim ve Bilim",
+        "ikon": "📚",
+        "uygulamalar": [
+            {"paket": "libreoffice", "ad": "LibreOffice Tam Paket", "ikon": "📄",
+             "aciklama": "Kelime işlemci (Writer), hesap tablosu (Calc) ve sunum (Impress)"},
+            {"paket": "scratch", "ad": "Scratch", "ikon": "🐱",
+             "aciklama": "Blok tabanlı algoritma, animasyon ve oyun geliştirme aracı"},
+            {"paket": "geogebra", "ad": "GeoGebra", "ikon": "📐",
+             "aciklama": "Etkileşimli geometri, cebir, tablo ve istatistik uygulaması"},
+            {"paket": "stellarium", "ad": "Stellarium", "ikon": "🔭",
+             "aciklama": "Gerçekçi 3B gökyüzü ve astronomi gözlem simülasyonu"},
+            {"paket": "kalzium", "ad": "Kalzium", "ikon": "🧪",
+             "aciklama": "Etkileşimli periyodik tablo ve kimya başvuru aracı"},
+            {"paket": "gcompris-qt", "ad": "GCompris", "ikon": "🧩",
+             "aciklama": "Zengin eğitsel algoritma, matematik ve bilim etkinlikleri"},
+        ],
+    },
+    {
+        "kategori": "İnternet ve Sistem Araçları",
+        "ikon": "🛠️",
+        "uygulamalar": [
+            {"paket": "chromium", "ad": "Chromium Tarayıcı", "ikon": "🌐",
+             "aciklama": "Hızlı ve modern açık kaynaklı web tarayıcısı"},
+            {"paket": "firefox-esr", "ad": "Firefox ESR", "ikon": "🦊",
+             "aciklama": "Pardus varsayılan uzun süreli destekli web tarayıcısı"},
+            {"paket": "okular", "ad": "Okular PDF Okuyucu", "ikon": "📑",
+             "aciklama": "Gelişmiş PDF, EPUB ve e-kitap görüntüleme ve işaretleme aracı"},
+            {"paket": "filezilla", "ad": "FileZilla", "ikon": "📂",
+             "aciklama": "Web sunucuları için görsel FTP / SFTP dosya aktarım istemcisi"},
+            {"paket": "7zip", "ad": "7-Zip", "ikon": "🗜️",
+             "aciklama": "7z, ZIP, RAR ve TAR arşiv sıkıştırma ve açma aracı"},
+            {"paket": "htop", "ad": "htop", "ikon": "📊",
+             "aciklama": "Renkli ve etkileşimli işlemci/bellek süreç izleyicisi"},
+        ],
+    },
+]
+
+
+def repo_katalog() -> dict:
+    return {"kategoriler": REPO_KATALOG}
+
+
+def paket_listesi_dogrula(paketler_ham: list[str], kaldirma_mi: bool = False) -> list[str]:
+    temiz = []
+    goruldu = set()
+    for p in paketler_ham or []:
+        for parca in re.split(r"[\s,;]+", (p or "").strip().lower()):
+            if not parca or parca in goruldu:
+                continue
+            if not _PAKET_ADI_RE.match(parca):
+                raise ValueError(f"Geçersiz paket adı: '{parca}'")
+            if kaldirma_mi and uzak_paket.korumali_paket_mi(parca):
+                raise ValueError(
+                    f"'{parca}' kritik sistem veya masaüstü paketidir; güvenli çalışma için kaldırılmasına izin verilmez."
+                )
+            goruldu.add(parca)
+            temiz.append(parca)
+    if not temiz:
+        raise ValueError("En az bir geçerli paket seçin veya yazın")
+    if len(temiz) > 30:
+        raise ValueError("Tek seferde en çok 30 paket seçilebilir")
+    return temiz
+
+
+def _referans_cihaz_bul(cihaz_id: str | None = None) -> dict:
+    if cihaz_id:
+        c = veritabani.cihaz(cihaz_id)
+        if not c:
+            raise ValueError("Seçilen bilgisayar envanterde bulunamadı")
+        neden = secim.uygunluk(c, "paket")
+        if neden:
+            raise ValueError(f"{veritabani.cihaz_adi(c)} bu işlem için uygun değil: {neden}")
+        return c
+    for c in veritabani.cihazlar():
+        if not secim.uygunluk(c, "paket"):
+            return c
+    raise ValueError("Depo sorgusu için yönetime hazır (SSH + parolasız sudo) en az bir bilgisayar gereklidir")
+
+
+def repo_ara(sorgu: str, cihaz_id: str | None = None) -> dict:
+    cihaz = _referans_cihaz_bul(cihaz_id)
+    ad = veritabani.cihaz_adi(cihaz)
+    try:
+        istemci = yonetim.baglan(cihaz)
+    except Exception as hata:
+        raise ValueError(f"{ad} bilgisayarına bağlanılamadı: {hata}")
+    try:
+        sonuc = ssh_araclari.sudo_betik(
+            istemci, uzak.betik("paket"),
+            {"kip": "repo_ara", "sorgu": sorgu},
+            zaman=90)
+        if "hata" in sonuc:
+            raise ValueError(sonuc["hata"])
+        return {"cihaz_id": cihaz["id"], "cihaz_ad": ad, **sonuc}
+    finally:
+        istemci.close()
+
+
+def kurulu_listele(cihaz_id: str, tum_paketler: bool = False) -> dict:
+    cihaz = _referans_cihaz_bul(cihaz_id)
+    ad = veritabani.cihaz_adi(cihaz)
+    try:
+        istemci = yonetim.baglan(cihaz)
+    except Exception as hata:
+        raise ValueError(f"{ad} bilgisayarına bağlanılamadı: {hata}")
+    try:
+        sonuc = ssh_araclari.sudo_betik(
+            istemci, uzak.betik("paket"),
+            {"kip": "kurulu_listele", "tum_paketler": tum_paketler},
+            zaman=120)
+        if "hata" in sonuc:
+            raise ValueError(sonuc["hata"])
+        return {"cihaz_id": cihaz["id"], "cihaz_ad": ad, "ip": cihaz["ip"], **sonuc}
+    finally:
+        istemci.close()
+
+
+async def repo_kur_isi(is_id: str, paket_adlari: list[str], guncelle: bool,
+                       cihaz_idler: list[str], iptal: asyncio.Event) -> None:
+    sinir = asyncio.Semaphore(ayarlar.PAKET_PARALELLIGI)
+
+    async def _tek(cid: str):
+        cihaz = veritabani.cihaz(cid)
+        if not cihaz:
+            return
+        if iptal.is_set():
+            veritabani.hedef_guncelle(is_id, cihaz["ip"], "atlandi", "iptal", "Kullanıcı iptal etti")
+            return
+        neden = secim.uygunluk(cihaz, "paket")
+        if neden:
+            veritabani.hedef_guncelle(is_id, cihaz["ip"], "atlandi", "kapsam",
+                                      f"{veritabani.cihaz_adi(cihaz)} — {neden}")
+            return
+        async with sinir:
+            await asyncio.to_thread(_repo_kur_tek, is_id, cihaz, paket_adlari, guncelle)
+
+    await asyncio.gather(*(_tek(c) for c in cihaz_idler))
+
+
+def _repo_kur_tek(is_id: str, cihaz: dict, paket_adlari: list[str], guncelle: bool) -> None:
+    ip, ad = cihaz["ip"], veritabani.cihaz_adi(cihaz)
+    veri = {"cihaz_id": cihaz["id"], "ad": ad, "paketler": paket_adlari}
+    ozet_adlar = ", ".join(paket_adlari[:4]) + (f" (+{len(paket_adlari) - 4})" if len(paket_adlari) > 4 else "")
+    veritabani.hedef_guncelle(is_id, ip, "calisiyor", "kurulum",
+                              f"{ad} — depodan kuruluyor: {ozet_adlar}", veri)
+    try:
+        istemci = yonetim.baglan(cihaz)
+    except Exception as hata:
+        veritabani.hedef_guncelle(is_id, ip, "basarisiz", "baglanti", f"{ad} — bağlanılamadı: {hata}", veri)
+        return
+    try:
+        sonuc = ssh_araclari.sudo_betik(
+            istemci, uzak.betik("paket"),
+            {"kip": "repo_kur", "paketler": paket_adlari, "guncelle": guncelle},
+            zaman=2000)
+        if "hata" in sonuc:
+            veritabani.hedef_guncelle(is_id, ip, "basarisiz", "kurulum",
+                                      f"{ad} — {sonuc['hata']}", {**veri, "sonuc": sonuc})
+            return
+        kurulan = sonuc.get("kurulanlar") or {}
+        detay = ", ".join(f"{k} ({v})" for k, v in kurulan.items())
+        veritabani.hedef_guncelle(
+            is_id, ip, "basarili", "tamam",
+            f"{ad} — kuruldu ve doğrulandı: {detay}",
+            {**veri, "sonuc": sonuc})
+    except Exception as hata:
+        veritabani.hedef_guncelle(is_id, ip, "basarisiz", "kurulum", f"{ad} — {hata}", veri)
+    finally:
+        istemci.close()
+
+
+async def repo_kaldir_isi(is_id: str, paket_adlari: list[str], artiklari_temizle: bool,
+                          cihaz_idler: list[str], iptal: asyncio.Event) -> None:
+    sinir = asyncio.Semaphore(ayarlar.PAKET_PARALELLIGI)
+
+    async def _tek(cid: str):
+        cihaz = veritabani.cihaz(cid)
+        if not cihaz:
+            return
+        if iptal.is_set():
+            veritabani.hedef_guncelle(is_id, cihaz["ip"], "atlandi", "iptal", "Kullanıcı iptal etti")
+            return
+        neden = secim.uygunluk(cihaz, "paket")
+        if neden:
+            veritabani.hedef_guncelle(is_id, cihaz["ip"], "atlandi", "kapsam",
+                                      f"{veritabani.cihaz_adi(cihaz)} — {neden}")
+            return
+        async with sinir:
+            await asyncio.to_thread(_repo_kaldir_tek, is_id, cihaz, paket_adlari, artiklari_temizle)
+
+    await asyncio.gather(*(_tek(c) for c in cihaz_idler))
+
+
+def _repo_kaldir_tek(is_id: str, cihaz: dict, paket_adlari: list[str], artiklari_temizle: bool) -> None:
+    ip, ad = cihaz["ip"], veritabani.cihaz_adi(cihaz)
+    veri = {"cihaz_id": cihaz["id"], "ad": ad, "paketler": paket_adlari}
+    ozet_adlar = ", ".join(paket_adlari[:4]) + (f" (+{len(paket_adlari) - 4})" if len(paket_adlari) > 4 else "")
+    veritabani.hedef_guncelle(is_id, ip, "calisiyor", "kaldirma",
+                              f"{ad} — kaldırılıyor: {ozet_adlar}", veri)
+    try:
+        istemci = yonetim.baglan(cihaz)
+    except Exception as hata:
+        veritabani.hedef_guncelle(is_id, ip, "basarisiz", "baglanti", f"{ad} — bağlanılamadı: {hata}", veri)
+        return
+    try:
+        sonuc = ssh_araclari.sudo_betik(
+            istemci, uzak.betik("paket"),
+            {"kip": "repo_kaldir", "paketler": paket_adlari, "artiklari_temizle": artiklari_temizle},
+            zaman=1000)
+        if "hata" in sonuc:
+            veritabani.hedef_guncelle(is_id, ip, "basarisiz", "kaldirma",
+                                      f"{ad} — {sonuc['hata']}", {**veri, "sonuc": sonuc})
+            return
+        if sonuc.get("durum") == "atlandi":
+            veritabani.hedef_guncelle(is_id, ip, "atlandi", "tamam",
+                                      f"{ad} — {sonuc.get('mesaj', 'zaten kurulu değil')}",
+                                      {**veri, "sonuc": sonuc})
+            return
+        kaldirilan = ", ".join(sonuc.get("kaldirilanlar") or paket_adlari)
+        veritabani.hedef_guncelle(
+            is_id, ip, "basarili", "tamam",
+            f"{ad} — güvenli şekilde kaldırıldı: {kaldirilan}",
+            {**veri, "sonuc": sonuc})
+    except Exception as hata:
+        veritabani.hedef_guncelle(is_id, ip, "basarisiz", "kaldirma", f"{ad} — {hata}", veri)
+    finally:
+        istemci.close()
+
+

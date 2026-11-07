@@ -382,7 +382,8 @@
   yol("POST", "/api/cihazlar", (g) => {
     if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(g.ip || "")) throw new Hata(422, "Geçersiz IP adresi");
     if (cihazlar.some((c) => c.ip === g.ip)) throw new Hata(422, `${g.ip}:22 zaten envanterde`);
-    const c = { ...cihaz(90 + cihazlar.length, g.etiket || g.ip, g.grup || "Laboratuvar"), ip: g.ip, etiket: g.etiket || null,
+    const c = { ...cihaz(90 + cihazlar.length, g.etiket || g.ip, g.grup || "Laboratuvar"), ip: g.ip, ssh_port: Number(g.port) || 22,
+      etiket: g.etiket || null, hostname: g.hostname || null,
       anahtar_durumu: "gerekli", sudo_durumu: null, parmak_izi: null, parmak_izi_onay: 0, durum: "Kimlik okunmadı",
       baglanti_hesabi: g.baglanti_hesabi || null, yonetim_hesaplari: null, korunan: g.korunan ? 1 : 0, son_kontrol: null,
       gizleme_durumu: null, otomatik_giris: null, gorunum_durumu: null, ogrenci_oturumu: null, pardus_surum: null, masaustu: null,
@@ -394,11 +395,22 @@
   yol("PATCH", "/api/cihazlar/([\\w-]+)", (g, [id]) => {
     const c = cihazAl(id);
     const degisti = "baglanti_hesabi" in g && g.baglanti_hesabi !== c.baglanti_hesabi;
+    if ("ip" in g && g.ip) c.ip = g.ip;
+    if ("port" in g && g.port) c.ssh_port = Number(g.port) || 22;
     if ("etiket" in g) c.etiket = g.etiket;
     if ("grup" in g) c.grup = g.grup || "Laboratuvar";
     if ("korunan" in g) { c.korunan = g.korunan ? 1 : 0; c.korunan_neden = g.korunan ? "Öğretmen işaretledi" : null; }
+    let hostname_degisti = false, hostname_uzak = false, hostname_mesaj = null;
+    if ("hostname" in g && g.hostname !== c.hostname) {
+      c.hostname = g.hostname || null;
+      hostname_degisti = true;
+      hostname_uzak = c.anahtar_durumu === "ok" && c.sudo_durumu === "parolasiz" && c.erisim !== 0;
+      hostname_mesaj = hostname_uzak
+        ? `Uzak bilgisayarda ve envanterde hostname '${c.hostname}' olarak güncellendi.`
+        : `Hostname '${c.hostname || "—"}' envantere kaydedildi.`;
+    }
     if (degisti) Object.assign(c, { baglanti_hesabi: g.baglanti_hesabi, anahtar_durumu: "gerekli", sudo_durumu: null, durum: "Hazırlık gerekli" });
-    return { hesap_degisti: degisti };
+    return { hesap_degisti: degisti, hostname_degisti, hostname_uzak, hostname_mesaj };
   });
   yol("POST", "/api/cihazlar/ice-aktar/onizle", (g) => iceAktar(g, false));
   yol("POST", "/api/cihazlar/ice-aktar", (g) => iceAktar(g, true));
@@ -605,8 +617,13 @@
   const vOge = (c, kur) => {
     const y = c.veyon_yapilandirma || {};
     const ayni = y.eslesme === "eslesiyor";
-    return { anahtar: { ad: veyonAnahtar ? veyonAnahtar.ad : "teacher", durum: ayni ? "zaten" : y.eslesme === "farkli" ? "degistirilecek" : "eklenecek", mevcut_kimlik: y.eslesme === "farkli" ? "5d0c11fe" : null },
-      yontem: { durum: y.yontem === 1 && !kur ? "zaten" : "ayarlanacak" }, servis: { durum: (y.servis || {}).calisiyor && !kur ? "zaten" : "etkinlestirilecek" } };
+    return {
+      anahtar: { ad: veyonAnahtar ? veyonAnahtar.ad : "teacher", durum: ayni ? "zaten" : y.eslesme === "farkli" ? "degistirilecek" : "eklenecek", mevcut_kimlik: y.eslesme === "farkli" ? "5d0c11fe" : null },
+      yontem: { durum: y.yontem === 1 && !kur ? "zaten" : "ayarlanacak" },
+      erisim_grubu: { durum: ayni && !kur ? "zaten" : "ayarlanacak", hedef: "root" },
+      vnc_kalite: { durum: ayni && !kur ? "zaten" : "ayarlanacak" },
+      servis: { durum: (y.servis || {}).calisiyor && !kur ? "zaten" : "etkinlestirilecek" },
+    };
   };
   function veyonPlani(c, kip) {
     const p = veyonPaketi();
@@ -726,6 +743,112 @@
     return r;
   });
 
+  /* ---- Pardus Yazılım Merkezi / Repo (DEMO) ---- */
+  const DEMO_REPO_KATALOG = [
+    { kategori: "Kodlama ve Robotik", ikon: "💻", uygulamalar: [
+      { paket: "thonny", ad: "Thonny Python IDE", ikon: "🐍", aciklama: "Öğrenciler için adım adım hata ayıklamalı kolay Python geliştirme ortamı" },
+      { paket: "arduino", ad: "Arduino IDE", ikon: "🤖", aciklama: "Robotik kodlama ve mikrodenetleyici kart programlama ortamı" },
+      { paket: "fritzing", ad: "Fritzing", ikon: "🔌", aciklama: "Elektronik devre şeması ve breadboard prototipleme tasarımı" },
+      { paket: "geany", ad: "Geany", ikon: "📝", aciklama: "Hızlı ve hafif C, C++, Python, HTML/JS kod düzenleyici" },
+      { paket: "codeblocks", ad: "Code::Blocks", ikon: "⚙️", aciklama: "C ve C++ dersleri için tümleşik geliştirme ortamı (IDE)" },
+      { paket: "sqlitebrowser", ad: "DB Browser for SQLite", ikon: "🗄️", aciklama: "Veritabanı dersleri için görsel SQLite tablo ve SQL sorgu aracı" },
+      { paket: "git", ad: "Git", ikon: "🌿", aciklama: "Dağıtık sürüm kontrol ve proje takip sistemi" },
+      { paket: "python3-pip", ad: "Python3 Pip", ikon: "📦", aciklama: "Python kütüphane ve paket kurulum yöneticisi" },
+    ] },
+    { kategori: "Tasarım, Grafik ve Medya", ikon: "🎨", uygulamalar: [
+      { paket: "gimp", ad: "GIMP", ikon: "🖌️", aciklama: "Profesyonel fotoğraf işleme ve görsel tasarım programı" },
+      { paket: "inkscape", ad: "Inkscape", ikon: "✒️", aciklama: "Vektörel grafik, logo ve afiş tasarım uygulaması (SVG)" },
+      { paket: "krita", ad: "Krita", ikon: "🎨", aciklama: "Dijital boyama, illüstrasyon ve 2B animasyon stüdyosu" },
+      { paket: "kolourpaint", ad: "KolourPaint", ikon: "🖼️", aciklama: "Hızlı ve sade resim/çizim programı (MS Paint benzeri)" },
+      { paket: "blender", ad: "Blender", ikon: "🧊", aciklama: "3B modelleme, animasyon, simülasyon ve render stüdyosu" },
+      { paket: "kdenlive", ad: "Kdenlive", ikon: "🎬", aciklama: "Çok katmanlı video kurgu ve montaj programı" },
+      { paket: "audacity", ad: "Audacity", ikon: "🎙️", aciklama: "Ses kaydetme, kesme ve efekt düzenleme stüdyosu" },
+      { paket: "vlc", ad: "VLC Media Player", ikon: "▶️", aciklama: "Tüm video ve ses biçimlerini oynatan medya oynatıcı" },
+    ] },
+    { kategori: "Ofis, Eğitim ve Bilim", ikon: "📚", uygulamalar: [
+      { paket: "libreoffice", ad: "LibreOffice Tam Paket", ikon: "📄", aciklama: "Kelime işlemci (Writer), hesap tablosu (Calc) ve sunum (Impress)" },
+      { paket: "scratch", ad: "Scratch", ikon: "🐱", aciklama: "Blok tabanlı algoritma, animasyon ve oyun geliştirme aracı" },
+      { paket: "geogebra", ad: "GeoGebra", ikon: "📐", aciklama: "Etkileşimli geometri, cebir, tablo ve istatistik uygulaması" },
+      { paket: "stellarium", ad: "Stellarium", ikon: "🔭", aciklama: "Gerçekçi 3B gökyüzü ve astronomi gözlem simülasyonu" },
+      { paket: "kalzium", ad: "Kalzium", ikon: "🧪", aciklama: "Etkileşimli periyodik tablo ve kimya başvuru aracı" },
+      { paket: "gcompris-qt", ad: "GCompris", ikon: "🧩", aciklama: "Zengin eğitsel algoritma, matematik ve bilim etkinlikleri" },
+    ] },
+    { kategori: "İnternet ve Sistem Araçları", ikon: "🛠️", uygulamalar: [
+      { paket: "chromium", ad: "Chromium Tarayıcı", ikon: "🌐", aciklama: "Hızlı ve modern açık kaynaklı web tarayıcısı" },
+      { paket: "firefox-esr", ad: "Firefox ESR", ikon: "🦊", aciklama: "Pardus varsayılan uzun süreli destekli web tarayıcısı" },
+      { paket: "okular", ad: "Okular PDF Okuyucu", ikon: "📑", aciklama: "Gelişmiş PDF, EPUB ve e-kitap görüntüleme ve işaretleme aracı" },
+      { paket: "filezilla", ad: "FileZilla", ikon: "📂", aciklama: "Web sunucuları için görsel FTP / SFTP dosya aktarım istemcisi" },
+      { paket: "7zip", ad: "7-Zip", ikon: "🗜️", aciklama: "7z, ZIP, RAR ve TAR arşiv sıkıştırma ve açma aracı" },
+      { paket: "htop", ad: "htop", ikon: "📊", aciklama: "Renkli ve etkileşimli işlemci/bellek süreç izleyicisi" },
+    ] },
+  ];
+  let demoKuruluUygulamalar = [
+    { paket: "audacity", surum: "3.2.4+dfsg-1", boyut_kb: 38400, bolum: "sound", aciklama: "Çok kanallı ses düzenleme ve kayıt uygulaması", korumali: false },
+    { paket: "chromium", surum: "120.0.6099.224-1~deb12u1", boyut_kb: 245000, bolum: "web", aciklama: "Açık kaynaklı Google web tarayıcısı", korumali: false },
+    { paket: "firefox-esr", surum: "115.8.0esr-1~deb12u1", boyut_kb: 228000, bolum: "web", aciklama: "Mozilla Firefox Uzun Süreli Destekli Tarayıcı", korumali: false },
+    { paket: "gimp", surum: "2.10.34-1+deb12u2", boyut_kb: 112000, bolum: "graphics", aciklama: "GNU Görüntü İşleme Programı", korumali: false },
+    { paket: "inkscape", surum: "1.2.2-2+b1", boyut_kb: 98500, bolum: "graphics", aciklama: "Vektörel çizim ve grafik tasarım programı", korumali: false },
+    { paket: "libreoffice", surum: "4:7.4.7-1+deb12u1", boyut_kb: 412000, bolum: "editors", aciklama: "Tam kapsamlı ofis üretkenlik paketi", korumali: false },
+    { paket: "thonny", surum: "4.0.1-1", boyut_kb: 14200, bolum: "devel", aciklama: "Yeni başlayanlar için Python IDE", korumali: false },
+    { paket: "vlc", surum: "3.0.20-0+deb12u1", boyut_kb: 64000, bolum: "video", aciklama: "Çoklu ortam oynatıcı ve yayıncı", korumali: false },
+    { paket: "gdm3", surum: "43.0-3", boyut_kb: 4200, bolum: "gnome", aciklama: "GNOME Ekran Yöneticisi (Giriş Ekranı)", korumali: true },
+    { paket: "gnome-shell", surum: "43.9-0+deb12u1", boyut_kb: 18500, bolum: "gnome", aciklama: "GNOME masaüstü kullanıcı arayüzü kabuğu", korumali: true },
+    { paket: "network-manager", surum: "1.42.4-1", boyut_kb: 12800, bolum: "net", aciklama: "Ağ bağlantısı yönetim çerçevesi", korumali: true },
+    { paket: "openssh-server", surum: "1:9.2p1-2+deb12u2", boyut_kb: 1950, bolum: "net", aciklama: "Güvenli kabuk (SSH) sunucusu", korumali: true },
+    { paket: "pardus-software", surum: "0.7.2", boyut_kb: 8400, bolum: "admin", aciklama: "Pardus Yazılım Merkezi uygulaması", korumali: true },
+    { paket: "pardus-welcome", surum: "0.4.5", boyut_kb: 6100, bolum: "admin", aciklama: "Pardus Hoşgeldiniz ve Karşılayıcı", korumali: true },
+    { paket: "sudo", surum: "1.9.13p3-1+deb12u1", boyut_kb: 5400, bolum: "admin", aciklama: "Süper kullanıcı yetki yönetimi", korumali: true },
+    { paket: "veyon", surum: "4.11.0.0-debian.12", boyut_kb: 32000, bolum: "education", aciklama: "Bilgisayar izleme ve sınıf yönetimi", korumali: true },
+  ];
+  yol("GET", "/api/paketler/repo/katalog", () => ({ kategoriler: DEMO_REPO_KATALOG }));
+  yol("POST", "/api/paketler/repo/ara", (g) => {
+    const q = (g.sorgu || "").toLowerCase();
+    const tum = DEMO_REPO_KATALOG.flatMap((k) => k.uygulamalar).map((u) => ({
+      paket: u.paket,
+      aciklama: u.aciklama,
+      kurulu: demoKuruluUygulamalar.some((x) => x.paket === u.paket),
+      kurulu_surum: (demoKuruluUygulamalar.find((x) => x.paket === u.paket) || {}).surum || null,
+      korumali: false,
+    }));
+    const sonuclar = tum.filter((u) => u.paket.includes(q) || u.aciklama.toLowerCase().includes(q));
+    if (!sonuclar.length) {
+      sonuclar.push({ paket: q.replace(/[^a-z0-9+.-]/g, "") || "ornek-paket", aciklama: `Pardus deposundaki '${g.sorgu}' paketi (DEMO)`, kurulu: false, kurulu_surum: null, korumali: false });
+    }
+    const c = (g.cihaz && cihazlar.find((x) => x.id === g.cihaz)) || cihazlar[0];
+    return { cihaz_id: c.id, cihaz_ad: adi(c), sorgu: g.sorgu, sonuclar };
+  });
+  yol("POST", "/api/paketler/repo/kurulu-listele", (g) => {
+    const c = (g.cihaz && cihazlar.find((x) => x.id === g.cihaz)) || cihazlar[0];
+    return { cihaz_id: c.id, cihaz_ad: adi(c), ip: c.ip, uygulamalar: demoKuruluUygulamalar, toplam: demoKuruluUygulamalar.length };
+  });
+  yol("POST", "/api/paketler/repo/kur", (g) => {
+    const paketAdlari = g.paketler || [];
+    for (const p of paketAdlari) {
+      if (!demoKuruluUygulamalar.some((x) => x.paket === p)) {
+        demoKuruluUygulamalar.unshift({ paket: p, surum: "1.0+pardus23", boyut_kb: 24500, bolum: "education", aciklama: "Pardus deposundan kurulan uygulama", korumali: false });
+      }
+    }
+    const kurulanlar = Object.fromEntries(paketAdlari.map((p) => [p, "1.0+pardus23"]));
+    const r = isBaslat("repo_kur", g.cihazlar, { paketler: paketAdlari }, () => ({
+      durum: "basarili",
+      mesaj: `kuruldu ve doğrulandı: ${paketAdlari.map((p) => `${p} (1.0+pardus23)`).join(", ")}`,
+      veri: { sonuc: { durum: "kuruldu", kurulanlar } },
+    }));
+    isler.get(r.is_id)._uygunlukIslemi = "paket";
+    return r;
+  });
+  yol("POST", "/api/paketler/repo/kaldir", (g) => {
+    const paketAdlari = g.paketler || [];
+    demoKuruluUygulamalar = demoKuruluUygulamalar.filter((x) => x.korumali || !paketAdlari.includes(x.paket));
+    const r = isBaslat("repo_kaldir", g.cihazlar, { paketler: paketAdlari }, () => ({
+      durum: "basarili",
+      mesaj: `güvenli şekilde kaldırıldı: ${paketAdlari.join(", ")}`,
+      veri: { sonuc: { durum: "kaldirildi", kaldirilanlar: paketAdlari } },
+    }));
+    isler.get(r.is_id)._uygunlukIslemi = "paket";
+    return r;
+  });
+
   /* ---- M2-S4 uyku ayarı ve M2-S5 zamanlı kapatma ---- */
   const gucOzet = (g) => (g ? `${g.uyku_kapali ? "uyku KAPALI" : "uyku AÇIK (bilgisayar boşta uykuya geçebilir)"}; ${g.planlar.length} kapatma planı${g.bekleyen ? `; BEKLEYEN KAPATMA VAR${g.bekleyen_saat ? ` (kapanma ${g.bekleyen_saat})` : ""}` : ""}` : "güç durumu okundu");
   const gucBos = () => ({ uyku_kapali: false, ekran_dk: null, bekleyen: false, planlar: [], zaman: SIMDI() });
@@ -784,9 +907,44 @@
     return r;
   });
 
-  let gorsel = null;
-  yol("GET", "/api/gorunum", () => ({ gorsel }));
-  yol("POST", "/api/duvar-kagidi/gorsel", (g) => { gorsel = { ad: `duvar${g.uzanti}`, bayt: Math.round(g.icerik_b64.length * 0.75) }; return { tamam: true, bayt: gorsel.bayt }; });
+  let demoGaleriOgeler = [
+    { id: "sablon_pardus_lacivert", ad: "sablon_pardus_lacivert.png", baslik: "Pardus Gece Mavisi (Kurumsal)", bayt: 48200, hazir: true },
+    { id: "sablon_anadolu_turkuaz", ad: "sablon_anadolu_turkuaz.png", baslik: "Anadolu Turkuazı (Ferah)", bayt: 46800, hazir: true },
+    { id: "sablon_bilisim_antrasit", ad: "sablon_bilisim_antrasit.png", baslik: "Bilişim Atölyesi (Koyu Antrasit)", bayt: 49100, hazir: true },
+  ];
+  let demoSeciliGaleriId = "sablon_pardus_lacivert";
+  const demoGaleriDurum = () => {
+    const gorsel = demoGaleriOgeler.find((o) => o.id === demoSeciliGaleriId) || demoGaleriOgeler[0] || null;
+    return { gorsel, secili_id: gorsel ? gorsel.id : null, ogeler: demoGaleriOgeler };
+  };
+  yol("GET", "/api/gorunum", () => demoGaleriDurum());
+  yol("POST", "/api/duvar-kagidi/gorsel", (g) => {
+    const id = `duvar_${Date.now().toString(36)}`;
+    const baslik = (g.ad || `duvar${g.uzanti}`).replace(/\.(png|jpg|jpeg)$/i, "");
+    const mime = g.uzanti === ".png" ? "image/png" : "image/jpeg";
+    const oge = {
+      id,
+      ad: `${id}${g.uzanti}`,
+      baslik,
+      bayt: Math.round((g.icerik_b64 || "").length * 0.75),
+      hazir: false,
+      onizleme_url: g.icerik_b64 ? `data:${mime};base64,${g.icerik_b64}` : null,
+    };
+    demoGaleriOgeler.push(oge);
+    demoSeciliGaleriId = id;
+    return { tamam: true, bayt: oge.bayt, oge, galeri: demoGaleriDurum() };
+  });
+  yol("POST", "/api/duvar-kagidi/galeri/sec", (g) => {
+    const oge = demoGaleriOgeler.find((o) => o.id === g.id);
+    if (!oge) throw new Hata(422, "Duvar kâğıdı bulunamadı");
+    demoSeciliGaleriId = oge.id;
+    return { tamam: true, oge, galeri: demoGaleriDurum() };
+  });
+  yol("DELETE", "/api/duvar-kagidi/galeri/([\\w-]+)", (_, [id]) => {
+    demoGaleriOgeler = demoGaleriOgeler.filter((o) => o.id !== id || o.hazir);
+    if (demoSeciliGaleriId === id) demoSeciliGaleriId = demoGaleriOgeler[0].id;
+    return { tamam: true, silindi: true, galeri: demoGaleriDurum() };
+  });
   function gorunumIs(g, kip) {
     const r = isBaslat(kip === "uygula" ? "gorunum" : "gorunum_onizleme", g.cihazlar, { secenekler: g.secenekler }, (c) => {
       const d = (a) => (kip === "uygula" ? (g.secenekler[a] === "kaldir" ? "kaldirildi" : "uygulandi") : (g.secenekler[a] === "kaldir" ? "kaldirilacak" : "uygulanacak"));

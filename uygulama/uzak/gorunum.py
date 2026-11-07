@@ -22,12 +22,16 @@ Kipler (argv[1], JSON):
 import glob
 import json
 import os
-import pwd
 import re
 import subprocess
 import sys
 import tempfile
 import time
+
+try:
+    import pwd
+except ImportError:  # Windows test ortamı
+    pwd = None
 
 ORTAM = dict(os.environ, LC_ALL="C", LANG="C", GSETTINGS_BACKEND="memory")
 KOK = "/var/lib/pardus-sinif-yonetimi"
@@ -597,15 +601,28 @@ def calistir_betik(p):
             ogeler["duvar"] = {"durum": ("kaldirildi" if degisti else "zaten_yok") if uygula
                                else "kaldirilacak"}
         else:
-            oge = {"durum": "uygulanacak", "kilit": kilitle}
+            kose = p.get("duvar_kose") or s.get("duvar_kose") or "sag_ust"
+            numara, tam_host = hostname_numarasi_cikar(p.get("cihaz_hostname") or "", p.get("cihaz_etiket") or "")
+            kose_metin = {"sag_ust": "sağ üst", "sol_ust": "sol üst"}.get(kose)
+            oge = {
+                "durum": "uygulanacak",
+                "kilit": kilitle,
+                "ayrinti": (f"köşede '{numara}' ({tam_host}, {kose_metin}) yazılacak"
+                            if kose_metin else "köşe etiketi yok"),
+            }
             if uygula:
-                hata, ayarlar = _duvar_uygula(p.get("duvar_gecici", ""), p.get("duvar_uzanti", ""), kilitle)
+                hata, ayarlar, etiket_bilgi = _duvar_uygula(
+                    p.get("duvar_gecici", ""), p.get("duvar_uzanti", ""), kilitle,
+                    kose=kose, numara=numara, tam_host=tam_host
+                )
                 if hata:
                     oge = {"durum": "hata", "ayrinti": hata}
                 else:
                     dconf_degisti = True
                     dogrulanacak["duvar"] = ayarlar
                     oge["durum"] = "uygulandi"
+                    if etiket_bilgi:
+                        oge["ayrinti"] = etiket_bilgi
             ogeler["duvar"] = oge
 
     if uygula and dconf_degisti:
@@ -696,25 +713,174 @@ def calistir_betik(p):
     return {"ortam": ortam, "ogeler": ogeler}
 
 
-def _duvar_uygula(gecici, uzanti, kilitle):
+def hostname_numarasi_cikar(cihaz_hostname="", cihaz_etiket=""):
+    sistem_ad = ""
+    try:
+        sistem_ad = os.uname().nodename
+    except AttributeError:
+        pass
+    tam_host = (cihaz_hostname or "").strip() or (sistem_ad or "").strip() or (cihaz_etiket or "").strip() or "PC"
+    rakamlar = re.findall(r"\d+", tam_host) or re.findall(r"\d+", cihaz_etiket or "")
+    numara = (rakamlar[-1].zfill(2) if len(rakamlar[-1]) == 1 else rakamlar[-1]) if rakamlar else tam_host.upper()[:8]
+    return numara, tam_host
+
+
+def _yuvarlak_kutu(ctx, x, y, w, h, r):
+    import math
+    ctx.new_sub_path()
+    ctx.arc(x + w - r, y + r, r, -math.pi / 2, 0)
+    ctx.arc(x + w - r, y + h - r, r, 0, math.pi / 2)
+    ctx.arc(x + r, y + h - r, r, math.pi / 2, math.pi)
+    ctx.arc(x + r, y + r, r, math.pi, 3 * math.pi / 2)
+    ctx.close_path()
+
+
+def _duvar_kose_etiketi_yaz(kaynak_yol, hedef_png_yol, numara, tam_host, kose):
+    """Pardus GNOME'da kurulu GdkPixbuf+Cairo (veya PIL yedek) ile duvar kağıdının sağ/sol üst köşesine
+    uzaktan okunabilir estetik bilgisayar numarası ve hostname rozeti işler."""
+    if kose not in ("sag_ust", "sol_ust"):
+        return False
+    # 1. Yöntem: GdkPixbuf + Cairo (GNOME masaüstünde yerleşik)
+    try:
+        import cairo
+        import gi
+        gi.require_version("GdkPixbuf", "2.0")
+        gi.require_version("Gdk", "3.0")
+        from gi.repository import Gdk, GdkPixbuf
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(kaynak_yol)
+        w, h = pixbuf.get_width(), pixbuf.get_height()
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
+        ctx = cairo.Context(surface)
+        Gdk.cairo_set_source_pixbuf(ctx, pixbuf, 0, 0)
+        ctx.paint()
+
+        no_boy = max(42, int(h * 0.088))
+        alt_boy = max(14, int(h * 0.022))
+
+        ctx.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        ctx.set_font_size(no_boy)
+        xb, yb, no_w, no_h, _, _ = ctx.text_extents(numara)
+
+        ctx.set_font_size(alt_boy)
+        xb2, yb2, alt_w, alt_h, _, _ = ctx.text_extents(tam_host)
+
+        pad_x = max(24, int(w * 0.018))
+        pad_y = max(16, int(h * 0.016))
+        ic_bosluk = max(8, int(h * 0.010))
+        kutu_w = int(max(no_w, alt_w) + pad_x * 2)
+        kutu_h = int(no_h + alt_h + pad_y * 2 + ic_bosluk)
+
+        kenar_x = max(28, int(w * 0.032))
+        kenar_y = max(42, int(h * 0.055))  # GNOME üst panelin altında kalması için güvenli boşluk
+        kutu_x = (w - kutu_w - kenar_x) if kose == "sag_ust" else kenar_x
+        kutu_y = kenar_y
+        yaricap = max(14, int(min(kutu_w, kutu_h) * 0.18))
+
+        # Gölge
+        _yuvarlak_kutu(ctx, kutu_x + 4, kutu_y + 6, kutu_w, kutu_h, yaricap)
+        ctx.set_source_rgba(0, 0, 0, 0.45)
+        ctx.fill()
+
+        # Koyu lacivert yarı saydam zemin (#0F172A)
+        _yuvarlak_kutu(ctx, kutu_x, kutu_y, kutu_w, kutu_h, yaricap)
+        ctx.set_source_rgba(15 / 255.0, 23 / 255.0, 42 / 255.0, 0.88)
+        ctx.fill_preserve()
+
+        # Parlak gök mavisi çerçeve (#38BDF8)
+        ctx.set_line_width(max(2.5, h * 0.003))
+        ctx.set_source_rgba(56 / 255.0, 189 / 255.0, 248 / 255.0, 0.95)
+        ctx.stroke()
+
+        # Büyük numara metni
+        ctx.set_font_size(no_boy)
+        ctx.set_source_rgba(56 / 255.0, 189 / 255.0, 248 / 255.0, 1.0)
+        no_x = kutu_x + (kutu_w - no_w) / 2 - xb
+        no_y = kutu_y + pad_y - yb
+        ctx.move_to(no_x, no_y)
+        ctx.show_text(numara)
+
+        # Altında hostname metni
+        ctx.set_font_size(alt_boy)
+        ctx.set_source_rgba(226 / 255.0, 232 / 255.0, 240 / 255.0, 0.95)
+        alt_x = kutu_x + (kutu_w - alt_w) / 2 - xb2
+        alt_y = kutu_y + pad_y + no_h + ic_bosluk - yb2
+        ctx.move_to(alt_x, alt_y)
+        ctx.show_text(tam_host)
+
+        surface.write_to_png(hedef_png_yol)
+        return os.path.isfile(hedef_png_yol)
+    except Exception:
+        pass
+
+    # 2. Yedek Yöntem: PIL / Pillow
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        im = Image.open(kaynak_yol).convert("RGBA")
+        w, h = im.size
+        katman = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        ciz = ImageDraw.Draw(katman)
+        no_boy = max(42, int(h * 0.085))
+        alt_boy = max(14, int(h * 0.022))
+        try:
+            f_no = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", no_boy)
+            f_alt = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", alt_boy)
+        except Exception:
+            f_no = ImageFont.load_default()
+            f_alt = ImageFont.load_default()
+        b_no = ciz.textbbox((0, 0), numara, font=f_no)
+        b_alt = ciz.textbbox((0, 0), tam_host, font=f_alt)
+        no_w, no_h = b_no[2] - b_no[0], b_no[3] - b_no[1]
+        alt_w, alt_h = b_alt[2] - b_alt[0], b_alt[3] - b_alt[1]
+        pad_x, pad_y = max(24, int(w * 0.018)), max(16, int(h * 0.016))
+        kutu_w = max(no_w, alt_w) + pad_x * 2
+        kutu_h = no_h + alt_h + pad_y * 2 + 10
+        kenar_x, kenar_y = max(28, int(w * 0.032)), max(42, int(h * 0.055))
+        x0 = (w - kutu_w - kenar_x) if kose == "sag_ust" else kenar_x
+        y0 = kenar_y
+        ciz.rounded_rectangle([x0, y0, x0 + kutu_w, y0 + kutu_h], radius=18,
+                              fill=(15, 23, 42, 225), outline=(56, 189, 248, 245), width=3)
+        ciz.text((x0 + (kutu_w - no_w) // 2, y0 + pad_y - b_no[1]), numara, font=f_no, fill=(56, 189, 248, 255))
+        ciz.text((x0 + (kutu_w - alt_w) // 2, y0 + pad_y + no_h + 10 - b_alt[1]), tam_host, font=f_alt, fill=(226, 232, 240, 245))
+        sonuc = Image.alpha_composite(im, katman).convert("RGB")
+        sonuc.save(hedef_png_yol, "PNG")
+        return os.path.isfile(hedef_png_yol)
+    except Exception:
+        return False
+
+
+def _duvar_uygula(gecici, uzanti, kilitle, kose="sag_ust", numara="", tam_host=""):
     if uzanti not in (".png", ".jpg", ".jpeg"):
-        return "geçersiz görsel uzantısı", None
+        return "geçersiz görsel uzantısı", None, None
     if not gecici.startswith("/tmp/") or not os.path.isfile(gecici) or os.path.islink(gecici):
-        return "yüklenen görsel bulunamadı", None
+        return "yüklenen görsel bulunamadı", None, None
     if os.path.getsize(gecici) > 20 * 1048576:
-        return "görsel 20 MB sınırını aşıyor", None
+        return "görsel 20 MB sınırını aşıyor", None, None
     with open(gecici, "rb") as f:
         bas = f.read(8)
     if not (bas.startswith(b"\x89PNG") or bas.startswith(b"\xff\xd8\xff")):
-        return "yalnızca PNG veya JPEG kabul edilir", None
+        return "yalnızca PNG veya JPEG kabul edilir", None, None
     os.makedirs(DUVAR_DIZINI, mode=0o755, exist_ok=True)
     for eski in glob.glob(DUVAR_DIZINI + "/duvar.*"):
         os.unlink(eski)
-    hedef = os.path.join(DUVAR_DIZINI, "duvar" + uzanti)
-    with open(gecici, "rb") as kaynak, open(hedef + ".yeni", "wb") as f:
-        f.write(kaynak.read())
-    os.chmod(hedef + ".yeni", 0o644)
-    os.replace(hedef + ".yeni", hedef)
+    if not numara or not tam_host:
+        numara, tam_host = hostname_numarasi_cikar()
+    etiket_bilgi = None
+    hedef_png = os.path.join(DUVAR_DIZINI, "duvar.png")
+    if kose in ("sag_ust", "sol_ust") and _duvar_kose_etiketi_yaz(gecici, hedef_png + ".yeni", numara, tam_host, kose):
+        os.chmod(hedef_png + ".yeni", 0o644)
+        os.replace(hedef_png + ".yeni", hedef_png)
+        hedef = hedef_png
+        kose_ad = "sağ üst" if kose == "sag_ust" else "sol üst"
+        etiket_bilgi = f"köşe numarası işlendi: '{numara}' ({tam_host}, {kose_ad})"
+    else:
+        hedef = os.path.join(DUVAR_DIZINI, "duvar" + uzanti)
+        with open(gecici, "rb") as kaynak, open(hedef + ".yeni", "wb") as f:
+            f.write(kaynak.read())
+        os.chmod(hedef + ".yeni", 0o644)
+        os.replace(hedef + ".yeni", hedef)
+        if kose == "yok":
+            etiket_bilgi = "köşe etiketsiz uygulandı"
     os.unlink(gecici)
     if os.path.basename(os.path.dirname(gecici)).startswith("psy-duvar-"):
         try:
@@ -727,7 +893,7 @@ def _duvar_uygula(gecici, uzanti, kilitle):
         "/org/gnome/desktop/background/picture-options": "'zoom'",
     }
     anahtar_dosyasi_yaz(DUVAR_DOSYASI, DUVAR_KILIT, ayarlar, kilitle)
-    return None, ayarlar
+    return None, ayarlar, etiket_bilgi
 
 
 def ana():

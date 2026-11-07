@@ -5,7 +5,7 @@
 <h1 align="center">Lab Kaptanı</h1>
 
 <p align="center">
-  <strong>Pardus Sınıf Yönetimi (Sürüm 0.7.0)</strong><br>
+  <strong>Pardus Sınıf Yönetimi (Sürüm 0.8.0)</strong><br>
   Pardus ve Debian tabanlı okul bilgisayar laboratuvarları için teknik bilgi gerektirmeyen, Türkçe ve modern merkezi yönetim uygulaması.
 </p>
 
@@ -13,7 +13,7 @@
   <img alt="Lisans: GPL-3.0-or-later" src="https://img.shields.io/badge/lisans-GPL--3.0--or--later-blue">
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
   <img alt="Pardus 23 EDU" src="https://img.shields.io/badge/Pardus-23%20EDU-1B5FC1">
-  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.7.0-brightgreen">
+  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.8.0-brightgreen">
 </p>
 
 ---
@@ -33,23 +33,24 @@
 Lab Kaptanı, öğretmenlerin teknik detaylarla vakit kaybetmeden dersi verimli şekilde yürütmelerini sağlar. Öğretmen bilgisayarına tek bir `.deb` paketiyle kurulur; **öğrenci bilgisayarlarına hiçbir ajan veya istemci yazılımı kurulması gerekmez**. Tüm işlemler güvenli SSH anahtarı üzerinden gerçekleştirilir.
 
 * 🖥️ **Canlı Sınıf Masası:**
-  * **Bana Bakın (Ekran Kilitle):** Öğrenci ekranlarını tek tıkla kilitler, dikkat çekici görsel uyarı gösterir ve klavye/fareyi kilitler.
+  * **Bana Bakın (Ekran Kilitle):** Öğrenci ekranlarını tek tıkla kilitler; sağ üst köşede devasa bilgisayar numarası (**`01`**) ve ortada hostname kartı (`🖥️ 01 · ogrenci01`) ile uzaktan tanınmasını sağlar, monitör uykuya geçmez.
   * **Ekran Kilitlerini Aç:** Kilitli ekranları anında serbest bırakır.
   * **Sınıfa Anlık Duyuru:** Öğrenci ekranlarında öğretmenin yazdığı mesajı pencere olarak açar.
   * **İnterneti Kısıtla / Aç:** Öğrencilerin dış internet erişimini tek tıkla engeller; yerel ağ ve ödev portalını açık tutar.
 * 🔍 **Bilgisayar Durumları ve Cihaz Detay Özeti:**
   * Bilgisayarlar durum renkleriyle izlenir (Hazır, Öğrenci Çalışıyor, Kapalı, Anahtar Gerekli, Yönetim Yetkisi Yok vb.).
-  * Herhangi bir bilgisayar kutucuğuna veya adına tıklandığında IP adresi, bağlantı durumu, donanım bilgisi ve Veyon sürümü açılır özet penceresinde görüntülenir.
-* 🔑 **Tek Adımda Hazırlık (Parolasız Yönetim):**
-  * Öğrenci bilgisayarlarının parolası yalnızca ilk kurulumda bir kez girilir.
-  * Güvenli Ed25519 SSH anahtarı kurulur; günlük ders yönetiminde **asla parola sorulmaz**.
-  * Fazla yönetici hesapları (`pardus`/`hp`) yedeklenerek güvenle tekilleştirilir.
-* 🧹 **Ders Sonu Temizliği ve Profil Yönetimi:**
-  * Ders bitiminde Masaüstü ve İndirilenler klasörleri tek tıkla temizlenir.
-  * Silinen dosyalar öğrenci bilgisayarında karantinaya alınır; yanlışlıkla silinen ödev veya projeler geri kurtarılabilir.
-* ⚡ **Güç ve Uyku Yönetimi:**
-  * Bilgisayarların ders esnasında boşta uykuya geçmesi veya kapanması tek tıkla önlenir (yalnızca ekran kararır).
+  * Bilgisayar kutucuğuna tıklandığında **Hostname** ve **IP adresi**, donanım bilgisi ve Veyon sürümü açılır özet penceresinde görüntülenir. Formdan bilgisayar adı (hostname) tek tıkla değiştirilebilir.
+* 📦 **Pardus Yazılım Merkezi & Uzaktan Program Kurulumu (M2-S2):**
+  * Tanımlı APT depolarında arama yapabilir, vitrinden (Thonny, Scratch, Arduino, Blender, GIMP vb.) seçerek tek veya çoklu bilgisayara uzaktan program kurabilirsiniz.
+  * İstemediğiniz kurulu programları kritik sistem bileşenleri koruma altında olacak şekilde güvenle kaldırabilirsiniz.
+* 🖼️ **Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası Etiketi (M2-S3):**
+  * Birden fazla okul fotoğrafı yükleyebilir veya 3 hazır kurumsal şablondan seçim yapabilirsiniz.
+  * Duvar kâğıdı atanırken her bilgisayarın `hostname` numarası (örn. `ogrenci01` → **01**) sağ/sol üst köşeye rozet olarak otomatik işlenir.
+* ⚡ **Güç ve Ekran Koruyucu Yönetimi:**
+  * Bilgisayarların boşta uykuya geçmesi veya ekranının kararması ("Hiç kapanmasın") X11 DPMS ve GNOME/GDM kilitleriyle tamamen önlenir.
   * Ders çıkış saatine özel bir kezlik veya haftalık zamanlı kapatma planı oluşturulabilir.
+* 📡 **Veyon Tek Tıkla Standart Kurulum ve Uzman Ayarları (M1-S4):**
+  * Yüklenen `.deb` ve `public key` ile anahtar dosya yetkilendirmesi, `root` erişim grubu, dahili VNC ve yüksek kalite ayarları soru sorulmadan otomatik uygulanır. Uzmanlar için katlanabilir ayar paneli sunulur.
 * 📚 **Ödev ve Materyal Dağıtımı:**
   * Öğrenci bilgisayarlarının masaüstüne ders materyali veya web bağlantısı gönderilebilir.
   * Öğrenciler `http://ogretmen.lab:8090` adresinden sınıf kodlarıyla ödevlerini tarayıcıdan teslim eder.
@@ -70,7 +71,7 @@ Lab Kaptanı, öğretmenlerin teknik detaylarla vakit kaybetmeden dersi verimli 
 Öğretmen bilgisayarında (Pardus 23 EDU) terminal açarak paketi kurun:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.7.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.8.0_amd64.deb
 ```
 
 > **Not:** Paket, kendi gömülü Python çalışma ortamını ve gerekli tüm kütüphaneleri taşır. Kurulum için internet bağlantısı gerekmez.

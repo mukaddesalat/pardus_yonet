@@ -62,7 +62,12 @@ def _calistir_tek(is_id: str, cihaz: dict, parametre: dict) -> None:
                                   f"{ad} — ulaşılamadı ({hata})", {**veri, "ulasildi": False})
         return
     try:
-        sonuc = ssh_araclari.sudo_betik(istemci, uzak.betik("sinif"), parametre, zaman=30)
+        parametre_gonder = {
+            **parametre,
+            "cihaz_hostname": cihaz.get("hostname") or "",
+            "cihaz_etiket": cihaz.get("etiket") or "",
+        }
+        sonuc = ssh_araclari.sudo_betik(istemci, uzak.betik("sinif"), parametre_gonder, zaman=30)
         if "hata" in sonuc:
             veritabani.hedef_guncelle(is_id, ip, "basarisiz", "uygulama",
                                       f"{ad} — {sonuc['hata']}", {**veri, "ulasildi": True, "sonuc": sonuc})

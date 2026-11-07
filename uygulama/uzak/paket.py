@@ -330,13 +330,276 @@ def temizle(p):
     return {"silinen": silinen}
 
 
+# ---------------------------------------------------------------- Pardus Yazılım Merkezi / Repo İşlemleri
+
+KORUMALI_PAKETLER = frozenset({
+    "apt", "apt-utils", "base-files", "base-passwd", "bash", "bsdutils", "ca-certificates",
+    "coreutils", " cron", "dash", "dbus", "debconf", "debianutils", "diffutils", "dpkg",
+    "e2fsprogs", "findutils", "gdm3", "gnome-core", "gnome-session", "gnome-shell",
+    "grep", "grub-common", "grub-efi-amd64", "grub-pc", "gzip", "hostname", "init",
+    "init-system-helpers", "initramfs-tools", "iproute2", "iptables", "libc-bin", "libc6",
+    "lightdm", "locales", "login", "mount", "ncurses-base", "ncurses-bin", "network-manager",
+    "nftables", "openssh-client", "openssh-server", "pardus-about", "pardus-common",
+    "pardus-gnome-desktop", "pardus-menus", "pardus-package-installer", "pardus-software",
+    "pardus-update", "pardus-welcome", "passwd", "perl-base", "pkexec", "polkitd",
+    "procps", "python3", "python3-apt", "python3-minimal", "sed", "sudo", "systemd",
+    "systemd-sysv", "tar", "tzdata", "udev", "util-linux", "veyon", "veyon-configurator",
+    "veyon-master", "veyon-plugins", "veyon-service", "xorg", "xserver-xorg",
+    "xserver-xorg-core", "xfce4", "xfce4-session", "xfwm4",
+})
+
+KORUMALI_ONEKLER = (
+    "linux-image-", "linux-headers-", "linux-kbuild-", "grub-", "systemd-",
+    "pardus-gnome-", "pardus-xfce-", "gnome-shell-", "xserver-xorg-", "libpam-",
+    "libsystemd", "libapt-", "udev", "openssh-", "veyon-",
+)
+
+GIZLENECEK_ONEKLER = (
+    "lib", "gir1.2-", "fonts-", "xfonts-", "mythes-", "hyphen-", "hunspell-",
+    "aspell-", "ispell-", "manpages", "doc-", "linux-headers-", "linux-kbuild-",
+    "linux-compiler-", "gcc-", "g++-", "cpp-", "binutils-",
+)
+
+GIZLENECEK_SONEKLER = (
+    "-dev", "-dbg", "-dbgsym", "-doc", "-data", "-common", "-l10n", "-locales",
+    "-bin", "-core", "-minimal", "-base",
+)
+
+
+def korumali_paket_mi(paket_adi, essential="no", priority="optional"):
+    ad = (paket_adi or "").split(":")[0].strip().lower()
+    if not ad:
+        return False
+    if essential == "yes" or priority in ("required", "important"):
+        return True
+    if ad in KORUMALI_PAKETLER:
+        return True
+    if any(ad.startswith(onek) for onek in KORUMALI_ONEKLER):
+        return True
+    return False
+
+
+def _tum_kurulu_sozluk():
+    rc, cikti, _ = calistir(["dpkg-query", "-W", "-f=${Package}\t${Status}\t${Version}\n"], zaman=60)
+    sonuc = {}
+    if rc != 0:
+        return sonuc
+    for satir in cikti.splitlines():
+        parca = satir.split("\t")
+        if len(parca) == 3 and parca[1].strip().endswith(" installed"):
+            sonuc[parca[0].split(":")[0]] = parca[2].strip()
+    return sonuc
+
+
+def repo_ara(p):
+    sorgu = (p.get("sorgu") or "").strip()
+    if len(sorgu) < 2 or len(sorgu) > 60 or not re.match(r"^[a-zA-Z0-9.+_-]+(?:\s+[a-zA-Z0-9.+_-]+)*$", sorgu):
+        return {"hata": "Arama terimi 2-60 karakter olmalı ve yalnız harf, rakam, '.', '+', '-', '_' içermelidir."}
+    kelimeler = sorgu.split()
+    rc, cikti, hata = calistir(["apt-cache", "search", "--", *kelimeler], zaman=60)
+    if rc != 0:
+        return {"hata": "Depo araması başarısız: " + (hata.strip() or cikti.strip())[:300]}
+    kurulular = _tum_kurulu_sozluk()
+    sonuclar = []
+    # Tam veya önekle eşleşenleri öne almak için sıralama
+    ham_liste = []
+    for satir in cikti.splitlines():
+        if " - " not in satir:
+            continue
+        ad, aciklama = satir.split(" - ", 1)
+        ad = ad.strip()
+        if not PAKET_DESENI.match(ad):
+            continue
+        oncelik = 0 if ad == kelimeler[0].lower() else (1 if ad.startswith(kelimeler[0].lower()) else (
+            2 if not ad.startswith("lib") else 3))
+        ham_liste.append((oncelik, ad, aciklama.strip()))
+    ham_liste.sort(key=lambda x: (x[0], x[1]))
+    for _, ad, aciklama in ham_liste[:80]:
+        surum = kurulular.get(ad)
+        korumali = korumali_paket_mi(ad)
+        sonuclar.append({
+            "paket": ad,
+            "aciklama": aciklama,
+            "kurulu": surum is not None,
+            "kurulu_surum": surum,
+            "korumali": korumali,
+        })
+    return {"sorgu": sorgu, "sonuclar": sonuclar}
+
+
+def kurulu_listele(p):
+    tum_paketler = bool(p.get("tum_paketler", False))
+    rc_m, cikti_m, _ = calistir(["apt-mark", "showmanual"], zaman=30)
+    elle_kurulan = {s.split(":")[0].strip() for s in cikti_m.splitlines() if s.strip()} if rc_m == 0 else set()
+    rc, cikti, hata = calistir(
+        ["dpkg-query", "-W",
+         "-f=${Package}\t${Status}\t${Version}\t${Installed-Size}\t${Section}\t${Essential}\t${Priority}\t${binary:Summary}\n"],
+        zaman=90)
+    if rc != 0:
+        return {"hata": "Kurulu paketler okunamadı: " + (hata.strip() or cikti.strip())[:300]}
+    uygulamalar = []
+    for satir in cikti.splitlines():
+        parca = satir.split("\t")
+        if len(parca) < 8:
+            continue
+        ad, durum, surum, boyut_kb, bolum, essential, priority, ozet = parca[:8]
+        if not durum.strip().endswith(" installed"):
+            continue
+        ad_yaln = ad.split(":")[0].strip()
+        essential = essential.strip().lower()
+        priority = priority.strip().lower()
+        bolum_alt = bolum.split("/")[-1].strip().lower()
+        korumali = korumali_paket_mi(ad_yaln, essential, priority)
+        if not tum_paketler:
+            if elle_kurulan and ad_yaln not in elle_kurulan and bolum_alt not in (
+                    "editors", "education", "electronics", "games", "gnome", "graphics",
+                    "math", "net", "science", "sound", "text", "utils", "video", "web", "x11"):
+                continue
+            if any(ad_yaln.startswith(o) for o in GIZLENECEK_ONEKLER):
+                continue
+            if any(ad_yaln.endswith(s) for s in GIZLENECEK_SONEKLER) and ad_yaln not in ("firefox-esr", "python3-pip"):
+                continue
+            if ad_yaln.startswith("python3-") and ad_yaln not in ("python3-pip", "python3-tk", "python3-pygame", "python3-pyqt5"):
+                continue
+        try:
+            kb = int(boyut_kb.strip() or "0")
+        except ValueError:
+            kb = 0
+        uygulamalar.append({
+            "paket": ad_yaln,
+            "surum": surum.strip(),
+            "boyut_kb": kb,
+            "bolum": bolum.strip(),
+            "aciklama": ozet.strip(),
+            "korumali": korumali,
+            "koruma_nedeni": "Temel sistem / masaüstü / yönetim bileşeni" if korumali else None,
+        })
+    uygulamalar.sort(key=lambda x: (x["korumali"], x["paket"]))
+    return {"uygulamalar": uygulamalar, "toplam": len(uygulamalar)}
+
+
+def repo_kur(p):
+    paket_listesi = [x.strip() for x in (p.get("paketler") or []) if x and x.strip()]
+    if not paket_listesi:
+        return {"hata": "Kurulacak paket seçilmedi"}
+    for ad in paket_listesi:
+        if not PAKET_DESENI.match(ad):
+            return {"hata": "Geçersiz paket adı: %s" % ad}
+    kilit = kilit_durumu()
+    if kilit:
+        return {"hata": "Paket yöneticisi meşgul (%s kilitli); başka bir işlem sürüyor olabilir" % kilit}
+    if p.get("guncelle", True):
+        calistir(["apt-get", "update", "-q"], zaman=180)
+    # Önce benzetim: hiçbir paketin kaldırılmayacağını doğrula
+    rc_s, cikti_s, hata_s = calistir(
+        ["apt-get", "-s", "-q", "-o", "Debug::NoLocking=1", "install", "--no-remove", "--", *paket_listesi],
+        zaman=180)
+    benzetim = apt_ciktisi_ayristir(cikti_s)
+    if rc_s != 0:
+        return {"hata": "Paket deposunda bulunamadı veya bağımlılık hatası: " + (hata_s.strip() or cikti_s.strip())[-400:]}
+    if benzetim["kaldirilacak"]:
+        return {"hata": "Kurulum mevcut paketleri kaldıracağı için engellendi: " + ", ".join(benzetim["kaldirilacak"])}
+    rc, cikti, hata = calistir(
+        ["apt-get", "install", "-y", "-q", "--no-remove",
+         "-o", "Dpkg::Options::=--force-confdef", "-o", "Dpkg::Options::=--force-confold",
+         "--", *paket_listesi],
+        zaman=1800)
+    kurulanlar = {}
+    eksikler = []
+    for ad in paket_listesi:
+        s = kurulu_surum(ad)
+        if s:
+            kurulanlar[ad] = s
+        else:
+            eksikler.append(ad)
+    if rc != 0 or eksikler:
+        return {
+            "hata": "Kurulum tamamlanamadı (%s): %s" % (
+                ", ".join(eksikler) or "apt hatası",
+                (hata.strip() or cikti.strip())[-400:]
+            ),
+            "kurulanlar": kurulanlar,
+        }
+    return {
+        "durum": "kuruldu",
+        "kurulanlar": kurulanlar,
+        "yeni_bagimlilik_sayisi": max(0, len(benzetim["yeni"]) - len(paket_listesi)),
+        "kayit": (cikti + "\n" + hata).strip().splitlines()[-10:],
+    }
+
+
+def repo_kaldir(p):
+    paket_listesi = [x.strip() for x in (p.get("paketler") or []) if x and x.strip()]
+    if not paket_listesi:
+        return {"hata": "Kaldırılacak paket seçilmedi"}
+    for ad in paket_listesi:
+        if not PAKET_DESENI.match(ad):
+            return {"hata": "Geçersiz paket adı: %s" % ad}
+        if korumali_paket_mi(ad):
+            return {"hata": "Korumalı sistem paketi kaldırılamaz: %s" % ad}
+    kilit = kilit_durumu()
+    if kilit:
+        return {"hata": "Paket yöneticisi meşgul (%s kilitli); başka bir işlem sürüyor olabilir" % kilit}
+    kurulu_olanlar = [ad for ad in paket_listesi if kurulu_surum(ad) is not None]
+    if not kurulu_olanlar:
+        return {"durum": "atlandi", "mesaj": "Seçilen paketler bu bilgisayarda zaten kurulu değil", "kaldirilanlar": []}
+    # Benzetim ile kaldırılacak tüm paketleri denetle (sistem paketi etkilenirse engelle!)
+    rc_s, cikti_s, hata_s = calistir(
+        ["apt-get", "-s", "-q", "-o", "Debug::NoLocking=1", "remove", "--", *kurulu_olanlar],
+        zaman=120)
+    if rc_s != 0:
+        return {"hata": "Kaldırma benzetimi başarısız: " + (hata_s.strip() or cikti_s.strip())[-400:]}
+    benzetim = apt_ciktisi_ayristir(cikti_s)
+    tum_kaldirilacak = [k.split(":")[0] for k in benzetim["kaldirilacak"]]
+    tehlikeli = [k for k in tum_kaldirilacak if korumali_paket_mi(k)]
+    if tehlikeli:
+        return {
+            "hata": (
+                "GÜVENLİK ENGELİ: Bu paketin kaldırılması kritik sistem bileşenlerini de (%s) "
+                "kaldıracağı için işlem otomatik olarak durduruldu." % ", ".join(tehlikeli[:8])
+            )
+        }
+    yan_etki = [k for k in tum_kaldirilacak if k not in kurulu_olanlar]
+    if len(yan_etki) > 25:
+        return {
+            "hata": (
+                "GÜVENLİK ENGELİ: Bu işlem %d ek paketi daha kaldıracağı için güvenlik amacıyla engellendi."
+                % len(yan_etki)
+            )
+        }
+    alt_komut = "purge" if p.get("artiklari_temizle") else "remove"
+    rc, cikti, hata = calistir(
+        ["apt-get", alt_komut, "-y", "-q",
+         "-o", "Dpkg::Options::=--force-confdef", "-o", "Dpkg::Options::=--force-confold",
+         "--", *kurulu_olanlar],
+        zaman=900)
+    hala_kurulu = [ad for ad in kurulu_olanlar if kurulu_surum(ad) is not None]
+    if rc != 0 or hala_kurulu:
+        return {
+            "hata": "Kaldırma tamamlanamadı (%s): %s" % (
+                ", ".join(hala_kurulu) or "apt hatası",
+                (hata.strip() or cikti.strip())[-400:]
+            )
+        }
+    return {
+        "durum": "kaldirildi",
+        "kaldirilanlar": kurulu_olanlar,
+        "ek_kaldirilanlar": yan_etki,
+        "kayit": (cikti + "\n" + hata).strip().splitlines()[-10:],
+    }
+
+
 def ana():
     try:
         p = json.loads(sys.argv[1])
         if os.geteuid() != 0:
             sonuc = {"hata": "root yetkisi gerekli"}
         else:
-            sonuc = {"al": al, "plan": plan, "kur": kur, "temizle": temizle}[p["kip"]](p)
+            sonuc = {
+                "al": al, "plan": plan, "kur": kur, "temizle": temizle,
+                "repo_ara": repo_ara, "kurulu_listele": kurulu_listele,
+                "repo_kur": repo_kur, "repo_kaldir": repo_kaldir,
+            }[p["kip"]](p)
     except Exception as hata:  # tek satır JSON sözleşmesi korunur
         sonuc = {"hata": "%s: %s" % (type(hata).__name__, hata)}
     print(json.dumps(sonuc, ensure_ascii=False))

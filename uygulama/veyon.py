@@ -417,16 +417,20 @@ def _ozet_metni(v: dict) -> str:
     return "; ".join(p for p in (kurulum, servis, anahtar, yontem) if p)
 
 
-def _yapilandirma_metni(ogeler: dict) -> str:
+def _yapilandirma_metni(ogeler: dict, uzman: dict | None = None) -> str:
     a, y, s = ogeler.get("anahtar", {}), ogeler.get("yontem", {}), ogeler.get("servis", {})
     ad = a.get("ad", "?")
+    grup = (uzman or {}).get("erisim_grubu") or a.get("erisim_grubu") or "root"
+    kalite = (uzman or {}).get("goruntu_kalitesi") or "yuksek"
     metin = {
-        "anahtar": {"zaten": f"anahtar '{ad}' zaten aynı", "eklenecek": f"anahtar '{ad}' eklenecek",
+        "anahtar": {"zaten": f"anahtar '{ad}' zaten aynı (erişim grubu: {grup})",
+                    "eklenecek": f"anahtar '{ad}' eklenecek (erişim grubu: {grup})",
                     "degistirilecek": f"anahtar '{ad}' DEĞİŞTİRİLECEK (mevcut [{a.get('mevcut_kimlik')}] yedeklenir)",
-                    "uygulandi": f"anahtar '{ad}' kuruldu ve geri okunarak doğrulandı",
+                    "uygulandi": f"anahtar '{ad}' kuruldu (erişim grubu: {grup}) ve geri okunarak doğrulandı",
                     "hata": f"anahtar HATASI: {a.get('neden')}"},
         "yontem": {"zaten": "yöntem zaten anahtar dosyası", "ayarlanacak": "yöntem → anahtar dosyası",
-                   "uygulandi": "yöntem anahtar dosyası yapıldı", "hata": f"yöntem HATASI: {y.get('neden')}"},
+                   "uygulandi": f"yöntem anahtar dosyası, sistem kullanıcı grupları, dahili VNC, görüntü kalitesi: {kalite}",
+                   "hata": f"yöntem HATASI: {y.get('neden')}"},
         "servis": {"zaten": "servis zaten çalışıyor", "etkinlestirilecek": "servis etkinleştirilip başlatılacak",
                    "uygulandi": "servis etkin ve çalışıyor", "hata": f"servis HATASI: {s.get('neden')}"},
     }
@@ -531,12 +535,14 @@ def _surum_oku(is_id: str, cihaz: dict) -> None:
         istemci.close()
 
 
-async def plan_isi(is_id: str, cihaz_idler: list[str], kip: str, iptal: asyncio.Event) -> None:
+async def plan_isi(is_id: str, cihaz_idler: list[str], kip: str, iptal: asyncio.Event,
+                   uzman: dict | None = None) -> None:
     """Önizleme: kurulacak sürüm ve uygulanacak ayarlar; hiçbir şey değişmez (paket aktarımı hariç)."""
-    await _is(is_id, cihaz_idler, iptal, _plan, kip, secili_paket(), anahtar_bilgisi())
+    await _is(is_id, cihaz_idler, iptal, _plan, kip, secili_paket(), anahtar_bilgisi(), uzman)
 
 
-def _plan(is_id: str, cihaz: dict, kip: str, paket: dict | None, anahtar: dict | None) -> None:
+def _plan(is_id: str, cihaz: dict, kip: str, paket: dict | None, anahtar: dict | None,
+          uzman: dict | None = None) -> None:
     ip, ad = cihaz["ip"], veritabani.cihaz_adi(cihaz)
     veri = {"cihaz_id": cihaz["id"], "ad": ad, "kip": kip}
     istemci = _baglan(is_id, cihaz, veri)
@@ -587,11 +593,11 @@ def _plan(is_id: str, cihaz: dict, kip: str, paket: dict | None, anahtar: dict |
             else:
                 y = _veyon_betik(istemci, {"kip": "yapilandir", "anahtar_adi": anahtar["ad"],
                                            "anahtar_pem": anahtar_pem(), "parmak_izi": anahtar["parmak_izi"],
-                                           "uygula": False}, 120)
+                                           "uzman": uzman or {}, "uygula": False}, 120)
                 if "hata" in y:
                     raise RuntimeError(y["hata"])
                 veri["yapilandirma"] = y
-                parcalar.append("yapılandırma: " + _yapilandirma_metni(y["ogeler"])
+                parcalar.append("yapılandırma: " + _yapilandirma_metni(y["ogeler"], y.get("uzman"))
                                 + (" (kurulumdan sonra)" if y.get("veyon_yok") else ""))
                 parcalar += y.get("uyarilar") or []
         veri["durum"] = "engellendi" if engel else "hazir"
@@ -613,11 +619,13 @@ def onaylanabilir_hedefler(plan_is_id: str, kip: str) -> list[str]:
             if h.get("veri") and h["veri"].get("durum") == "hazir"]
 
 
-async def uygula_isi(is_id: str, cihaz_idler: list[str], kip: str, iptal: asyncio.Event) -> None:
-    await _is(is_id, cihaz_idler, iptal, _uygula, kip, secili_paket(), anahtar_bilgisi())
+async def uygula_isi(is_id: str, cihaz_idler: list[str], kip: str, iptal: asyncio.Event,
+                     uzman: dict | None = None) -> None:
+    await _is(is_id, cihaz_idler, iptal, _uygula, kip, secili_paket(), anahtar_bilgisi(), uzman)
 
 
-def _uygula(is_id: str, cihaz: dict, kip: str, paket: dict | None, anahtar: dict | None) -> None:
+def _uygula(is_id: str, cihaz: dict, kip: str, paket: dict | None, anahtar: dict | None,
+            uzman: dict | None = None) -> None:
     ip, ad = cihaz["ip"], veritabani.cihaz_adi(cihaz)
     veri = {"cihaz_id": cihaz["id"], "ad": ad, "kip": kip}
     istemci = _baglan(is_id, cihaz, veri)
@@ -658,13 +666,13 @@ def _uygula(is_id: str, cihaz: dict, kip: str, paket: dict | None, anahtar: dict
                 raise RuntimeError("Veyon public key yüklenmedi")
             veritabani.hedef_guncelle(is_id, ip, "calisiyor", "yapilandirma", f"{ad} — Veyon yapılandırılıyor", veri)
             y = _veyon_betik(istemci, {"kip": "yapilandir", "anahtar_adi": anahtar["ad"], "anahtar_pem": anahtar_pem(),
-                                       "parmak_izi": anahtar["parmak_izi"], "uygula": True}, 300)
+                                       "parmak_izi": anahtar["parmak_izi"], "uzman": uzman or {}, "uygula": True}, 300)
             if y.get("hata") == "veyon_yok":
                 raise RuntimeError(VEYON_YOK_MESAJI)
             if "hata" in y:
                 raise RuntimeError(y["hata"])
             veri["yapilandirma"] = y
-            adimlar.append("yapılandırma: " + _yapilandirma_metni(y["ogeler"])
+            adimlar.append("yapılandırma: " + _yapilandirma_metni(y["ogeler"], y.get("uzman"))
                            + f" (önceki ayarlar yedeklendi: {y['yedek']['ad']})")
             if y.get("hata_var"):
                 _durumu_yaz(cihaz, y["durum"])

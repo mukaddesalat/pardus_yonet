@@ -9,7 +9,7 @@ Bu kılavuz, bilgisayar laboratuvarını yöneten öğretmenler için hazırlanm
 Lab Kaptanı yalnızca **öğretmen bilgisayarına** tek bir paketle kurulur. Öğrenci bilgisayarlarına hiçbir program yüklenmesi gerekmez.
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.7.0_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.8.0_amd64.deb
 ```
 
 Kurulum tamamlandığında uygulama arka planda çalışmaya başlar. Masaüstünüzdeki **Lab Kaptanı** simgesine tıklayarak arayüzü açabilirsiniz.
@@ -28,8 +28,9 @@ Sınıf Masası, ders esnasında en çok kullanacağınız ana kontrol panelidir
 
 ### 🔒 Bana Bakın (Ekran Kilitleme)
 * Öğrencilerin dikkatini tahtaya veya öğretmene çekmek istediğinizde **Bana Bakın** butonuna tıklayın.
-* Seçili tüm öğrenci bilgisayarlarının ekranları kilitlenir, dikkat çekici görsel uyarı görüntülenir ve klavye/fare girişi geçici olarak engellenir.
-* İşlem arka planda milisaniyeler içinde gerçekleşir.
+* Seçili tüm öğrenci bilgisayarlarının ekranları anında kilitlenir, klavye/fare girişi geçici olarak engellenir.
+* **Uzaktan Okunabilir Hostname ve Numara:** Öğretmenin kürsüden veya sınıfın en arkasından hangi bilgisayara baktığını görebilmesi için ekranın **sağ üst köşesinde devasa büyüklükte bilgisayar numarası** (örneğin `ogrenci01` için **`01`**) ve ekran ortasında yüksek kontrastlı bilgi kartı (`🖥️ 01 · ogrenci01`) belirir.
+* Ekran kilitliyken bilgisayar monitörlerinin kendiliğinden kararması veya uykuya geçmesi donanımsal düzeyde (DPMS) engellenir.
 
 ### 🔓 Ekran Kilitlerini Aç
 * Ders anlatımı bittiğinde veya öğrencilerin uygulamaya geçmesini istediğinizde **Ekran Kilitlerini Aç** butonuna tıklayın.
@@ -75,11 +76,13 @@ Herhangi bir bilgisayar kutucuğundaki monitör görseline veya bilgisayar adın
 ![Cihaz Detay Özeti](gorseller/03_cihaz_ozeti.png)
 
 Bu pencerede:
-* Bilgisayarın IP adresi ve portu,
+* Bilgisayarın **Hostname (Bilgisayar Adı)** ve **IP Adresi**,
 * Anlık çalışma durumu ve aktif kullanıcı bilgisi,
 * Laboratuvar grubu,
 * Donanım, boş disk alanı ve RAM bilgisi,
 * Kurulu Veyon sürümü ve güç/uyku ayar durumu yer alır.
+
+> **💡 Hostname (Bilgisayar Adı) Değiştirme:** Özet penceresindeki **"Bilgisayarı Düzenle"** düğmesine tıklayarak bilgisayarın adını (örn. `ogrenci01`) değiştirebilirsiniz. Kaydettiğinizde Lab Kaptanı uzak bilgisayarın adını arka planda `hostnamectl` ile anında günceller.
 
 ---
 
@@ -100,15 +103,39 @@ Hazırlık ekranı üç kolay adımdan oluşur:
 
 **Bakım & Görünüm** menüsü, laboratuvarın genel çalışma düzenini korumanızı sağlar.
 
+### 🖼️ Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası Etiketi
+M2-S3 Görünüm menüsünde zengin bir **Duvar Kâğıdı Galerisi** bulunur:
+
+![Duvar Kâğıdı Galerisi](gorseller/09_duvar_kagidi_galeri.png)
+
+* **Galeriye Fotoğraf Ekle:** İstediğiniz okul fotoğrafını veya duvar kâğıtlarını (`.png`, `.jpg`) galeriye ekleyebilir, silebilir ve önizleyebilirsiniz.
+* **3 Hazır Kurumsal Şablon:** Sistemde tanımlı *Pardus Gece Mavisi*, *Anadolu Turkuazı* ve *Bilişim Atölyesi* şablonlarından dilediğinizi tek tıkla seçebilirsiniz.
+* **Köşede Bilgisayar Numarası Etiketi:** Duvar kâğıdı atanırken her bilgisayarın `hostname` adındaki rakamlar (örn. `ogrenci01` için **`01`**, `ogrenci15` için **`15`**) seçtiğiniz köşeye (**Sağ Üst** veya **Sol Üst**) yüksek kontrastlı rozet olarak otomatik işlenir. Böylece laboratuvara uzaktan bakıldığında hangi masada hangi bilgisayarın olduğu hemen anlaşılır.
+* **Windows 10 Düzeni:** Pardus Karşılayıcı'daki alt görev çubuğu ve uygulama menüsü tek tıkla tüm bilgisayarlara uygulanabilir.
+
+### ⚡ Güç ve Ekran Koruyucu Yönetimi
+Öğrenci bilgisayarlarının boşta kalınca kapanmasını veya ekranının kararmasını engeller:
+
 ![Güç ve Uyku Ayarları](gorseller/05_bakim_ve_guc.png)
 
-* **Uyku Modunu Kapat:** Öğrenci bilgisayarlarının boşta kalınca uykuya geçmesini veya kapanmasını engeller. Bilgisayarlar arka planda açık kalır, sadece ekran kararır (böylece uzaktan erişim asla kesilmez).
+* **Hiç Kapanmasın (Önerilen Varsayılan):** Bilgisayarlar siz istemediğiniz sürece asla uykuya geçmez, askıya alınmaz ve **ekranları kapanmaz**. Hem GNOME/GDM kilitleri hem de X11 DPMS donanımsal korumasıyla monitörler daima açık kalır.
 * **Zamanlı Kapatma:** Ders bitim saatine (örneğin hafta içi her gün 17:30) otomatik kapanma planı kurabilirsiniz. Kapanmadan önce öğrenci ekranına uyarı bildirimi gönderilir.
-* **Masaüstü Görünümü:** Tüm bilgisayarlara standart okul duvar kâğıdı atanabilir ve Windows 10 benzeri tanıdık masaüstü düzeni uygulanabilir.
 
 ---
 
-## 6. SSH Komut Merkezi (Komut Gönder)
+## 6. Pardus Yazılım Merkezi & Uzaktan Program Kurulumu (M2-S2)
+
+Öğretmen bilgisayarından kalkmadan, seçtiğiniz bir veya daha fazla öğrenci bilgisayarına uygulama kurabilir veya kaldırabilirsiniz:
+
+![Pardus Yazılım Merkezi ve Depodan Kurulum](gorseller/10_yazilim_merkezi.png)
+
+* **Eğitim ve Kodlama Vitrini:** Thonny Python IDE, Scratch, Arduino, Blender, GIMP, LibreOffice, Krita, Geogebra, VS Code/C++ araçları gibi popüler eğitim yazılımları kategorize edilmiş mağaza kartlarında listelenir.
+* **Depoda Arama:** Pardus'un tanımlı APT depolarında dilediğiniz paketi aratabilir ve tek tıkla seçim sepetine ekleyebilirsiniz.
+* **Güvenli Kaldırma:** Kurulu uygulamaları listeyebilir, istemediğiniz programları kaldırabilirsiniz. Lab Kaptanı kritik sistem bileşenlerinin (`gdm3`, `sudo`, `network-manager`, `openssh-server` vb.) kazara kaldırılmasını otomatik olarak engeller.
+
+---
+
+## 7. SSH Komut Merkezi (Komut Gönder)
 
 Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda sistem komutu gönderebilirsiniz.
 
@@ -120,7 +147,7 @@ Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda 
 
 ---
 
-## 7. Ödev Dağıtımı ve Teslim Portalı
+## 8. Ödev Dağıtımı ve Teslim Portalı
 
 Öğrenciler ödevlerini internete ihtiyaç duymadan, yerel ağ üzerinden öğretmen bilgisayarına yükleyebilir.
 
@@ -133,7 +160,7 @@ Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda 
 
 ---
 
-## 8. Okul Kimliği ve Öğretmen Hesapları
+## 9. Okul Kimliği ve Öğretmen Hesapları
 
 **Kurulum, Okul & Öğretmen** ekranından okulunuza özel ayarları yapabilirsiniz:
 
