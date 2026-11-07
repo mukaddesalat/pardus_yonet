@@ -359,6 +359,9 @@
     { id: "ogr3", kullanici_adi: "ali.yilmaz", ad_soyad: "Ali Yılmaz", rol: "standart", brans: "Ağ Sistemleri", yetkiler: ["komut_gonder"], son_giris: DK(1440) },
   ];
   let demoKomutlar = [
+    { id: "k_veyon_servis", ad: "Veyon Servisini Kontrol Et ve Başlat (Ayağa Kaldır)", kategori: "Veyon & Servis",
+      komut: "if systemctl is-active --quiet veyon && pgrep -x veyon-service >/dev/null; then\n  echo \"OK: Veyon servisi ve arka plan süreçleri çalışıyor (aktif).\"\n  systemctl is-enabled --quiet veyon 2>/dev/null || (systemctl enable veyon 2>/dev/null && echo \"Veyon servisi otomatik başlatmaya alındı.\")\nelse\n  echo \"UYARI: Veyon servisi çalışmıyor veya durdurulmuş! Ayağa kaldırılıyor...\"\n  systemctl unmask veyon 2>/dev/null || true\n  systemctl enable veyon 2>/dev/null || true\n  systemctl restart veyon 2>/dev/null || systemctl restart veyon-service 2>/dev/null || true\n  sleep 1\n  if (systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service) && (pgrep -x veyon-service >/dev/null || pgrep -x veyon-server >/dev/null); then\n    echo \"BAŞARILI: Veyon servisi ayağa kaldırıldı ve aktif duruma getirildi.\"\n  elif systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service; then\n    echo \"BAŞARILI: Veyon servisi başlatıldı (active).\"\n  else\n    echo \"HATA: Veyon servisi başlatılamadı!\"\n    systemctl status veyon --no-pager -n 5 2>/dev/null || true\n    exit 1\n  fi\nfi",
+      sudo: true, yerlesik: true },
     { id: "k_hosts", ad: "Hosts Dosyasına Adres Ekle (abc.local -> 192.168.23.142)", kategori: "Ağ / DNS",
       komut: "grep -qE '(^|[[:space:]])abc\\.local([[:space:]]|$)' /etc/hosts && sed -i -E 's/^[0-9.]+[[:space:]]+.*abc\\.local.*/192.168.23.142\\tabc.local/' /etc/hosts || printf '\\n192.168.23.142\\tabc.local\\n' >> /etc/hosts && grep 'abc.local' /etc/hosts",
       sudo: true, yerlesik: true },

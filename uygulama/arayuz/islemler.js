@@ -1258,6 +1258,23 @@ const m2s6 = {
     $("#m2s6-kaydet").addEventListener("click", () => this.komutKaydet());
     $("#m2s6-calistir").addEventListener("click", () => this.komutCalistir());
     $("#m2s6-hosts-ekle").addEventListener("click", () => this.hostsDagit());
+    const hizliVeyon = $("#m2s6-hizli-veyon");
+    if (hizliVeyon) {
+      hizliVeyon.addEventListener("click", () => {
+        const k = this.komutlar.find((x) => x.id === "k_veyon_servis") || {
+          ad: "Veyon Servisini Kontrol Et ve Başlat (Ayağa Kaldır)",
+          kategori: "Veyon & Servis",
+          komut: "if systemctl is-active --quiet veyon && pgrep -x veyon-service >/dev/null; then\n  echo \"OK: Veyon servisi ve arka plan süreçleri çalışıyor (aktif).\"\n  systemctl is-enabled --quiet veyon 2>/dev/null || (systemctl enable veyon 2>/dev/null && echo \"Veyon servisi otomatik başlatmaya alındı.\")\nelse\n  echo \"UYARI: Veyon servisi çalışmıyor veya durdurulmuş! Ayağa kaldırılıyor...\"\n  systemctl unmask veyon 2>/dev/null || true\n  systemctl enable veyon 2>/dev/null || true\n  systemctl restart veyon 2>/dev/null || systemctl restart veyon-service 2>/dev/null || true\n  sleep 1\n  if (systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service) && (pgrep -x veyon-service >/dev/null || pgrep -x veyon-server >/dev/null); then\n    echo \"BAŞARILI: Veyon servisi ayağa kaldırıldı ve aktif duruma getirildi.\"\n  elif systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service; then\n    echo \"BAŞARILI: Veyon servisi başlatıldı (active).\"\n  else\n    echo \"HATA: Veyon servisi başlatılamadı!\"\n    systemctl status veyon --no-pager -n 5 2>/dev/null || true\n    exit 1\n  fi\nfi",
+          sudo: true,
+        };
+        $("#m2s6-ad").value = k.ad;
+        $("#m2s6-kategori").value = k.kategori || "Veyon & Servis";
+        $("#m2s6-komut").value = k.komut;
+        $("#m2s6-sudo").checked = Boolean(k.sudo);
+        bildir("“Veyon Servisini Kontrol Et ve Başlat” komutu düzenleyiciye yüklendi.");
+        $("#m2s6-komut").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
   },
   async ac() {
     await this.kutuphaneYukle();

@@ -152,6 +152,34 @@ def simdi() -> str:
 
 _YERLESIK_KOMUTLAR = [
     (
+        "k_veyon_servis",
+        "Veyon Servisini Kontrol Et ve Başlat (Ayağa Kaldır)",
+        "Veyon & Servis",
+        (
+            "if systemctl is-active --quiet veyon && pgrep -x veyon-service >/dev/null; then\n"
+            "  echo \"OK: Veyon servisi ve arka plan süreçleri çalışıyor (aktif).\"\n"
+            "  systemctl is-enabled --quiet veyon 2>/dev/null || (systemctl enable veyon 2>/dev/null && echo \"Veyon servisi otomatik başlatmaya alındı.\")\n"
+            "else\n"
+            "  echo \"UYARI: Veyon servisi çalışmıyor veya durdurulmuş! Ayağa kaldırılıyor...\"\n"
+            "  systemctl unmask veyon 2>/dev/null || true\n"
+            "  systemctl enable veyon 2>/dev/null || true\n"
+            "  systemctl restart veyon 2>/dev/null || systemctl restart veyon-service 2>/dev/null || true\n"
+            "  sleep 1\n"
+            "  if (systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service) && (pgrep -x veyon-service >/dev/null || pgrep -x veyon-server >/dev/null); then\n"
+            "    echo \"BAŞARILI: Veyon servisi ayağa kaldırıldı ve aktif duruma getirildi.\"\n"
+            "  elif systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service; then\n"
+            "    echo \"BAŞARILI: Veyon servisi başlatıldı (active).\"\n"
+            "  else\n"
+            "    echo \"HATA: Veyon servisi başlatılamadı!\"\n"
+            "    systemctl status veyon --no-pager -n 5 2>/dev/null || true\n"
+            "    exit 1\n"
+            "  fi\n"
+            "fi"
+        ),
+        "Öğrencinin Veyon servisini kapatması durumunda servisi kontrol eder; kapalıysa servisi etkinleştirip anında ayağa kaldırır.",
+        1,
+    ),
+    (
         "k_hosts",
         "Hosts Dosyasına Adres Ekle (abc.local -> 192.168.23.142)",
         "Ağ & DNS",
@@ -269,9 +297,12 @@ def _yerlesik_komutlari_yukle(vt: sqlite3.Connection) -> None:
     zaman = simdi()
     for kid, baslik, kategori, komut, aciklama, sudo_gerekli in _YERLESIK_KOMUTLAR:
         vt.execute(
-            "INSERT OR IGNORE INTO kayitli_komut"
+            "INSERT INTO kayitli_komut"
             "(id, baslik, kategori, komut, aciklama, sudo_gerekli, yerlesik, olusturan, zaman) "
-            "VALUES(?, ?, ?, ?, ?, ?, 1, 'sistem', ?)",
+            "VALUES(?, ?, ?, ?, ?, ?, 1, 'sistem', ?) "
+            "ON CONFLICT(id) DO UPDATE SET "
+            "baslik=excluded.baslik, kategori=excluded.kategori, komut=excluded.komut, "
+            "aciklama=excluded.aciklama, sudo_gerekli=excluded.sudo_gerekli WHERE yerlesik=1",
             (kid, baslik, kategori, komut, aciklama, sudo_gerekli, zaman),
         )
 

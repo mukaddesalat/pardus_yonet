@@ -141,7 +141,8 @@ Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda 
 
 ![Komut Gönder](gorseller/06_komut_merkezi.png)
 
-* **Kayıtlı Komutlar:** Kütüphanedeki hazır komutları (kullanıcı silme, disk/RAM kontrolü, paket onarımı vb.) tek tıkla yükleyebilirsiniz.
+* **Kayıtlı Komutlar:** Kütüphanedeki hazır komutları (Veyon servisini kontrol edip kapalıysa ayağa kaldırma, kullanıcı silme, disk/RAM kontrolü, paket onarımı vb.) veya **"🔄 Veyon Servisini Aç (Hızlı Yükle)"** düğmesini kullanarak tek tıkla düzenleyiciye yükleyebilir ve sınıfa gönderebilirsiniz.
+* **Veyon Servis Kurtarma:** Öğrenciler Veyon servisini veya süreçlerini kapattığında bağlantı kopsa bile, SSH üzerinden tek tıkla servisi kontrol edip yeniden ayağa kaldırabilirsiniz.
 * **Canlı Çıktı:** Komutun her bilgisayardaki çalışma sonucu, başarı durumu ve terminal çıktısı anında ekranda listelenir.
 * **Hızlı `/etc/hosts` Ekleme:** Yerel sunucuların veya öğretmen bilgisayarının adını (`ogretmen.lab`) öğrenci bilgisayarlarına tek tıkla kaydedebilirsiniz.
 

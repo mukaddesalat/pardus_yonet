@@ -145,6 +145,11 @@ class TestKomutGonderVeHosts:
         idler = {k["id"] for k in liste}
         assert "k_hosts" in idler
         assert "k_userdel" in idler
+        assert "k_veyon_servis" in idler
+        veyon_komut = veritabani.komut_getir("k_veyon_servis")
+        assert "systemctl is-active" in veyon_komut["komut"]
+        assert "systemctl restart veyon" in veyon_komut["komut"]
+        assert veyon_komut["sudo"] is True
         hosts_komut = veritabani.komut_getir("k_hosts")
         assert "192.168.23.142" in hosts_komut["komut"]
         assert "abc.local" in hosts_komut["komut"]

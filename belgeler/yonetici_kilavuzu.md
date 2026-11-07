@@ -375,6 +375,9 @@ hata verir) ve iki sayfanın paket seçimi birbirini etkilemez.
   sunucusunun RFB karşılaması okunur. Anahtarla gerçek oturum yalnız Veyon Master'da
   denenebilir (private key uygulamada yoktur). Masaüstü oturumu açık değilse Veyon
   sunucusu çalışmaz; bu durum ayrıca belirtilir.
+
+> [!TIP]
+> **Öğrencilerin Veyon servisini kapatması durumunda:** Öğrenciler masaüstünde Veyon servisini durdurursa veya bağlantı koparsa, **Komut Gönder (M2-S6)** menüsünden yerleşik **"Veyon Servisini Kontrol Et ve Başlat (Ayağa Kaldır)"** komutunu veya hızlı yükle düğmesini kullanarak tek tıkla servisi kontrol edebilir, unmask/enable yapıp anında yeniden ayağa kaldırabilirsiniz.
 - **B13 Sürümleri yenile:** yalnız envanterdeki kayıtları sorgular, ağ taraması yapmaz;
   parolasız sudo gerektirmez. Aynı bilgi **M1-S1 Durumu kontrol et** ile de güncellenir;
   M1-S1 “Veyon sürümü” sütunu ve M1-S4 aynı envanter verisini gösterir. Erişilemeyen

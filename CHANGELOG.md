@@ -14,6 +14,8 @@ sürüm numaraları [Anlamsal Sürümleme](https://semver.org/lang/tr/) ile veri
 - **Kullanım ve Yönetici Kılavuzları Güncellemeleri:**
   - `belgeler/kullanim_kilavuzu.md` ve `belgeler/yonetici_kilavuzu.md` dosyalarına sistem yedekleme, geri yükleme ve sıfırdan kurulum adımları eklendi.
   - 12 adet güncel ve yüksek çözünürlüklü arayüz ekran görüntüsü (`01_sinif_masasi.png` ... `12_sistem_yedekleme.png`) Headless Edge ile yeniden üretildi.
+- **Veyon Servis Kurtarma ve Kontrol Komutu (M2-S6):**
+  - SSH Komut Merkezi'ne (M2-S6) öğrencilerin Veyon servisini kapatması durumunda servisi kontrol edip unmask/enable ederek anında ayağa kaldıran yerleşik komut (`k_veyon_servis`) ve tek tıkla yükleme kısayolu (`🔄 Veyon Servisini Aç`) eklendi.
 
 ## [0.8.0] — 2026-11-07
 
