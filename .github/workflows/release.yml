@@ -1,0 +1,41 @@
+name: Sürüm Paketleme ve Yayınlama (Release)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: .deb Paketi Üret ve GitHub Release Yayınla
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Depoyu Klonla
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Python 3.12 Kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: .deb Paketini Üret
+        run: |
+          python paketleme/deb_yap.py
+
+      - name: GitHub Release Yayınla
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" cikti/*.deb cikti/*.deb.sha256 --clobber
+          else
+            gh release create "$TAG_NAME" cikti/*.deb cikti/*.deb.sha256 \
+              --title "Lab Kaptanı $TAG_NAME" \
+              --generate-notes
+          fi
