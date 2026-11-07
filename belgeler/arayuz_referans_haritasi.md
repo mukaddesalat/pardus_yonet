@@ -334,9 +334,9 @@ Tüm işlerin öğretmen, hedef listesi ve bilgisayar bazında sonuçları.
 
 ## M5 — Ayarlar
 
-### M5-S1 — Uygulama Ayarları ve Referans Rehberi
+### M5-S1 — Sistem, Yedekleme ve Taşıma Ayarları
 
-Saklama sınırı, sürüm bilgisi ve tüm menü/sayfa/düğme kodları.
+Yönetim uygulamasını başka bilgisayara taşıma (.tar.gz yedek + .deb + yedekten-kur.sh), yedekten geri yükleme, saklama sınırı ve sürüm bilgisi.
 
 | Kod | Ad | İşlev |
 | --- | --- | --- |
@@ -344,6 +344,12 @@ Saklama sınırı, sürüm bilgisi ve tüm menü/sayfa/düğme kodları.
 | `M5-S1-B2` | Referans kodlarını göster/gizle | M0-S1-B1 ile aynı işlev |
 | `M5-S1-B3` | Rehberde ara | Kod veya ada göre süzer |
 | `M5-S1-B4` | Referans haritasını indir | Tüm kodları Markdown dosyası olarak indirir |
+| `M5-S1-B5` | Tam sistem yedeği oluştur | Envanter, SSH anahtarları, Veyon, galeri, ödevler ve .deb paketini .tar.gz olarak yedekler |
+| `M5-S1-B6` | Yedek dosyası seç (.tar.gz) | Bilgisayardan geri yüklenecek tam sistem yedeğini seçer ve doğrular |
+| `M5-S1-B7` | Seçilen yedeği geri yükle | Doğrulanan .tar.gz yedek arşivini canlı sisteme geri yükler |
+| `M5-S1-B8-<kimlik>` | Yedeği indir (satır) | Kayıtlı tam sistem yedeğini (.tar.gz) bilgisayara indirir |
+| `M5-S1-B9-<kimlik>` | Bu yedekten geri yükle (satır) | Sunucudaki kayıtlı yedeği doğrular ve geri yükler |
+| `M5-S1-B10-<kimlik>` | Yedeği sil (satır) | Sunucudaki kayıtlı yedek arşivini siler |
 
 ### M5-S2 — Okul ve Öğretmenler
 

@@ -22,8 +22,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import (ag, anahtar, ayarlar, debpaket, envanter, gorunum, guc, guc_ayar, guvenlik, hazirlik,
-               isler, kesif, komutlar, paketler, profil, secim, sinif_araclari, tekillestirme,
-               temizlik, veritabani, veyon, yedekler, yonetim)
+               isler, kesif, komutlar, paketler, profil, secim, sinif_araclari, sistem_yedek,
+               tekillestirme, temizlik, veritabani, veyon, yedekler, yonetim)
 from .odev import ortak as odev_ortak
 from .odev import vt as odev_vt
 from .odev.yonetim_api import yonlendirici as odev_yonlendirici
@@ -84,6 +84,8 @@ def _yol_yetki_hata_mesaji(yol: str, metod: str, ogr: dict | None) -> str | None
         return "Envantere bilgisayar ekleme/çıkarma yalnızca Admin Öğretmen tarafından yapılabilir"
     if yol.startswith(("/api/ogretmenler", "/api/okul", "/api/ayarlar")) and metod != "GET":
         return "Sistem, okul ve öğretmen ayarları yalnızca Admin Öğretmen tarafından değiştirilebilir"
+    if yol.startswith("/api/sistem-yedek"):
+        return "Sistem yedeği alma ve geri yükleme işlemleri yalnızca Admin Öğretmen tarafından yapılabilir"
     return None
 
 
@@ -1290,6 +1292,128 @@ async def ayarlari_oku():
 async def ayarlari_yaz(istek: AyarIstek):
     veritabani.ayar_yaz("saklama_adedi", str(istek.saklama_adedi))
     return {"saklama_adedi": istek.saklama_adedi}
+
+
+class SistemYedekOlusturIstek(BaseModel):
+    aciklama: str = ""
+    deb_dahil: bool = True
+    odev_teslimleri_dahil: bool = True
+    yerel_paketler_dahil: bool = False
+
+
+class SistemYedekDosyaAdiIstek(BaseModel):
+    dosya_adi: str
+    onay: bool = False
+
+
+@uygulama.get("/api/sistem-yedek", dependencies=[korumali])
+async def sistem_yedek_durumu():
+    sistem, yedekler = await asyncio.gather(
+        asyncio.to_thread(sistem_yedek.sistem_ozeti),
+        asyncio.to_thread(sistem_yedek.yedek_listele),
+    )
+    return {"sistem": sistem, "yedekler": yedekler}
+
+
+@uygulama.post("/api/sistem-yedek/olustur", dependencies=[korumali])
+async def sistem_yedek_olustur_uc(istek: SistemYedekOlusturIstek):
+    try:
+        yedek = await asyncio.to_thread(
+            sistem_yedek.yedek_olustur,
+            aciklama=istek.aciklama,
+            deb_dahil=istek.deb_dahil,
+            odev_teslimleri_dahil=istek.odev_teslimleri_dahil,
+            yerel_paketler_dahil=istek.yerel_paketler_dahil,
+        )
+        return {
+            "tamam": True,
+            "yedek": yedek,
+            "yedekler": await asyncio.to_thread(sistem_yedek.yedek_listele),
+            "sistem": await asyncio.to_thread(sistem_yedek.sistem_ozeti),
+        }
+    except sistem_yedek.SistemYedekHatasi as hata:
+        raise HTTPException(422, str(hata))
+
+
+@uygulama.get("/api/sistem-yedek/{dosya_adi}/indir", dependencies=[korumali])
+async def sistem_yedek_indir_uc(dosya_adi: str):
+    try:
+        yol = sistem_yedek.yedek_yolu(dosya_adi)
+    except sistem_yedek.SistemYedekHatasi as hata:
+        raise HTTPException(404, str(hata))
+    return FileResponse(
+        yol,
+        media_type="application/gzip",
+        filename=yol.name,
+        headers={"Content-Security-Policy": "sandbox"},
+    )
+
+
+@uygulama.delete("/api/sistem-yedek/{dosya_adi}", dependencies=[korumali])
+async def sistem_yedek_sil_uc(dosya_adi: str):
+    try:
+        sistem_yedek.yedek_sil(dosya_adi)
+        return {"tamam": True, "yedekler": await asyncio.to_thread(sistem_yedek.yedek_listele)}
+    except sistem_yedek.SistemYedekHatasi as hata:
+        raise HTTPException(404, str(hata))
+
+
+@uygulama.post("/api/sistem-yedek/incele", dependencies=[korumali])
+async def sistem_yedek_incele_uc(istek: Request):
+    icerik_turu = (istek.headers.get("content-type") or "").lower()
+    try:
+        if "application/json" in icerik_turu:
+            veri_json = await istek.json()
+            yol = sistem_yedek.yedek_yolu(veri_json.get("dosya_adi", ""))
+            return await asyncio.to_thread(sistem_yedek.yedek_incele, yol, True)
+        govde = await istek.body()
+        if not govde:
+            raise HTTPException(422, "İncelenecek yedek dosyası boş")
+        return await asyncio.to_thread(sistem_yedek.yedek_incele, govde, True)
+    except sistem_yedek.SistemYedekHatasi as hata:
+        raise HTTPException(422, str(hata))
+
+
+@uygulama.post("/api/sistem-yedek/geri-yukle", dependencies=[korumali])
+async def sistem_yedek_geri_yukle_uc(istek: Request):
+    ogr = guvenlik.aktif_ogretmen(istek)
+    k_adi = (ogr or {}).get("kullanici_adi") or "admin"
+    icerik_turu = (istek.headers.get("content-type") or "").lower()
+    try:
+        if "application/json" in icerik_turu:
+            veri_json = await istek.json()
+            _onay_gerekli(bool(veri_json.get("onay")), "Yedekten geri yükleme için onay gereklidir")
+            yol = sistem_yedek.yedek_yolu(veri_json.get("dosya_adi", ""))
+            sonuc = await asyncio.to_thread(sistem_yedek.yedek_geri_yukle, yol, True)
+        else:
+            _onay_gerekli(istek.headers.get("x-onay") == "1", "Yedekten geri yükleme için onay gereklidir")
+            govde = await istek.body()
+            if not govde:
+                raise HTTPException(422, "Geri yüklenecek yedek dosyası boş")
+            sonuc = await asyncio.to_thread(sistem_yedek.yedek_geri_yukle, govde, True)
+    except sistem_yedek.SistemYedekHatasi as hata:
+        raise HTTPException(422, str(hata))
+
+    cerez = guvenlik.oturum_ac(k_adi)
+    sonuc["csrf"] = guvenlik.csrf_uret(cerez)
+    sonuc["okul"] = veritabani.okul_bilgisi()
+    sonuc["yedekler"] = await asyncio.to_thread(sistem_yedek.yedek_listele)
+    yanit = JSONResponse(content=sonuc)
+    yanit.set_cookie("psy_oturum", cerez, httponly=True, samesite="strict",
+                     max_age=ayarlar.OTURUM_SURESI_SN)
+    return yanit
+
+
+@uygulama.post("/api/sistem-yedek/deb-yukle", dependencies=[korumali])
+async def sistem_yedek_deb_yukle_uc(istek: Request):
+    from urllib.parse import unquote
+    dosya_adi = unquote(istek.headers.get("x-dosya-adi", "pardus-sinif-yonetimi.deb"))
+    govde = await istek.body()
+    try:
+        bilgi = await asyncio.to_thread(sistem_yedek.deb_onbellege_yukle, dosya_adi, govde)
+        return {"tamam": True, "deb": bilgi, "sistem": await asyncio.to_thread(sistem_yedek.sistem_ozeti)}
+    except sistem_yedek.SistemYedekHatasi as hata:
+        raise HTTPException(422, str(hata))
 
 
 @uygulama.get("/api/okul")

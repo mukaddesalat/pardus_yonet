@@ -523,7 +523,51 @@ servistir (`pardus-sinif-odev.service`).
 - **İndirme (M3-S1):** tek dosya, tek teslim (B6), seçili öğrenciler (B5) veya tüm
   sınıf (B4) ZIP olarak; dosyalar tarayıcıda açılmaz, her zaman indirilir.
 
-### Ödev verisini yedekleme ve geri yükleme
+### Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma (M5-S1)
+
+Öğretmen bilgisayarını yenilerken, formatlarken veya düzenli yedek alırken **Kurulum, Okul & Öğretmen (M5-S1)** ekranındaki **Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma** bölümünü veya komut satırını kullanabilirsiniz.
+
+![Sistem Yedekleme ve Taşıma](gorseller/12_sistem_yedekleme.png)
+
+Üretilen `.tar.gz` yedek paketi kendi kendine yeten (self-contained) taşınabilir bir arşivdir ve şunları içerir:
+- **Envanter ve Yapılandırma (`envanter.db`):** Bilgisayar listesi, IP/MAC/hostname kayıtları, öğretmen hesapları, okul kimliği, zamanlı kapatma planları ve kayıtlı SSH komutları (SQLite Online Backup API ile atomik olarak alınır).
+- **Uygulama SSH Anahtar Çifti (`uygulama_ed25519` & `.pub`):** Öğrenci bilgisayarlarıyla kurulu güven ilişkisi korunduğu için yeni öğretmen bilgisayarında **öğrenci bilgisayarlarını yeniden hazırlamanıza gerek kalmaz**.
+- **Veyon & Duvar Kâğıdı Galerisi:** Yüklü Veyon `.deb` paketi, Veyon RSA public key ve duvar kâğıdı galerisi görselleri.
+- **Ödev Portalı Verileri (`odev.db` ve `teslimler/`):** Sınıflar, öğrenci listeleri, giriş kodları ve teslim edilen ödev dosyaları (isteğe bağlı).
+- **Kurulum Paketi (`pardus-sinif-yonetimi_<sürüm>_amd64.deb`):** Yedeğin içine doğrudan gömülür (kurulu sistemde `/opt/pardus-sinif-yonetimi` üzerinden otomatik yeniden paketlenebilir).
+- **Sıfırdan Kurulum Betiği (`yedekten-kur.sh`) ve `manifest.json`:** Tüm dosyaların SHA-256 bütünlük özetleri ve tek komutla kurulum betiği.
+
+#### Yöntem 1: Sıfırdan Pardus Bilgisayara Tek Komutla Taşıma (`yedekten-kur.sh`)
+
+Hiçbir şey kurulu olmayan yeni bir Pardus öğretmen bilgisayarında yedeği açıp betiği çalıştırmanız yeterlidir:
+
+```bash
+tar -xzf pardus-sinif-yonetimi-yedek_*.tar.gz
+cd pardus-sinif-yonetimi-yedek_*
+sudo bash yedekten-kur.sh
+```
+
+Betik sırasıyla:
+1. Arşiv içindeki `pardus-sinif-yonetimi_*.deb` paketini `apt-get` / `dpkg` ile kurar.
+2. Servisleri geçici olarak durdurup mevcut veriyi yedekler.
+3. Envanter ve ödev veritabanlarını, SSH anahtarlarını (`0600` izinle), Veyon dosyalarını, duvar kâğıdı galerisini ve `/etc/pardus-sinif-yonetimi/ortam` ayarlarını doğru kullanıcı sahiplikleriyle (`pardus-sinif:pardus-sinif` ve `pardus-odev:pardus-odev`) geri yükler.
+4. Servisleri başlatır.
+
+#### Yöntem 2: Web Yönetim Panelinden (M5-S1) Yedekleme ve Geri Yükleme
+
+- **Yedek Oluştur ve İndir (M5-S1-B8):** Admin öğretmen dilediği zaman tek tıkla tam yedek oluşturup `.tar.gz` olarak bilgisayarına indirebilir veya sunucudaki `sistem_yedekleri/` dizininde saklayabilir.
+- **Yedekten Geri Yükle (M5-S1-B9):** Bilgisayardan bir `.tar.gz` yedek dosyası seçildiğinde önce tüm dosyaların SHA-256 bütünlüğü ve arşiv içeriği doğrulanarak önizlenir; onaylandığında mevcut sistemin otomatik güvenlik yedeği (`geri-yukleme-oncesi_...`) alındıktan sonra kesintisiz geri yükleme yapılır.
+- **Kayıtlı Yedekler (M5-S1-B10):** Sunucuda tutulan geçmiş yedekler listelenir; istenirse indirilebilir, doğrudan geri yüklenebilir veya silinebilir.
+
+#### Yöntem 3: Komut Satırı (CLI) Kısayolları
+
+```bash
+sudo pardus-sinif-yonetimi --yedekle                  # Tam yedek oluşturur
+sudo pardus-sinif-yonetimi --yedek-listele            # Sunucudaki yedekleri listeler
+sudo pardus-sinif-yonetimi --geri-yukle YEDEK.tar.gz  # Yedekten geri yükler
+```
+
+### Sadece ödev verisini elle yedekleme ve geri yükleme
 
 Öğretmen PC'deki tek kopya yedek değildir. Tam yedek için:
 

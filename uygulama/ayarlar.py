@@ -51,7 +51,7 @@ VEYON_PORT = 11100                 # Veyon sunucusu (bağlantı doğrulaması i�
 VEYON_ANAHTAR_VARSAYILAN = "teacher"
 EN_BUYUK_ANAHTAR = 65536           # public key dosyası üst sınırı (bayt)
 
-VERSIYON = "0.8.0"
+VERSIYON = "0.8.1"
 UYGULAMA_ADI = "Lab Kaptanı"   # görünen ad; paket adı pardus-sinif-yonetimi kalır
 
 
@@ -66,4 +66,5 @@ def veri_yollari() -> dict:
         "log_dizini": VERI_DIZINI / "log",
         "paket_dizini": VERI_DIZINI / "paketler",
         "veyon_dizini": VERI_DIZINI / "veyon",
+        "sistem_yedek_dizini": VERI_DIZINI / "sistem_yedekleri",
     }

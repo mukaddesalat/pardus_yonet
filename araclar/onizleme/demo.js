@@ -981,8 +981,73 @@
   yol("GET", "/api/isler", () => [...gecmis].reverse().map((k) => { isIlerlet(k); const { hedefler, parametreler, ...ust } = disa(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...ust }; }));
   yol("GET", "/api/isler/(\\w+)", (_, [id]) => { const k = isler.get(id); if (!k) throw new Hata(404, "İş bulunamadı"); isIlerlet(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...disa(k) }; });
   yol("POST", "/api/isler/(\\w+)/iptal", (_, [id]) => { const k = isler.get(id); if (!k || k.durum !== "calisiyor") throw new Hata(409, "İş çalışmıyor veya zaten bitti"); k._iptal = true; return { tamam: true, not: "İptal, güvenli noktada durdurur; başlamış adımları geri almaz" }; });
-  yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.6.0 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
+  yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.8.0 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
   yol("POST", "/api/ayarlar", (g) => { saklama = g.saklama_adedi; return { saklama_adedi: saklama }; });
+
+  let demoSistemYedekler = [
+    {
+      dosya_adi: "pardus-sinif-yonetimi-yedek_2026-11-07_16-00-00_v0.8.0.tar.gz",
+      boyut: 19450880,
+      sha256: "da8ed4ce9e6e9170c47dfaa2f412abcc4b6dc7c04ce5ed3166cb575a9c38742f",
+      olusturma_zamani: "2026-11-07T16:00:00+03:00",
+      uygulama_surumu: "0.8.0",
+      kaynak_makine: "ogretmen-lab-pc",
+      aciklama: "Dönem başı tam sistem ve taşıma yedeği (.deb + yedekten-kur.sh dahil)",
+      secenekler: { deb_dahil: true, odev_teslimleri_dahil: true, yerel_paketler_dahil: false },
+      ozet: { okul_adi: demoOkul.ad, cihaz_sayisi: cihazlar.length, ogretmen_sayisi: demoOgretmenler.length, sinif_sayisi: 2, ogrenci_sayisi: 16, ssh_anahtari_var: true },
+    },
+  ];
+  const demoSistemOzeti = () => ({
+    uygulama_surumu: "0.8.0",
+    okul_adi: demoOkul.ad,
+    cihaz_sayisi: cihazlar.length,
+    ogretmen_sayisi: demoOgretmenler.length,
+    sinif_sayisi: 2,
+    ogrenci_sayisi: 16,
+    teslim_sayisi: 12,
+    ssh_anahtari_var: true,
+    veyon_anahtari_var: true,
+    veyon_paketi_var: true,
+    galeri_gorsel_sayisi: 3,
+    deb_hazir: true,
+    deb_uretilebilir: true,
+    deb_paketi: "pardus-sinif-yonetimi_0.8.0_amd64.deb",
+    deb_boyut: 18830608,
+  });
+  yol("GET", "/api/sistem-yedek", () => ({ sistem: demoSistemOzeti(), yedekler: demoSistemYedekler }));
+  yol("POST", "/api/sistem-yedek/olustur", (g) => {
+    const yeni = {
+      dosya_adi: `pardus-sinif-yonetimi-yedek_2026-11-07_16-30-00_v0.8.0.tar.gz`,
+      boyut: g && g.deb_dahil === false ? 620400 : 19450880,
+      sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      olusturma_zamani: new Date().toISOString(),
+      uygulama_surumu: "0.8.0",
+      kaynak_makine: "ogretmen-lab-pc",
+      aciklama: (g && g.aciklama) || "DEMO Tam Sistem Yedeği",
+      secenekler: { deb_dahil: g ? g.deb_dahil !== false : true, odev_teslimleri_dahil: true, yerel_paketler_dahil: false },
+      ozet: demoSistemOzeti(),
+    };
+    demoSistemYedekler = [yeni, ...demoSistemYedekler];
+    return { tamam: true, yedek: yeni, yedekler: demoSistemYedekler, sistem: demoSistemOzeti() };
+  });
+  yol("POST", "/api/sistem-yedek/incele", () => ({
+    gecerli: true,
+    format: "pardus-sinif-yonetimi-yedek",
+    uygulama_surumu: "0.8.0",
+    olusturma_zamani: new Date().toISOString(),
+    ozet: demoSistemOzeti(),
+  }));
+  yol("POST", "/api/sistem-yedek/geri-yukle", () => ({
+    durum: "tamamlandi",
+    geri_yuklenen: ["Envanter, öğretmen hesapları ve okul ayarları (envanter.db)", "SSH özel ve açık anahtar çifti", "Öğrenci sınıfları ve ödev veritabanı"],
+    yedekler: demoSistemYedekler,
+    guncel_ozet: demoSistemOzeti(),
+    okul: demoOkul,
+  }));
+  yol("DELETE", "/api/sistem-yedek/([^/]+)", (_, [ad]) => {
+    demoSistemYedekler = demoSistemYedekler.filter((y) => y.dosya_adi !== decodeURIComponent(ad));
+    return { tamam: true, yedekler: demoSistemYedekler };
+  });
 
   /* ---- sınıf hızlı araçlar ve M2-S6 komut gönder ---- */
   yol("POST", "/api/sinif/ekran-kilit", (g) => isBaslat(g.kilitle ? "sinif_ekran_kilitle" : "sinif_ekran_ac", g.cihazlar, g, () => ({

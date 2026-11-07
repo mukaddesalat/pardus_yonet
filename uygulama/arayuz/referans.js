@@ -59,8 +59,8 @@ window.PSY_REFERANS = {
       { kod: "S1", ad: "İşlem Geçmişi", ikon: "gecmis", aciklama: "Tüm işlerin öğretmen, hedef listesi ve bilgisayar bazında sonuçları." },
     ] },
     { kod: "M5", ad: "Ayarlar", ikon: "ayar", sayfalar: [
-      { kod: "S1", ad: "Uygulama Ayarları ve Referans Rehberi", ikon: "ayar",
-        aciklama: "Saklama sınırı, sürüm bilgisi ve tüm menü/sayfa/düğme kodları." },
+      { kod: "S1", ad: "Sistem, Yedekleme ve Taşıma Ayarları", ikon: "ayar",
+        aciklama: "Yönetim uygulamasını başka bilgisayara taşıma (.tar.gz yedek + .deb + yedekten-kur.sh), yedekten geri yükleme, saklama sınırı ve sürüm bilgisi." },
       { kod: "S2", ad: "Okul ve Öğretmenler", ikon: "kisiler",
         aciklama: "Okul adı ve logosu, öğretmen hesapları, Admin/Standart rolü ve isteğe bağlı menü yetkileri." },
     ] },
@@ -274,6 +274,12 @@ window.PSY_REFERANS = {
     "M5-S1-B2": ["Referans kodlarını göster/gizle", "M0-S1-B1 ile aynı işlev"],
     "M5-S1-B3": ["Rehberde ara", "Kod veya ada göre süzer"],
     "M5-S1-B4": ["Referans haritasını indir", "Tüm kodları Markdown dosyası olarak indirir"],
+    "M5-S1-B5": ["Tam sistem yedeği oluştur", "Envanter, SSH anahtarları, Veyon, galeri, ödevler ve .deb paketini .tar.gz olarak yedekler"],
+    "M5-S1-B6": ["Yedek dosyası seç (.tar.gz)", "Bilgisayardan geri yüklenecek tam sistem yedeğini seçer ve doğrular"],
+    "M5-S1-B7": ["Seçilen yedeği geri yükle", "Doğrulanan .tar.gz yedek arşivini canlı sisteme geri yükler"],
+    "M5-S1-B8-*": ["Yedeği indir (satır)", "Kayıtlı tam sistem yedeğini (.tar.gz) bilgisayara indirir"],
+    "M5-S1-B9-*": ["Bu yedekten geri yükle (satır)", "Sunucudaki kayıtlı yedeği doğrular ve geri yükler"],
+    "M5-S1-B10-*": ["Yedeği sil (satır)", "Sunucudaki kayıtlı yedek arşivini siler"],
 
     "M5-S2-B1": ["Okul bilgilerini kaydet", "Okul adını, alt başlığı ve logoyu kaydeder"],
     "M5-S2-B2": ["Okul logosu seç", "Okul logosu görselini (PNG/JPG/SVG) yükler"],

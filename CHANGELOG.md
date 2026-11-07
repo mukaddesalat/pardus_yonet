@@ -3,6 +3,18 @@
 Bu dosya [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) biçimini izler ve
 sürüm numaraları [Anlamsal Sürümleme](https://semver.org/lang/tr/) ile verilir.
 
+## [0.8.1] — 2026-11-07
+
+### Eklenen
+- **Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma Modülü (M5-S1):**
+  - Envanter veritabanı (`envanter.db`), ödev veritabanı (`odev.db`), SSH anahtar çifti (`uygulama_ed25519`), Veyon `.deb` paketi ve RSA public key, duvar kâğıdı galerisi, öğrenci ödev teslimleri ve uygulamanın kendi `.deb` kurulum paketini tek bir taşınabilir `.tar.gz` arşivinde yedekleme (`uygulama/sistem_yedek.py`).
+  - Her yedek arşivinin içine sıfırdan Pardus bilgisayarda tek komutla (`sudo bash yedekten-kur.sh`) hem `.deb` paketini kuran hem de tüm verileri/anahtarları/izinleri geri yükleyen otomatik kurulum betiği (`yedekten-kur.sh`) ve SHA-256 doğrulama manifestosu (`manifest.json`) ekleme.
+  - Web yönetim panelinden (`M5-S1`) canlı sistem özeti görüntüleme, yedek oluşturup indirme, sunucudaki yedekleri yönetme ve yüklenen `.tar.gz` yedeğini SHA-256 bütünlük önizlemesiyle kesintisiz geri yükleme (geri yükleme öncesi otomatik güvenlik yedeği alarak).
+  - `/usr/bin/pardus-sinif-yonetimi` komut satırı aracına `--yedekle`, `--geri-yukle` ve `--yedek-listele` parametreleri.
+- **Kullanım ve Yönetici Kılavuzları Güncellemeleri:**
+  - `belgeler/kullanim_kilavuzu.md` ve `belgeler/yonetici_kilavuzu.md` dosyalarına sistem yedekleme, geri yükleme ve sıfırdan kurulum adımları eklendi.
+  - 12 adet güncel ve yüksek çözünürlüklü arayüz ekran görüntüsü (`01_sinif_masasi.png` ... `12_sistem_yedekleme.png`) Headless Edge ile yeniden üretildi.
+
 ## [0.8.0] — 2026-11-07
 
 ### Eklenen

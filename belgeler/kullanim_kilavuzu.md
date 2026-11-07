@@ -169,5 +169,17 @@ Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda 
 * **Okul Adı ve Logosu:** Okulunuzun adını yazabilir (varsayılan: *Şehit Cengiz Polat Fen ve Teknoloji Anadolu İmam Hatip Lisesi*) ve bilgisayarınızdan okul armasını yükleyebilirsiniz.
 * **Öğretmen Hesapları:** Laboratuvarı paylaşan zümre öğretmenleri için ayrı hesaplar tanımlayabilirsiniz.
 * **Yetki Rolleri:**
-  * **Admin Öğretmen:** Tüm sistem ayarlarına, paket kurulumuna ve okul ayarlarına tam erişim sahibidir.
+  * **Admin Öğretmen:** Tüm sistem ayarlarına, paket kurulumuna, sistem yedekleme/geri yükleme işlemlerine ve okul ayarlarına tam erişim sahibidir.
   * **Standart Öğretmen:** Yalnızca canlı ders araçlarını, Sınıf Masası'nı ve ödev modülünü kullanır; kritik sistem ayarları gizlenir.
+
+---
+
+## 10. Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma
+
+Öğretmen bilgisayarını değiştirdiğinizde, formatladığınızda veya düzenli yedek almak istediğinizde **Kurulum, Okul & Öğretmen** sayfasının altındaki **Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma** bölümünü kullanabilirsiniz:
+
+![Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma](gorseller/12_sistem_yedekleme.png)
+
+* **Tam Sistem Yedeği Oluşturma:** Tek tıkla tüm bilgisayar envanterini, öğretmen hesaplarını, SSH yönetim anahtarlarını (öğrenci bilgisayarlarını yeniden hazırlamaya gerek kalmaması için), Veyon paket/anahtarlarını, duvar kâğıdı galerisini, ödevleri ve uygulamanın `.deb` kurulum paketini tek bir `.tar.gz` arşivinde indirebilirsiniz.
+* **Sıfırdan Pardus Bilgisayara Kurulum (`yedekten-kur.sh`):** Yeni bir Pardus bilgisayarda yedek arşivini açıp `sudo bash yedekten-kur.sh` komutunu çalıştırdığınızda uygulama `.deb` paketinden otomatik kurulur ve tüm ayarlarınız/anahtarlarınız eksiksiz geri yüklenir.
+* **Web Panelinden Geri Yükleme:** Uygulama kuruluysa doğrudan web arayüzünden `.tar.gz` yedek dosyasını seçip içeriğini kontrol ederek veya sunucuda kayıtlı geçmiş yedeklerden birini seçerek tek tıkla geri dönebilirsiniz.

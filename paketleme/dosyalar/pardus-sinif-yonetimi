@@ -7,6 +7,43 @@ PY=/opt/pardus-sinif-yonetimi/python/bin/python3
 PORT="${PSY_PORT:-8080}"
 ADRES="http://127.0.0.1:${PORT}/"
 
+# Komut satırı yedekleme / geri yükleme kısayolu:
+#   sudo pardus-sinif-yonetimi --yedekle [hedef_klasor_veya_dosya]
+#   sudo pardus-sinif-yonetimi --geri-yukle <yedek.tar.gz>
+#   sudo pardus-sinif-yonetimi --yedek-listele
+case "${1:-}" in
+    --yedekle)
+        shift
+        HEDEF_ARG=""
+        [ -n "${1:-}" ] && HEDEF_ARG="-c $1"
+        exec env PSY_VERI_DIZINI="/var/lib/pardus-sinif-yonetimi" \
+            PSY_ODEV_DIZINI="/var/lib/pardus-sinif-odev" \
+            PYTHONPATH="/opt/pardus-sinif-yonetimi" \
+            "$PY" -m uygulama.sistem_yedek yedekle $HEDEF_ARG
+        ;;
+    --geri-yukle)
+        shift
+        if [ -z "${1:-}" ]; then
+            echo "Kullanım: sudo pardus-sinif-yonetimi --geri-yukle <yedek.tar.gz>" >&2
+            exit 1
+        fi
+        env PSY_VERI_DIZINI="/var/lib/pardus-sinif-yonetimi" \
+            PSY_ODEV_DIZINI="/var/lib/pardus-sinif-odev" \
+            PYTHONPATH="/opt/pardus-sinif-yonetimi" \
+            "$PY" -m uygulama.sistem_yedek geri-yukle "$1"
+        chown -R pardus-sinif:pardus-sinif /var/lib/pardus-sinif-yonetimi 2>/dev/null || true
+        chown -R pardus-odev:pardus-odev /var/lib/pardus-sinif-odev 2>/dev/null || true
+        systemctl restart pardus-sinif-odev.service pardus-sinif-yonetimi.service 2>/dev/null || true
+        exit 0
+        ;;
+    --yedek-listele)
+        exec env PSY_VERI_DIZINI="/var/lib/pardus-sinif-yonetimi" \
+            PSY_ODEV_DIZINI="/var/lib/pardus-sinif-odev" \
+            PYTHONPATH="/opt/pardus-sinif-yonetimi" \
+            "$PY" -m uygulama.sistem_yedek listele
+        ;;
+esac
+
 mesaj() {
     if command -v zenity >/dev/null 2>&1; then
         zenity --error --title="Pardus Sınıf Yönetimi" --text="$1" 2>/dev/null

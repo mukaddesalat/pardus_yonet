@@ -39,3 +39,4 @@ jobs:
               --title "Lab Kaptanı $TAG_NAME" \
               --generate-notes
           fi
+

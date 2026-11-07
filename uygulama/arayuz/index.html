@@ -924,14 +924,75 @@
       <section id="sayfa-M5-S1" class="sayfa" data-ui-id="M5-S1" hidden>
         <header class="sayfa-baslik">
           <span class="kod-cip">M5 · S1</span>
-          <h1>🛠️ Sistem ve Saklama Ayarları</h1>
-          <p class="sayfa-aciklama">Öğrenci bilgisayarlarında tutulan profil yedeklerinin ve ders sonu temizlik karantinalarının saklama sayısını yapılandırın.</p>
+          <h1>🛠️ Sistem, Yedekleme ve Başka Bilgisayara Taşıma</h1>
+          <p class="sayfa-aciklama">Yönetim uygulamasını tüm yapılandırması, SSH anahtarları, öğrenci veritabanı ve
+            <code>.deb</code> kurulum paketiyle birlikte yedekleyin; sıfırdan Pardus kurulu yeni bir bilgisayara tek
+            komutla (<code>yedekten-kur.sh</code>) veya bu yönetim panelinden geri yükleyin.</p>
         </header>
+
+        <div id="m5s1-sistem-ozet" class="ozet-kartlar alt-bosluk"></div>
+
         <div class="iki-sutun">
           <div class="kart">
-            <h2>Yedek ve Karantina Saklama Sınırı</h2>
+            <h2>📦 Tam Sistem Yedeği Oluştur (Taşıma Paketi)</h2>
+            <p class="ipucu">Üretilen <code>.tar.gz</code> arşivi; envanteri, öğretmen hesaplarını, öğrenci PC'lere şifresiz
+              bağlanan <strong>SSH özel/açık anahtarlarını</strong>, Veyon dosyalarını, duvar kâğıdı galerisini,
+              uygulamanın <code>.deb</code> paketini ve otomatik kurulum betiğini (<code>yedekten-kur.sh</code>) içerir.</p>
+            <div class="form-izgara">
+              <label for="m5s1-yedek-aciklama">Yedek açıklaması (isteğe bağlı)</label>
+              <input id="m5s1-yedek-aciklama" type="text" maxlength="120" placeholder="örn. Yeni öğretmen bilgisayarına taşıma yedeği">
+            </div>
+            <div class="ust-bosluk">
+              <label class="onay-kutusu"><input id="m5s1-yedek-deb" type="checkbox" checked>
+                Uygulama kurulum paketini (<code>.deb</code>) ve <code>yedekten-kur.sh</code> betiğini dahil et <em>(Yeni PC'ye taşımak için önerilir)</em></label>
+              <label class="onay-kutusu"><input id="m5s1-yedek-teslimler" type="checkbox" checked>
+                Öğrenci sınıf listelerini ve ödev teslim dosyalarını dahil et</label>
+              <label class="onay-kutusu"><input id="m5s1-yedek-paketler" type="checkbox">
+                Yüklenmiş yerel <code>.deb</code> uygulama paketlerini dahil et</label>
+            </div>
+            <div class="arac-cubugu ust-bosluk">
+              <button id="m5s1-yedek-olustur" type="button" class="birincil" data-ui-id="M5-S1-B5">📦 Şimdi Yedek Oluştur ve İndir</button>
+              <button id="m5s1-yedek-sadece-sunucu" type="button" class="ikincil">💾 Sunucu Arşivine Kaydet</button>
+            </div>
+            <p id="m5s1-yedek-durum" class="ipucu" role="status"></p>
+          </div>
+
+          <div class="kart">
+            <h2>♻️ Yedekten Geri Yükle (Panel veya Terminal)</h2>
+            <p class="ipucu">Daha önce aldığınız <code>.tar.gz</code> yedek arşivini seçerek doğrulayın ve tek tıkla geri yükleyin.
+              Geri yükleme öncesinde mevcut durumunuz otomatik olarak güvenlik yedeğine alınır.</p>
+            <div class="arac-cubugu">
+              <label class="dugme ikincil" for="m5s1-yedek-dosya" data-ui-id="M5-S1-B6">📁 Bilgisayardan Yedek Seç (.tar.gz)</label>
+              <input id="m5s1-yedek-dosya" type="file" accept=".tar.gz,.tgz,application/gzip" class="gizli-giris">
+              <button id="m5s1-yedek-yukle-btn" type="button" class="birincil" data-ui-id="M5-S1-B7" disabled>♻️ Doğrulanmış Yedeği Geri Yükle</button>
+            </div>
+            <div id="m5s1-inceleme-kutu" class="ust-bosluk" hidden></div>
+
+            <details class="ust-bosluk">
+              <summary><strong>💻 Sıfırdan Pardus Kurulu Yeni Bilgisayara Tek Komutla Kurulum (yedekten-kur.sh)</strong></summary>
+              <p class="ipucu">Yeni bilgisayarda henüz Lab Kaptanı kurulu değilse, indirdiğiniz yedek arşivini klasöre çıkarıp
+                terminalde şu komutu çalıştırmanız yeterlidir (hem <code>.deb</code> paketini kurar hem yedeği geri yükler):</p>
+              <pre class="kod-kutu">tar -xzf pardus-sinif-yonetimi-yedek_*.tar.gz
+cd pardus-sinif-yonetimi-yedek
+sudo bash yedekten-kur.sh</pre>
+            </details>
+          </div>
+        </div>
+
+        <div class="kart ust-bosluk">
+          <div class="arac-cubugu">
+            <h2 class="sifir-alt">🗂️ Sunucuda Kayıtlı Sistem Yedekleri (Arşiv)</h2>
+            <span class="bosluk"></span>
+            <button id="m5s1-yedek-yenile" type="button" class="ikincil kucuk">Yenile</button>
+          </div>
+          <div id="m5s1-yedek-tablo" class="tablo-kap"></div>
+        </div>
+
+        <div class="iki-sutun ust-bosluk">
+          <div class="kart">
+            <h2>Öğrenci Bilgisayarlarında Yedek ve Karantina Saklama Sınırı</h2>
             <form id="m5s1-saklama-formu" class="satir-form">
-              <label for="m5s1-saklama">Her bilgisayarda tutulacak yedek / karantina sayısı</label>
+              <label for="m5s1-saklama">Her öğrenci bilgisayarında tutulacak profil yedeği / karantina sayısı</label>
               <input id="m5s1-saklama" type="number" min="1" max="30" required>
               <button type="submit" class="birincil" data-ui-id="M5-S1-B1">Kaydet</button>
             </form>

@@ -413,7 +413,7 @@ def dogrula(deb: Path) -> None:
                     f"./{OPT}/uygulama/arayuz/veyon.js", f"./{OPT}/uygulama/arayuz/guc.js",
                     f"./{OPT}/uygulama/uzak/guc_ayar.py", f"./{OPT}/uygulama/guc_ayar.py",
                     f"./{OPT}/uygulama/uzak/sinif.py", f"./{OPT}/uygulama/sinif_araclari.py",
-                    f"./{OPT}/uygulama/komutlar.py",
+                    f"./{OPT}/uygulama/komutlar.py", f"./{OPT}/uygulama/sistem_yedek.py",
                     f"./{OPT}/uygulama/arayuz/referans.js", f"./{OPT}/uygulama/arayuz/belirtecler.css",
                     f"./{SITE}/fastapi/__init__.py",
                     f"./{SITE}/paramiko/__init__.py", f"./usr/bin/{PAKET}",

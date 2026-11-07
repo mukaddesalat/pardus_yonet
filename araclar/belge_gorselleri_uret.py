@@ -29,6 +29,7 @@ PAGES = [
     ("09_duvar_kagidi_galeri.png", "#M2-S3", "1366,920", ""),
     ("10_yazilim_merkezi.png", "#M2-S2", "1366,920", ""),
     ("11_veyon_uzman.png", "#M1-S4", "1366,980", "setTimeout(() => { const p = document.querySelector('#m1s4-uzman-panel'); if (p) { p.open = true; p.scrollIntoView(); } }, 600);"),
+    ("12_sistem_yedekleme.png", "#M5-S1", "1366,960", "setTimeout(() => { const s = document.querySelector('#m5s1-yedek-kartlari'); if (s) s.scrollIntoView(); }, 800);"),
 ]
 
 

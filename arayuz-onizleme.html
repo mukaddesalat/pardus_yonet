@@ -2135,14 +2135,75 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
       <section id="sayfa-M5-S1" class="sayfa" data-ui-id="M5-S1" hidden>
         <header class="sayfa-baslik">
           <span class="kod-cip">M5 · S1</span>
-          <h1>🛠️ Sistem ve Saklama Ayarları</h1>
-          <p class="sayfa-aciklama">Öğrenci bilgisayarlarında tutulan profil yedeklerinin ve ders sonu temizlik karantinalarının saklama sayısını yapılandırın.</p>
+          <h1>🛠️ Sistem, Yedekleme ve Başka Bilgisayara Taşıma</h1>
+          <p class="sayfa-aciklama">Yönetim uygulamasını tüm yapılandırması, SSH anahtarları, öğrenci veritabanı ve
+            <code>.deb</code> kurulum paketiyle birlikte yedekleyin; sıfırdan Pardus kurulu yeni bir bilgisayara tek
+            komutla (<code>yedekten-kur.sh</code>) veya bu yönetim panelinden geri yükleyin.</p>
         </header>
+
+        <div id="m5s1-sistem-ozet" class="ozet-kartlar alt-bosluk"></div>
+
         <div class="iki-sutun">
           <div class="kart">
-            <h2>Yedek ve Karantina Saklama Sınırı</h2>
+            <h2>📦 Tam Sistem Yedeği Oluştur (Taşıma Paketi)</h2>
+            <p class="ipucu">Üretilen <code>.tar.gz</code> arşivi; envanteri, öğretmen hesaplarını, öğrenci PC'lere şifresiz
+              bağlanan <strong>SSH özel/açık anahtarlarını</strong>, Veyon dosyalarını, duvar kâğıdı galerisini,
+              uygulamanın <code>.deb</code> paketini ve otomatik kurulum betiğini (<code>yedekten-kur.sh</code>) içerir.</p>
+            <div class="form-izgara">
+              <label for="m5s1-yedek-aciklama">Yedek açıklaması (isteğe bağlı)</label>
+              <input id="m5s1-yedek-aciklama" type="text" maxlength="120" placeholder="örn. Yeni öğretmen bilgisayarına taşıma yedeği">
+            </div>
+            <div class="ust-bosluk">
+              <label class="onay-kutusu"><input id="m5s1-yedek-deb" type="checkbox" checked>
+                Uygulama kurulum paketini (<code>.deb</code>) ve <code>yedekten-kur.sh</code> betiğini dahil et <em>(Yeni PC'ye taşımak için önerilir)</em></label>
+              <label class="onay-kutusu"><input id="m5s1-yedek-teslimler" type="checkbox" checked>
+                Öğrenci sınıf listelerini ve ödev teslim dosyalarını dahil et</label>
+              <label class="onay-kutusu"><input id="m5s1-yedek-paketler" type="checkbox">
+                Yüklenmiş yerel <code>.deb</code> uygulama paketlerini dahil et</label>
+            </div>
+            <div class="arac-cubugu ust-bosluk">
+              <button id="m5s1-yedek-olustur" type="button" class="birincil" data-ui-id="M5-S1-B5">📦 Şimdi Yedek Oluştur ve İndir</button>
+              <button id="m5s1-yedek-sadece-sunucu" type="button" class="ikincil">💾 Sunucu Arşivine Kaydet</button>
+            </div>
+            <p id="m5s1-yedek-durum" class="ipucu" role="status"></p>
+          </div>
+
+          <div class="kart">
+            <h2>♻️ Yedekten Geri Yükle (Panel veya Terminal)</h2>
+            <p class="ipucu">Daha önce aldığınız <code>.tar.gz</code> yedek arşivini seçerek doğrulayın ve tek tıkla geri yükleyin.
+              Geri yükleme öncesinde mevcut durumunuz otomatik olarak güvenlik yedeğine alınır.</p>
+            <div class="arac-cubugu">
+              <label class="dugme ikincil" for="m5s1-yedek-dosya" data-ui-id="M5-S1-B6">📁 Bilgisayardan Yedek Seç (.tar.gz)</label>
+              <input id="m5s1-yedek-dosya" type="file" accept=".tar.gz,.tgz,application/gzip" class="gizli-giris">
+              <button id="m5s1-yedek-yukle-btn" type="button" class="birincil" data-ui-id="M5-S1-B7" disabled>♻️ Doğrulanmış Yedeği Geri Yükle</button>
+            </div>
+            <div id="m5s1-inceleme-kutu" class="ust-bosluk" hidden></div>
+
+            <details class="ust-bosluk">
+              <summary><strong>💻 Sıfırdan Pardus Kurulu Yeni Bilgisayara Tek Komutla Kurulum (yedekten-kur.sh)</strong></summary>
+              <p class="ipucu">Yeni bilgisayarda henüz Lab Kaptanı kurulu değilse, indirdiğiniz yedek arşivini klasöre çıkarıp
+                terminalde şu komutu çalıştırmanız yeterlidir (hem <code>.deb</code> paketini kurar hem yedeği geri yükler):</p>
+              <pre class="kod-kutu">tar -xzf pardus-sinif-yonetimi-yedek_*.tar.gz
+cd pardus-sinif-yonetimi-yedek
+sudo bash yedekten-kur.sh</pre>
+            </details>
+          </div>
+        </div>
+
+        <div class="kart ust-bosluk">
+          <div class="arac-cubugu">
+            <h2 class="sifir-alt">🗂️ Sunucuda Kayıtlı Sistem Yedekleri (Arşiv)</h2>
+            <span class="bosluk"></span>
+            <button id="m5s1-yedek-yenile" type="button" class="ikincil kucuk">Yenile</button>
+          </div>
+          <div id="m5s1-yedek-tablo" class="tablo-kap"></div>
+        </div>
+
+        <div class="iki-sutun ust-bosluk">
+          <div class="kart">
+            <h2>Öğrenci Bilgisayarlarında Yedek ve Karantina Saklama Sınırı</h2>
             <form id="m5s1-saklama-formu" class="satir-form">
-              <label for="m5s1-saklama">Her bilgisayarda tutulacak yedek / karantina sayısı</label>
+              <label for="m5s1-saklama">Her öğrenci bilgisayarında tutulacak profil yedeği / karantina sayısı</label>
               <input id="m5s1-saklama" type="number" min="1" max="30" required>
               <button type="submit" class="birincil" data-ui-id="M5-S1-B1">Kaydet</button>
             </form>
@@ -2677,8 +2738,8 @@ window.PSY_REFERANS = {
       { kod: "S1", ad: "İşlem Geçmişi", ikon: "gecmis", aciklama: "Tüm işlerin öğretmen, hedef listesi ve bilgisayar bazında sonuçları." },
     ] },
     { kod: "M5", ad: "Ayarlar", ikon: "ayar", sayfalar: [
-      { kod: "S1", ad: "Uygulama Ayarları ve Referans Rehberi", ikon: "ayar",
-        aciklama: "Saklama sınırı, sürüm bilgisi ve tüm menü/sayfa/düğme kodları." },
+      { kod: "S1", ad: "Sistem, Yedekleme ve Taşıma Ayarları", ikon: "ayar",
+        aciklama: "Yönetim uygulamasını başka bilgisayara taşıma (.tar.gz yedek + .deb + yedekten-kur.sh), yedekten geri yükleme, saklama sınırı ve sürüm bilgisi." },
       { kod: "S2", ad: "Okul ve Öğretmenler", ikon: "kisiler",
         aciklama: "Okul adı ve logosu, öğretmen hesapları, Admin/Standart rolü ve isteğe bağlı menü yetkileri." },
     ] },
@@ -2892,6 +2953,12 @@ window.PSY_REFERANS = {
     "M5-S1-B2": ["Referans kodlarını göster/gizle", "M0-S1-B1 ile aynı işlev"],
     "M5-S1-B3": ["Rehberde ara", "Kod veya ada göre süzer"],
     "M5-S1-B4": ["Referans haritasını indir", "Tüm kodları Markdown dosyası olarak indirir"],
+    "M5-S1-B5": ["Tam sistem yedeği oluştur", "Envanter, SSH anahtarları, Veyon, galeri, ödevler ve .deb paketini .tar.gz olarak yedekler"],
+    "M5-S1-B6": ["Yedek dosyası seç (.tar.gz)", "Bilgisayardan geri yüklenecek tam sistem yedeğini seçer ve doğrular"],
+    "M5-S1-B7": ["Seçilen yedeği geri yükle", "Doğrulanan .tar.gz yedek arşivini canlı sisteme geri yükler"],
+    "M5-S1-B8-*": ["Yedeği indir (satır)", "Kayıtlı tam sistem yedeğini (.tar.gz) bilgisayara indirir"],
+    "M5-S1-B9-*": ["Bu yedekten geri yükle (satır)", "Sunucudaki kayıtlı yedeği doğrular ve geri yükler"],
+    "M5-S1-B10-*": ["Yedeği sil (satır)", "Sunucudaki kayıtlı yedek arşivini siler"],
 
     "M5-S2-B1": ["Okul bilgilerini kaydet", "Okul adını, alt başlığı ve logoyu kaydeder"],
     "M5-S2-B2": ["Okul logosu seç", "Okul logosu görselini (PNG/JPG/SVG) yükler"],
@@ -3890,8 +3957,73 @@ window.PSY_REFERANS = {
   yol("GET", "/api/isler", () => [...gecmis].reverse().map((k) => { isIlerlet(k); const { hedefler, parametreler, ...ust } = disa(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...ust }; }));
   yol("GET", "/api/isler/(\\w+)", (_, [id]) => { const k = isler.get(id); if (!k) throw new Hata(404, "İş bulunamadı"); isIlerlet(k); return { ogretmen_kullanici: "admin", ogretmen_ad: "Mukaddes ALAT", ogretmen_rol: "admin", ...disa(k) }; });
   yol("POST", "/api/isler/(\\w+)/iptal", (_, [id]) => { const k = isler.get(id); if (!k || k.durum !== "calisiyor") throw new Hata(409, "İş çalışmıyor veya zaten bitti"); k._iptal = true; return { tamam: true, not: "İptal, güvenli noktada durdurur; başlamış adımları geri almaz" }; });
-  yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.6.0 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
+  yol("GET", "/api/ayarlar", () => ({ saklama_adedi: saklama, versiyon: "0.8.0 · DEMO", odev_dizini: "/var/lib/pardus-sinif-odev", okul: demoOkul }));
   yol("POST", "/api/ayarlar", (g) => { saklama = g.saklama_adedi; return { saklama_adedi: saklama }; });
+
+  let demoSistemYedekler = [
+    {
+      dosya_adi: "pardus-sinif-yonetimi-yedek_2026-11-07_16-00-00_v0.8.0.tar.gz",
+      boyut: 19450880,
+      sha256: "da8ed4ce9e6e9170c47dfaa2f412abcc4b6dc7c04ce5ed3166cb575a9c38742f",
+      olusturma_zamani: "2026-11-07T16:00:00+03:00",
+      uygulama_surumu: "0.8.0",
+      kaynak_makine: "ogretmen-lab-pc",
+      aciklama: "Dönem başı tam sistem ve taşıma yedeği (.deb + yedekten-kur.sh dahil)",
+      secenekler: { deb_dahil: true, odev_teslimleri_dahil: true, yerel_paketler_dahil: false },
+      ozet: { okul_adi: demoOkul.ad, cihaz_sayisi: cihazlar.length, ogretmen_sayisi: demoOgretmenler.length, sinif_sayisi: 2, ogrenci_sayisi: 16, ssh_anahtari_var: true },
+    },
+  ];
+  const demoSistemOzeti = () => ({
+    uygulama_surumu: "0.8.0",
+    okul_adi: demoOkul.ad,
+    cihaz_sayisi: cihazlar.length,
+    ogretmen_sayisi: demoOgretmenler.length,
+    sinif_sayisi: 2,
+    ogrenci_sayisi: 16,
+    teslim_sayisi: 12,
+    ssh_anahtari_var: true,
+    veyon_anahtari_var: true,
+    veyon_paketi_var: true,
+    galeri_gorsel_sayisi: 3,
+    deb_hazir: true,
+    deb_uretilebilir: true,
+    deb_paketi: "pardus-sinif-yonetimi_0.8.0_amd64.deb",
+    deb_boyut: 18830608,
+  });
+  yol("GET", "/api/sistem-yedek", () => ({ sistem: demoSistemOzeti(), yedekler: demoSistemYedekler }));
+  yol("POST", "/api/sistem-yedek/olustur", (g) => {
+    const yeni = {
+      dosya_adi: `pardus-sinif-yonetimi-yedek_2026-11-07_16-30-00_v0.8.0.tar.gz`,
+      boyut: g && g.deb_dahil === false ? 620400 : 19450880,
+      sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      olusturma_zamani: new Date().toISOString(),
+      uygulama_surumu: "0.8.0",
+      kaynak_makine: "ogretmen-lab-pc",
+      aciklama: (g && g.aciklama) || "DEMO Tam Sistem Yedeği",
+      secenekler: { deb_dahil: g ? g.deb_dahil !== false : true, odev_teslimleri_dahil: true, yerel_paketler_dahil: false },
+      ozet: demoSistemOzeti(),
+    };
+    demoSistemYedekler = [yeni, ...demoSistemYedekler];
+    return { tamam: true, yedek: yeni, yedekler: demoSistemYedekler, sistem: demoSistemOzeti() };
+  });
+  yol("POST", "/api/sistem-yedek/incele", () => ({
+    gecerli: true,
+    format: "pardus-sinif-yonetimi-yedek",
+    uygulama_surumu: "0.8.0",
+    olusturma_zamani: new Date().toISOString(),
+    ozet: demoSistemOzeti(),
+  }));
+  yol("POST", "/api/sistem-yedek/geri-yukle", () => ({
+    durum: "tamamlandi",
+    geri_yuklenen: ["Envanter, öğretmen hesapları ve okul ayarları (envanter.db)", "SSH özel ve açık anahtar çifti", "Öğrenci sınıfları ve ödev veritabanı"],
+    yedekler: demoSistemYedekler,
+    guncel_ozet: demoSistemOzeti(),
+    okul: demoOkul,
+  }));
+  yol("DELETE", "/api/sistem-yedek/([^/]+)", (_, [ad]) => {
+    demoSistemYedekler = demoSistemYedekler.filter((y) => y.dosya_adi !== decodeURIComponent(ad));
+    return { tamam: true, yedekler: demoSistemYedekler };
+  });
 
   /* ---- sınıf hızlı araçlar ve M2-S6 komut gönder ---- */
   yol("POST", "/api/sinif/ekran-kilit", (g) => isBaslat(g.kilitle ? "sinif_ekran_kilitle" : "sinif_ekran_ac", g.cihazlar, g, () => ({
@@ -8758,6 +8890,10 @@ function referansSatirlari() {
 }
 
 const m5s1 = {
+  sistem: null,
+  yedekler: [],
+  seciliDosya: null,
+  seciliInceleme: null,
   kur() {
     $("#m5s1-saklama-formu").addEventListener("submit", async (o) => {
       o.preventDefault();
@@ -8769,6 +8905,17 @@ const m5s1 = {
     $("#m5s1-kodlar").addEventListener("click", () => kodlariGoster(!kodlarGorunur()));
     $("#m5s1-ara").addEventListener("input", () => this.rehber());
     $("#m5s1-indir").addEventListener("click", () => this.markdown());
+
+    const btnOlustur = $("#m5s1-yedek-olustur");
+    if (btnOlustur) btnOlustur.addEventListener("click", () => this.yedekOlustur(true));
+    const btnSunucu = $("#m5s1-yedek-sadece-sunucu");
+    if (btnSunucu) btnSunucu.addEventListener("click", () => this.yedekOlustur(false));
+    const btnYenile = $("#m5s1-yedek-yenile");
+    if (btnYenile) btnYenile.addEventListener("click", () => this.yedekleriYukle());
+    const inpDosya = $("#m5s1-yedek-dosya");
+    if (inpDosya) inpDosya.addEventListener("change", (o) => this.dosyaSecildi(o.target.files[0]));
+    const btnYukle = $("#m5s1-yedek-yukle-btn");
+    if (btnYukle) btnYukle.addEventListener("click", () => this.dosyadanGeriYukle());
   },
   async ac() {
     this.rehber();
@@ -8776,6 +8923,204 @@ const m5s1 = {
       const a = await api("/api/ayarlar");
       $("#m5s1-saklama").value = a.saklama_adedi;
       $("#m5s1-surum").textContent = `Sürüm ${a.versiyon} · ödev arşivi: ${a.odev_dizini} (temizlik ve sıfırlama bu dizine hiçbir zaman dokunmaz)`;
+    } catch (hata) { bildir(hata.message, true); }
+    await this.yedekleriYukle();
+  },
+  async yedekleriYukle() {
+    try {
+      const veri = await api("/api/sistem-yedek");
+      this.sistem = veri.sistem || null;
+      this.yedekler = veri.yedekler || [];
+      this.sistemOzetiCiz();
+      this.yedekTablosuCiz();
+    } catch (_) {
+      /* Standart öğretmen ise gizle */
+    }
+  },
+  sistemOzetiCiz() {
+    const kap = $("#m5s1-sistem-ozet");
+    if (!kap || !this.sistem) return;
+    const s = this.sistem;
+    kap.replaceChildren(
+      ozetKarti(s.cihaz_sayisi || 0, "Envanterdeki Bilgisayar", s.ssh_anahtari_var ? "🔑 SSH anahtarı hazır" : "Anahtar yok"),
+      ozetKarti(s.ogretmen_sayisi || 0, "Öğretmen Hesabı", s.okul_adi || "Okul tanımlı"),
+      ozetKarti(`${s.sinif_sayisi || 0} / ${s.ogrenci_sayisi || 0}`, "Sınıf / Öğrenci", `${s.teslim_sayisi || 0} ödev teslimi`),
+      ozetKarti(s.deb_hazir ? "Hazır" : (s.deb_uretilebilir ? "Üretilebilir" : "Yok"), "Uygulama .deb Paketi",
+        s.deb_boyut ? `${s.deb_paketi} (${boyut(s.deb_boyut)})` : `v${s.uygulama_surumu}`),
+    );
+  },
+  yedekTablosuCiz() {
+    const kap = $("#m5s1-yedek-tablo");
+    if (!kap) return;
+    if (!this.yedekler.length) {
+      kap.replaceChildren(el("p", { class: "bos-tablo", metin: "Henüz oluşturulmuş bir sistem yedeği yok. Yukarıdan “Şimdi Yedek Oluştur ve İndir” düğmesine tıklayarak ilk taşıma paketinizi oluşturabilirsiniz." }));
+      return;
+    }
+    const tablo = el("table", {}, el("thead", {}, el("tr", {},
+      ...["Tarih & Dosya Adı", "Açıklama", "İçerik Özeti", "Boyut", ""].map((b) => el("th", { metin: b })))));
+    const g = el("tbody");
+    for (const y of this.yedekler) {
+      const oz = y.ozet || {};
+      const sec = y.secenekler || {};
+      const slug = kimlikSlug(y.dosya_adi).slice(-14);
+      const etiketler = [
+        `${oz.cihaz_sayisi ?? 0} PC`,
+        `${oz.ogretmen_sayisi ?? 0} Öğretmen`,
+        `${oz.sinif_sayisi ?? 0} Sınıf`,
+        oz.ssh_anahtari_var ? "🔑 SSH Anahtarlı" : null,
+        sec.deb_dahil ? "📦 .deb + yedekten-kur.sh" : null,
+      ].filter(Boolean).join(" · ");
+      g.append(el("tr", {},
+        el("td", {},
+          el("strong", { metin: tarih(y.olusturma_zamani) }),
+          el("span", { class: "alt mono", metin: y.dosya_adi })),
+        el("td", { metin: y.aciklama || "—" }),
+        el("td", {},
+          rozet(`v${y.uygulama_surumu || "?"}`, "mavi"), " ",
+          el("span", { class: "alt", metin: etiketler })),
+        el("td", { class: "mono", metin: boyut(y.boyut) }),
+        el("td", {}, el("div", { class: "dugme-grubu" },
+          dugme("⬇️ İndir", `M5-S1-B8-${slug}`, () => indir(`/api/sistem-yedek/${encodeURIComponent(y.dosya_adi)}/indir`), "birincil kucuk"),
+          dugme("♻️ Geri Yükle", `M5-S1-B9-${slug}`, () => this.sunucudanGeriYukle(y), "ikincil kucuk"),
+          dugme("Sil", `M5-S1-B10-${slug}`, () => this.yedekSil(y), "tehlikeli kucuk"),
+        )),
+      ));
+    }
+    tablo.append(g);
+    kap.replaceChildren(tablo);
+  },
+  async yedekOlustur(hemenIndir = true) {
+    const durumEl = $("#m5s1-yedek-durum");
+    const btn1 = $("#m5s1-yedek-olustur");
+    const btn2 = $("#m5s1-yedek-sadece-sunucu");
+    if (btn1) btn1.disabled = true;
+    if (btn2) btn2.disabled = true;
+    if (durumEl) durumEl.textContent = "⏳ Yedek arşivi ve taşıma paketi hazırlanıyor, lütfen bekleyin...";
+    try {
+      const yanit = await api("/api/sistem-yedek/olustur", {
+        aciklama: ($("#m5s1-yedek-aciklama") && $("#m5s1-yedek-aciklama").value.trim()) || "",
+        deb_dahil: Boolean($("#m5s1-yedek-deb") && $("#m5s1-yedek-deb").checked),
+        odev_teslimleri_dahil: Boolean($("#m5s1-yedek-teslimler") && $("#m5s1-yedek-teslimler").checked),
+        yerel_paketler_dahil: Boolean($("#m5s1-yedek-paketler") && $("#m5s1-yedek-paketler").checked),
+      });
+      this.sistem = yanit.sistem || this.sistem;
+      this.yedekler = yanit.yedekler || this.yedekler;
+      this.sistemOzetiCiz();
+      this.yedekTablosuCiz();
+      const y = yanit.yedek;
+      if (durumEl) durumEl.textContent = `✓ Yedek hazır: ${y.dosya_adi} (${boyut(y.boyut)})`;
+      bildir(`Tam sistem yedeği oluşturuldu: ${y.dosya_adi}`);
+      if (hemenIndir && y && y.dosya_adi) {
+        indir(`/api/sistem-yedek/${encodeURIComponent(y.dosya_adi)}/indir`);
+      }
+    } catch (hata) {
+      if (durumEl) durumEl.textContent = `✗ Hata: ${hata.message}`;
+      bildir(hata.message, true);
+    } finally {
+      if (btn1) btn1.disabled = false;
+      if (btn2) btn2.disabled = false;
+    }
+  },
+  async dosyaSecildi(dosya) {
+    const kutu = $("#m5s1-inceleme-kutu");
+    const btn = $("#m5s1-yedek-yukle-btn");
+    this.seciliDosya = null;
+    this.seciliInceleme = null;
+    if (btn) btn.disabled = true;
+    if (!dosya) { if (kutu) kutu.hidden = true; return; }
+    if (kutu) {
+      kutu.hidden = false;
+      kutu.replaceChildren(el("p", { class: "ipucu", metin: `⏳ "${dosya.name}" bütünlüğü ve SHA-256 özetleri doğrulanıyor...` }));
+    }
+    try {
+      const inc = await apiDosya("/api/sistem-yedek/incele", dosya);
+      this.seciliDosya = dosya;
+      this.seciliInceleme = inc;
+      if (btn) btn.disabled = false;
+      const oz = inc.ozet || {};
+      kutu.replaceChildren(
+        el("div", { class: "kart" },
+          el("p", {}, rozet("✓ SHA-256 Bütünlüğü Doğrulandı", "iyi"), " ", el("strong", { metin: dosya.name })),
+          el("p", { class: "ipucu", metin: `Okul: ${oz.okul_adi || "—"} · Sürüm: v${inc.uygulama_surumu || "?"} · Tarih: ${tarih(inc.olusturma_zamani)}` }),
+          el("p", { class: "ipucu", metin: `İçerik: ${oz.cihaz_sayisi ?? 0} bilgisayar, ${oz.ogretmen_sayisi ?? 0} öğretmen, ${oz.sinif_sayisi ?? 0} sınıf (${oz.ogrenci_sayisi ?? 0} öğrenci), SSH Anahtarı: ${oz.ssh_anahtari_var ? "Var" : "Yok"}` }),
+        ),
+      );
+    } catch (hata) {
+      if (kutu) {
+        kutu.replaceChildren(el("p", { class: "hata-metni", metin: `✗ Geçersiz yedek: ${hata.message}` }));
+      }
+      bildir(hata.message, true);
+    }
+  },
+  async dosyadanGeriYukle() {
+    if (!this.seciliDosya || !this.seciliInceleme) return;
+    const oz = this.seciliInceleme.ozet || {};
+    const onay = await onayIste({
+      baslik: "Yedekten Geri Yükle (Dosyadan)",
+      aciklama: `"${this.seciliDosya.name}" yedeği mevcut sistemin üzerine geri yüklenecek.`,
+      hedefler: [{ ad: oz.okul_adi || "Yönetim Sunucusu", ip: `${oz.cihaz_sayisi ?? 0} PC · ${oz.ogretmen_sayisi ?? 0} Öğretmen`, durum: "v" + (this.seciliInceleme.uygulama_surumu || "?") }],
+      uyarilar: [
+        "Geri yükleme öncesinde şu anki veritabanınız otomatik olarak güvenlik yedeğine alınır.",
+        "Envanter, öğretmen hesapları, SSH anahtarları, Veyon/Galeri dosyaları ve ödev veritabanı yedekteki haline döner.",
+      ],
+      kutuMetni: "Yedeğin mevcut yapılandırmanın üzerine yazılmasını onaylıyorum",
+    });
+    if (!onay) return;
+    try {
+      const sonuc = await apiDosya("/api/sistem-yedek/geri-yukle", this.seciliDosya, { "X-Onay": "1" });
+      await this.geriYuklemeSonrasi(sonuc);
+    } catch (hata) { bildir(hata.message, true); }
+  },
+  async sunucudanGeriYukle(yedek) {
+    const oz = yedek.ozet || {};
+    const onay = await onayIste({
+      baslik: "Kayıtlı Yedekten Geri Yükle",
+      aciklama: `"${yedek.dosya_adi}" (${tarih(yedek.olusturma_zamani)}) yedeği geri yüklenecek.`,
+      hedefler: [{ ad: oz.okul_adi || "Yönetim Sunucusu", ip: `${oz.cihaz_sayisi ?? 0} PC · ${oz.ogretmen_sayisi ?? 0} Öğretmen`, durum: "v" + (yedek.uygulama_surumu || "?") }],
+      uyarilar: [
+        "Geri yükleme öncesinde şu anki durumunuz otomatik olarak güvenlik yedeğine alınır.",
+        "Envanter, öğretmen hesapları, SSH anahtarları ve ödev veritabanı seçilen yedekteki haline döner.",
+      ],
+      kutuMetni: "Seçilen yedeğin geri yüklenmesini onaylıyorum",
+    });
+    if (!onay) return;
+    try {
+      const sonuc = await api("/api/sistem-yedek/geri-yukle", { dosya_adi: yedek.dosya_adi, onay: true });
+      await this.geriYuklemeSonrasi(sonuc);
+    } catch (hata) { bildir(hata.message, true); }
+  },
+  async geriYuklemeSonrasi(sonuc) {
+    if (sonuc.csrf) Uyg.csrf = sonuc.csrf;
+    if (sonuc.okul) okulBilgisiniUygula(sonuc.okul);
+    this.sistem = sonuc.guncel_ozet || this.sistem;
+    this.yedekler = sonuc.yedekler || this.yedekler;
+    this.seciliDosya = null;
+    this.seciliInceleme = null;
+    const inp = $("#m5s1-yedek-dosya");
+    if (inp) inp.value = "";
+    const kutu = $("#m5s1-inceleme-kutu");
+    if (kutu) kutu.hidden = true;
+    const btn = $("#m5s1-yedek-yukle-btn");
+    if (btn) btn.disabled = true;
+    this.sistemOzetiCiz();
+    this.yedekTablosuCiz();
+    await Veri.cihazlariYukle();
+    bildir(`Yedek başarıyla geri yüklendi (${(sonuc.geri_yuklenen || []).length} bileşen yenilendi).`);
+  },
+  async yedekSil(yedek) {
+    const onay = await onayIste({
+      baslik: "Sistem Yedeğini Sil",
+      aciklama: `"${yedek.dosya_adi}" yedek arşivi sunucudan kalıcı olarak silinecek.`,
+      hedefler: [{ ad: yedek.dosya_adi, ip: boyut(yedek.boyut), durum: tarih(yedek.olusturma_zamani) }],
+      uyarilar: ["Bu işlem yalnızca seçilen yedek dosyasını siler; çalışan sistemi etkilemez."],
+      kutuMetni: "Yedek arşivinin silinmesini onaylıyorum",
+    });
+    if (!onay) return;
+    try {
+      const s = await api(`/api/sistem-yedek/${encodeURIComponent(yedek.dosya_adi)}`, null, "DELETE");
+      this.yedekler = s.yedekler || [];
+      this.yedekTablosuCiz();
+      bildir("Yedek arşivi silindi.");
     } catch (hata) { bildir(hata.message, true); }
   },
   rehber() {
