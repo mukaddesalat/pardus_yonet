@@ -1088,6 +1088,98 @@
     return { durum: "basarili", asama: "hosts", mesaj: `${g.ip} ${g.alan_adi} /etc/hosts dosyasına eklendi`, veri: { cihaz_id: c.id, rc: 0, stdout: `${g.ip}\t${g.alan_adi}`, stderr: "" } };
   }));
 
+  /* ---- Komut Mağazası Demo ---- */
+  let demoSabitler = ["veyon-servis-ac", "disk-bellek-raporu"];
+  const demoMagazaKatalogu = [
+    {
+      id: "veyon-servis-ac",
+      ad: "Veyon Servisini Kontrol Et ve Başlat",
+      kategori: "veyon",
+      risk: "bilgi",
+      ozet: "Öğrenci bilgisayarlarında Veyon servisini denetler; kapalı veya durdurulmuşsa otomatik başlatır.",
+      yazar: "Ahmet Öğretmen",
+      surum: "1.2.0",
+      sudo: true,
+      parametreler: [],
+    },
+    {
+      id: "hosts-kayit-ekle",
+      ad: "Yerel Alan Adı (Hosts) Dağıt",
+      kategori: "ag",
+      risk: "degisiklik",
+      ozet: "Öğrenci bilgisayarlarının /etc/hosts dosyasına yerel sunucu IP ve alan adını güvenle ekler veya günceller.",
+      yazar: "Kemal Öğretmen",
+      surum: "1.1.0",
+      sudo: true,
+      parametreler: [
+        { ad: "ip", etiket: "Hedef IP Adresi", tip: "metin", varsayilan: "192.168.1.100", zorunlu: true, aciklama: "Öğretmen bilgisayarı veya yerel sunucu IP adresi" },
+        { ad: "alan_adi", etiket: "Alan Adı (Hostname)", tip: "metin", varsayilan: "ogretmen.lab", zorunlu: true, aciklama: "Örn. ogretmen.lab veya portal.yerel" },
+      ],
+    },
+    {
+      id: "kullanici-ev-dizini-sil",
+      ad: "Kullanıcı ve Ev Dizinini Sil",
+      kategori: "kullanici",
+      risk: "yikici",
+      ozet: "Sistem ve yönetim hesapları hariç belirtilen kullanıcının açık süreçlerini sonlandırıp ev diziniyle birlikte siler.",
+      yazar: "Fatma Öğretmen",
+      surum: "1.0.0",
+      sudo: true,
+      parametreler: [
+        { ad: "kullanici", etiket: "Silinecek Kullanıcı Adı", tip: "metin", varsayilan: "misafir", zorunlu: true, yasak: ["root", "pardus", "hp", "ogrenci"], aciklama: "Sistem kullanıcıları koruma altındadır ve silinemez" },
+      ],
+    },
+    {
+      id: "disk-bellek-raporu",
+      ad: "Disk ve Bellek Durumu Raporu",
+      kategori: "sistem",
+      risk: "bilgi",
+      ozet: "Öğrenci bilgisayarlarında kök dizin boş disk alanını ve RAM kullanım oranını canlı sorgular.",
+      yazar: "Mehmet Öğretmen",
+      surum: "1.0.0",
+      sudo: false,
+      parametreler: [],
+    },
+    {
+      id: "bozuk-paket-onar",
+      ad: "Bozuk Paketleri Onar (dpkg/apt)",
+      kategori: "paket",
+      risk: "degisiklik",
+      ozet: "Yarıda kalmış paket kurulumlarını tamamlar ve kilitlenmiş apt önbelleğini onarır.",
+      yazar: "Mustafa Öğretmen",
+      surum: "1.0.0",
+      sudo: true,
+      parametreler: [],
+    },
+    {
+      id: "ogrenci-masaustu-temizle",
+      ad: "Öğrenci Masaüstü Kısayollarını Sıfırla",
+      kategori: "bakim",
+      risk: "degisiklik",
+      ozet: "Öğrenci masaüstündeki geçici bağlantı ve dosya kalıntılarını arşivleyerek temiz bir masaüstü bırakır.",
+      yazar: "Ayşe Öğretmen",
+      surum: "1.0.0",
+      sudo: true,
+      parametreler: [],
+    },
+  ];
+
+  yol("GET", "/api/magaza/katalog", () => demoMagazaKatalogu);
+  yol("GET", "/api/magaza/sabitler", () => demoSabitler);
+  yol("POST", "/api/magaza/sabitle", (g) => {
+    if (g.sabitle) {
+      if (!demoSabitler.includes(g.arac_id)) demoSabitler.push(g.arac_id);
+    } else {
+      demoSabitler = demoSabitler.filter((x) => x !== g.arac_id);
+    }
+    return { sabitler: demoSabitler };
+  });
+  yol("POST", "/api/magaza/calistir", (g) => isBaslat("ssh_komut", g.cihazlar, g, (c) => {
+    if (c.erisim === 0) return { durum: "basarisiz", asama: "ulasilamadi", mesaj: "Ulaşılamadı: SSH zaman aşımı", veri: { cihaz_id: c.id, rc: -1, stdout: "", stderr: "Connection timed out" } };
+    const a = demoMagazaKatalogu.find((x) => x.id === g.arac_id) || { ad: g.arac_id };
+    return { durum: "basarili", asama: "komut", mesaj: `RC=0 — ${a.ad} başarıyla tamamlandı`, veri: { cihaz_id: c.id, rc: 0, stdout: `::psy:sonuc=ok\n[${c.etiket}] ${a.ad} çalıştırıldı (DEMO).`, stderr: "" } };
+  }));
+
   /* ---- M5-S2 okul ve öğretmenler ---- */
   yol("GET", "/api/okul", () => demoOkul);
   yol("POST", "/api/okul", (g) => { demoOkul = { ad: g.ad, alt_baslik: g.alt_baslik || "", logo_b64: g.logo_b64 || "" }; return demoOkul; });

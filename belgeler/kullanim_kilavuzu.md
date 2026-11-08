@@ -1,192 +1,252 @@
-# Lab Kaptanı — Öğretmen Kullanım Kılavuzu
+# Lab Kaptanı (Pardus Sınıf Yönetimi) — Öğretmen ve Laboratuvar Kullanım Kılavuzu
 
-Bu kılavuz, bilgisayar laboratuvarını yöneten öğretmenler için hazırlanmıştır. Lab Kaptanı, karmaşık komutlar veya teknik bilgi gerektirmeden, tüm laboratuvarı tek ekrandan yönetmenizi sağlar.
+Bu kılavuz, bilgisayar laboratuvarını yöneten öğretmenler ve sistem yöneticileri için hazırlanmıştır. **Lab Kaptanı**, karmaşık komut satırı işlemleri veya teknik zorluklar olmadan; canlı ders akışını, ödev dağıtım ve toplama işlemlerini, bilgisayar bakım ve güç kontrollerini, hazır komut mağazasını ve laboratuvar kurulumunu tek ekrandan yönetmenizi sağlar.
 
 ---
 
-## 1. Kurulum ve İlk Giriş
+## 📌 İçindekiler
+1. [Sistem Kurulumu ve Giriş](#1-sistem-kurulumu-ve-giriş)
+2. [Arayüz Yerleşimi ve Menü Mimarisi](#2-arayüz-yerleşimi-ve-menü-mimarisi)
+3. [GÜNLÜK DERS AKIŞI](#3-günlük-ders-akışı)
+   - [3.1. 🖥️ Sınıf Masası ve Canlı Kontroller](#31-️-sınıf-masası-ve-canlı-kontroller)
+   - [3.2. 📚 Ödev & Dosya Dağıt (Ödev Portalı ve Klasör Yönetimi)](#32--ödev--dosya-dağıt-ödev-portalı-ve-klasör-yönetimi)
+   - [3.3. 📇 Sınıf Listeleri ve Öğrenci Kod Kartları](#33--sınıf-listeleri-ve-öğrenci-kod-kartları)
+   - [3.4. 🧹 Bakım & Güç Yönetimi](#34--bakım--güç-yönetimi)
+     - [Ders Sonu & Tarayıcı Temizliği](#-ders-sonu--tarayıcı-temizliği)
+     - [Güç ve Uyku Ayarları (Uyku Kilidi)](#-güç-ve-uyku-ayarları-uyku-kilidi)
+     - [Zamanlı Kapatma Planı](#-zamanlı-kapatma-planı)
+4. [ARAÇ KUTUSU](#4-araç-kutusu)
+   - [4.1. 🏪 Komut Mağazası & Araçlar](#41--komut-mağazası--araçlar)
+   - [4.2. 📦 Yazılım Kurulumu (.deb Paket Merkezi)](#42--yazılım-kurulumu-deb-paket-merkezi)
+   - [4.3. 🖼️ Masaüstü Görünümü ve Duvar Kâğıdı Galerisi](#43-️-masaüstü-görünümü-ve-duvar-kâğıdı-galerisi)
+5. [YÖNETİCİ & KURULUM](#5-yönetici--kurulum)
+   - [5.1. 📜 İşlem Geçmişi ve Raporlama](#51--işlem-geçmişi-ve-raporlama)
+   - [5.2. 🏫 Okul Kimliği ve Öğretmen Hesapları](#52--okul-kimliği-ve-öğretmen-hesapları)
+   - [5.3. 🔑 Bilgisayar Kurulum Sihirbazı (4 Adım)](#53--bilgisayar-kurulum-sihirbazı-4-adım)
+   - [5.4. 💾 Yedekleme ve Başka Bilgisayara Taşıma](#54--yedekleme-ve-başka-bilgisayara-taşıma)
 
-Lab Kaptanı yalnızca **öğretmen bilgisayarına** tek bir paketle kurulur. Öğrenci bilgisayarlarına hiçbir program yüklenmesi gerekmez.
+---
+
+## 1. Sistem Kurulumu ve Giriş
+
+Lab Kaptanı yalnızca **öğretmen bilgisayarına** tek bir Debian paketi (`.deb`) olarak kurulur. Öğrenci bilgisayarlarına herhangi bir ajan veya istemci yazılımı yüklenmesine gerek yoktur; yönetim Pardus'un yerleşik SSH altyapısı üzerinden güvenle yürütülür.
 
 ```bash
 sudo dpkg -i pardus-sinif-yonetimi_0.8.2_amd64.deb
 ```
 
-Kurulum tamamlandığında uygulama arka planda çalışmaya başlar. Masaüstünüzdeki **Lab Kaptanı** simgesine tıklayarak arayüzü açabilirsiniz.
+Kurulum tamamlandığında arka plan servisi otomatik başlar. Masaüstünüzdeki **Lab Kaptanı** simgesine tıklayarak veya tarayıcınızdan `http://localhost:8081` adresine giderek yönetim panelini açabilirsiniz.
 
-* **İlk Giriş:** Kurulum kodunuz otomatik olarak okunur veya ilk girişte yönetici parolanızı belirlersiniz.
-* **Varsayılan Yönetici:** Sistemde tam yetkili yönetici öğretmen tanımlıdır (varsayılan: **Mukaddes ALAT**).
-* Giriş parolanız yalnızca bu uygulamaya erişim içindir; öğrenci bilgisayarlarının şifresiyle ilişkisi yoktur.
+* **Varsayılan Yönetici:** Sistemde tam yetkili `admin` hesabı hazırdır (varsayılan öğretmen adı: **Mukaddes ALAT**).
+* **Parola Belirleme:** İlk girişte veya kurulum koduyla belirlenen yönetici parolası yalnızca bu panele giriş içindir; öğrenci bilgisayarlarının şifreleriyle karışmaz.
 
 ---
 
-## 2. Sınıf Masası ve Canlı Ders Araçları
+## 2. Arayüz Yerleşimi ve Menü Mimarisi
 
-Sınıf Masası, ders esnasında en çok kullanacağınız ana kontrol panelidir. Üst panelde laboratuvarın anlık durumu, altında ise tek tıkla sınıfa uygulayabileceğiniz canlı ders araçları yer alır.
+Lab Kaptanı, öğretmenlerin ders esnasında aradıkları fonksiyona en hızlı şekilde ulaşabilmeleri için 3 ana çalışma grubuna ayrılmıştır:
+
+1. **GÜNLÜK DERS AKIŞI:** Ders esnasında sürekli elinizin altında olması gereken ekranlar (**Sınıf Masası**, **Ödev & Dosya Dağıt**, **Bakım & Güç**).
+2. **🧰 ARAÇ KUTUSU:** Sık kullanılan teknik araçlar ve özelleştirmeler (**Komut Mağazası**, **Yazılım Kurulumu**, **Masaüstü Görünümü**).
+3. **🏛️ YÖNETİCİ & KURULUM:** Okul yöneticisi ve laboratuvar sorumlusu öğretmenler için derin yapılandırma ekranları (**İşlem Geçmişi**, **Okul ve Öğretmenler**, **Bilgisayar Kurulumu**, **Yedek ve Taşıma**).
+
+Sağ üst köşedeki **⚙️ Gelişmiş Görünüm** butonu ile teknik ayrıntıları gizleyebilir ya da tek tıkla görünür hale getirebilirsiniz.
+
+---
+
+## 3. GÜNLÜK DERS AKIŞI
+
+### 3.1. 🖥️ Sınıf Masası ve Canlı Kontroller
+
+Sınıf Masası, ders esnasında tüm laboratuvarı tek bakışta izleyip yönlendirebileceğiniz ana kumanda merkezidir.
 
 ![Sınıf Masası](gorseller/01_sinif_masasi.png)
 
-### 🔒 Bana Bakın (Ekran Kilitleme)
-* Öğrencilerin dikkatini tahtaya veya öğretmene çekmek istediğinizde **Bana Bakın** butonuna tıklayın.
-* Seçili tüm öğrenci bilgisayarlarının ekranları anında kilitlenir, klavye/fare girişi geçici olarak engellenir.
-* **Uzaktan Okunabilir Hostname ve Numara:** Öğretmenin kürsüden veya sınıfın en arkasından hangi bilgisayara baktığını görebilmesi için ekranın **sağ üst köşesinde devasa büyüklükte bilgisayar numarası** (örneğin `ogrenci01` için **`01`**) ve ekran ortasında yüksek kontrastlı bilgi kartı (`🖥️ 01 · ogrenci01`) belirir.
-* Ekran kilitliyken bilgisayar monitörlerinin kendiliğinden kararması veya uykuya geçmesi donanımsal düzeyde (DPMS) engellenir.
+#### Üst Durum Sayaçları
+Sayfanın en üstünde kayıtlı bilgisayarlar, yönetime hazır makineler, hazırlık bekleyenler ve açık öğrenci oturumlarının canlı sayıları yer alır.
 
-### 🔓 Ekran Kilitlerini Aç
-* Ders anlatımı bittiğinde veya öğrencilerin uygulamaya geçmesini istediğinizde **Ekran Kilitlerini Aç** butonuna tıklayın.
-* Tüm kilitli öğrenci ekranları anında serbest kalır ve öğrenciler çalışmalarına kaldıkları yerden devam eder.
-
-### 📢 Sınıfa Duyuru Gönder
-* Sınıfa seslenmek yerine ekranda görünmesini istediğiniz bir mesajı (örneğin: *"Dersin bitmesine 5 dakika kaldı, lütfen projelerinizi kaydedin."*) gönderebilirsiniz.
-* Duyuru penceresi öğrenci ekranlarının tam ortasında açılır ve öğrenci onaylayana kadar görünür kalır.
-
-### 🌐 İnterneti Kısıtla / Aç
-* Sınav esnasında veya dikkatin dağılmasını önlemek için **İnterneti Kısıtla** butonuna tıklayarak dış dünya internet erişimini tek tıkla engelleyebilirsiniz.
-* Bu kısıtlama, yerel laboratuvar ağını ve öğretmenin ödev portalını açık tutar; böylece öğrenciler öğretmen bilgisayarına dosya yüklemeye devam edebilir.
-* Tekrar **İnterneti Aç** denildiğinde tüm kısıtlamalar anında kalkar.
-
-### 📚 Ödev & Masaüstüne Dosya
-* Öğrencilerin masaüstüne çalışma kağıdı, PDF, görsel veya doğrudan tıklanabilir bir web bağlantısı göndermenizi sağlar.
-
-### 🧹 Ders Sonu Hızlı Temizliği
-* Ders bittiğinde seçili bilgisayarların Masaüstü ve İndirilenler klasörlerini temizler; laboratuvarı bir sonraki derse hazır hale getirir.
+#### Hızlı Canlı Ders Kontrolleri
+* **🔒 Bana Bakın (Ekran Kilitle):** Öğrencilerin dikkatini anında tahtaya toplamak için kullanılır.
+  * Seçili tüm öğrenci ekranları anında kararır; klavye ve fare girişi kilitlenir.
+  * **Uzaktan Okunabilir Numara Rozeti:** Ekranın sağ üst köşesinde devasa büyüklükte bilgisayar numarası (örn. `ogrenci03` için **`03`**) ve ortada yüksek kontrastlı kimlik kartı belirir. Öğretmen kürsüden dahi hangi masada hangi bilgisayarın olduğunu net bir şekilde görür.
+  * Monitörlerin uykuya geçmesi donanımsal (DPMS) düzeyde engellenir.
+* **🔓 Ekran Kilitlerini Aç:** Anlatım tamamlandığında ekranları anında serbest bırakır; öğrenci kaldığı yerden çalışmaya devam eder.
+* **📢 Sınıfa Duyuru Gönder (Gelişmiş OSD Katmanı):**
+  * Öğrencilere seslenmek yerine ekranda dikkat çekici bir duyuru mesajı gösterir.
+  * **Belirgin Tasarım:** Ekranın ortasında beliren koyu lacivert zeminli, kalın altın çerçeveli, büyük puntolu ve megafon simgeli modern bir OSD penceresi açılır ve öğrenciye sesli uyarı çalar.
+  * **Otomatik Kaybolma (8 Saniye):** Pencerenin altında `⏱️ 8 saniye sonra kendiliğinden kapanacak` geri sayım sayacı çalışır. Süre dolduğunda pencere öğrenci hiçbir şeye dokunmasa dahi otomatik olarak kapanır. Dileyen öğrenci `Esc` veya `✕ Kapat` ile daha erken kapatabilir.
+* **🌐 İnterneti Kısıtla / Aç:** Sınavlarda veya dikkat dağıtıcı siteleri engellemek için dış interneti tek tıkla kapatır. Yerel laboratuvar ağı ve ödev teslim portalı açık kalır.
+* **📚 Ödev & Masaüstüne Dosya:** Doğrudan dosya ve bağlantı dağıtım ekranına yönlendirir.
+* **🧹 Ders Sonu Temizliği:** Hızlı temizlik sekmesini açar.
+* **⚡ Sabitlenen Hızlı Araçlar Panosu:** Komut Mağazasından panoya sabitlediğiniz araçlar tek tıkla çalıştırılmak üzere burada buton olarak yer alır.
 
 ---
 
-## 3. Bilgisayar Durumları ve Cihaz Detay Özeti
+### 3.2. 📚 Ödev & Dosya Dağıt (Ödev Portalı ve Klasör Yönetimi)
 
-Sınıf Masası'nda her bilgisayar durumunu simgeleyen renkli monitör kutucuklarıyla gösterilir.
+Öğrencilere materyal dağıtmak ve ödev toplamak için internet bağlantısına ihtiyaç yoktur; yerel laboratuvar ağı üzerinden son derece hızlı çalışır.
 
-![Bilgisayar Durumları](gorseller/02_bilgisayarlar_ekranlar.png)
+![Ödev ve Dosya Dağıtım Ekranı](gorseller/02_odev_dagitim.png)
 
-### Durum Renkleri ve Anlamları
-| Renk / Simge | Durum | Açıklama |
-| --- | --- | --- |
-| 🟢 **Yeşil ✓** | **Hazır** | Bilgisayar açık, SSH anahtarı ve yönetim yetkisi tam. Tüm işlemlere hazır. |
-| 👤 **Yeşil İkon** | **Öğrenci Çalışıyor** | Bilgisayarda öğrenci oturumu açık ve aktif olarak kullanılıyor. |
-| ⚫ **Koyu Gri** | **Kapalı / Erişilemiyor** | Bilgisayar kapalı veya ağ bağlantısı yok. |
-| 🟠 **Turuncu** | **Hazırlık Gerekli** | Bilgisayar açık fakat henüz yönetim anahtarı veya yetkisi kurulmamış. |
-| 🔵 **Mavi** | **Kimlik Onayı Bekliyor** | Bilgisayar ilk kez tespit edildi; güvenli kimlik onayı bekliyor. |
-| 🟣 **Mor Kalkan** | **Korunan Cihaz** | EBA / ETAP etkileşimli tahta gibi sisteme dahil edilmeyen cihazlar. |
-| 👥 **Sarı** | **İki Yönetici Hesabı** | Bilgisayarda hem `pardus` hem `hp` hesabı var; tekilleştirme önerilir. |
+#### Öğrenci Masaüstü Hedef Klasörü Ayarı
+* Varsayılan olarak tüm dağıtılan materyaller öğrenci masaüstünde dikkat çekici sarı klasör simgesiyle yer alan `/home/ogrenci/Masaüstü/Odevler` klasörüne bırakılır.
+* Öğretmen dilerse bu klasör adını kutucuğa tıklayarak `dersnotlari`, `scratch_projeleri` veya `sinav` olarak özelleştirebilir. Klasör öğrenci bilgisayarlarında otomatik olarak oluşturulur.
 
-### 🔍 Bilgisayar Detay Özeti (Açılır Pencere)
-Herhangi bir bilgisayar kutucuğundaki monitör görseline veya bilgisayar adına tıkladığınızda, o bilgisayara ait özet bilgi penceresi açılır:
-
-![Cihaz Detay Özeti](gorseller/03_cihaz_ozeti.png)
-
-Bu pencerede:
-* Bilgisayarın **Hostname (Bilgisayar Adı)** ve **IP Adresi**,
-* Anlık çalışma durumu ve aktif kullanıcı bilgisi,
-* Laboratuvar grubu,
-* Donanım, boş disk alanı ve RAM bilgisi,
-* Kurulu Veyon sürümü ve güç/uyku ayar durumu yer alır.
-
-> **💡 Hostname (Bilgisayar Adı) Değiştirme:** Özet penceresindeki **"Bilgisayarı Düzenle"** düğmesine tıklayarak bilgisayarın adını (örn. `ogrenci01`) değiştirebilirsiniz. Kaydettiğinizde Lab Kaptanı uzak bilgisayarın adını arka planda `hostnamectl` ile anında günceller.
+#### Dağıtım Seçenekleri
+1. **🌐 Web Sayfası & Ödev Portalı Bağlantısı:**
+   * Öğrenci tıkladığında doğrudan Chromium tarayıcısında tam ekranda açılan web bağlantı dosyası (`.desktop` ve `.html`) oluşturur.
+   * **🎯 Ödev Portalını Sınıfa Gönder ve Aç:** Tek tıkla öğretmen bilgisayarının yerel ağ adresini (`ogretmen.lab:8090`) öğrenci bilgisayarlarına tanıtır ve portalı öğrenci ekranlarında anında açar.
+2. **📁 Masaüstüne Dosya / Materyal Bırak (SFTP):**
+   * Çalışma kâğıdı, sunum, kod dosyası veya PDF materyallerini sürükleyip bırakarak sınıftaki tüm makinelerin hedef klasörüne güvenli SFTP ile kopyalar.
+3. **📋 Ödev Teslimleri ve ZIP İndirme:**
+   * Öğrencilerin yerel portaldan yüklediği dosyaları listeler; tek tıkla tüm sınıfın ödevlerini öğrenci adı ve numarasına göre klasörlenmiş tek bir ZIP arşivi olarak indirir.
 
 ---
 
-## 4. Bilgisayarları Hazırlama (İlk Kurulum)
+### 3.3. 📇 Sınıf Listeleri ve Öğrenci Kod Kartları
 
-Laboratuvara yeni eklenen bilgisayarlar için bu işlem **yalnızca bir kez** yapılır. Hazırlık tamamlandıktan sonra günlük derslerde bir daha asla şifre girmeniz gerekmez.
+Ödev sayfasındaki ikinci sekme, sınıf mevcudunu sisteme aktarmanızı ve öğrencilere özel teslim kartları basmanızı sağlar.
 
-![Bilgisayarları Hazırla](gorseller/04_hazirlik.png)
+![Sınıf Listeleri ve Kod Kartları](gorseller/03_odev_sinif_listeleri.png)
 
-Hazırlık ekranı üç kolay adımdan oluşur:
-1. **1. Bilgisayarı Tanıt:** Bilgisayarların güvenlik kimliklerini okuyun ve onaylayın.
-2. **2. Yönetime Bağla:** Öğrenci bilgisayarlarındaki yönetici şifresini (`pardus` veya `hp`) bir kez yazın. Lab Kaptanı güvenli bağlantı anahtarını kurar ve parolasız yönetim yetkisi tanımlar. Şifre sisteme kaydedilmez.
-3. **3. Fazla Yönetici Hesabını Temizle:** Bilgisayarda hem `pardus` hem `hp` hesabı varsa, biri yedeklenerek kaldırılır ve hesap yapısı standart hale getirilir.
-
----
-
-## 5. Bakım, Görünüm ve Güç Yönetimi
-
-**Bakım, Görünüm & Güç** menüsü, laboratuvarın temizliğini, görünümünü, uyku ayarlarını ve zamanlı kapatma planlarını tek bir çatı altında toplar.
-
-### 🖼️ Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası Etiketi
-M2-S3 Görünüm menüsünde zengin bir **Duvar Kâğıdı Galerisi** bulunur:
-
-![Duvar Kâğıdı Galerisi](gorseller/09_duvar_kagidi_galeri.png)
-
-* **Galeriye Fotoğraf Ekle:** İstediğiniz okul fotoğrafını veya duvar kâğıtlarını (`.png`, `.jpg`) galeriye ekleyebilir, silebilir ve önizleyebilirsiniz.
-* **3 Hazır Kurumsal Şablon:** Sistemde tanımlı *Pardus Gece Mavisi*, *Anadolu Turkuazı* ve *Bilişim Atölyesi* şablonlarından dilediğinizi tek tıkla seçebilirsiniz.
-* **Köşede Bilgisayar Numarası Etiketi:** Duvar kâğıdı atanırken her bilgisayarın `hostname` adındaki rakamlar (örn. `ogrenci01` için **`01`**, `ogrenci15` için **`15`**) seçtiğiniz köşeye (**Sağ Üst** veya **Sol Üst**) yüksek kontrastlı rozet olarak otomatik işlenir. Böylece laboratuvara uzaktan bakıldığında hangi masada hangi bilgisayarın olduğu hemen anlaşılır.
-* **Windows 10 Düzeni:** Pardus Karşılayıcı'daki alt görev çubuğu ve uygulama menüsü tek tıkla tüm bilgisayarlara uygulanabilir.
-
-### ⚡ Güç, Uyku ve Zamanlı Kapatma Yönetimi (M2-S4 / M2-S5)
-Öğrenci bilgisayarlarının boşta kalınca kapanmasını veya ekranının kararmasını engeller ve planlı kapanma takvimi oluşturur:
-
-![Güç ve Uyku Ayarları](gorseller/05_bakim_ve_guc.png)
-
-* **Hiç Kapanmasın (Önerilen Varsayılan):** Bilgisayarlar siz istemediğiniz sürece asla uykuya geçmez, askıya alınmaz ve **ekranları kapanmaz**. Hem GNOME/GDM kilitleri hem de X11 DPMS donanımsal korumasıyla monitörler daima açık kalır.
-* **⏰ Zamanlı Kapatma (M2-S5):** Bakım, Görünüm & Güç menüsünün altında yer alan bu modülle ders bitim saatine (örneğin hafta içi her gün 17:30 veya belirli bir tarihte) otomatik kapanma planı kurabilirsiniz. Kapanmadan önce öğrenci ekranına uyarı bildirimi gönderilir. Güç ve Uyku sayfasındaki **"⏰ Zamanlı Kapatma Planla →"** düğmesiyle iki sayfa arasında tek tıkla geçiş yapabilirsiniz.
+* **CSV ile Sınıf Ekle:** E-Okul veya Excel formatındaki öğrenci listesini (`Numara, Ad Soyad`) tek tıkla yükleyin.
+* **8 Haneli Güvenli Teslim Kodu:** Her öğrenciye benzersiz bir teslim kodu üretilir (örneğin `EFE-7429`). Öğrenci portala bu kodla girerek kendi adına ödev yükler.
+* **Yazdırılabilir Kod Kartları:** Sene başında veya ders başında kesilip öğrencilere dağıtılmak üzere hazır şablonlu kod kartı çıktısı verir.
 
 ---
 
-## 6. Pardus Yazılım Merkezi & Uzaktan Program Kurulumu (M2-S2)
+### 3.4. 🧹 Bakım & Güç Yönetimi
 
-Öğretmen bilgisayarından kalkmadan, seçtiğiniz bir veya daha fazla öğrenci bilgisayarına uygulama kurabilir veya kaldırabilirsiniz:
+Bakım ve güç işlemleri, tek bir menü çatısı altında 3 pratik sekmeyle (separatör) organize edilmiştir:
 
-![Pardus Yazılım Merkezi ve Depodan Kurulum](gorseller/10_yazilim_merkezi.png)
+#### 1. Ders Sonu & Tarayıcı Temizliği
+![Ders Sonu ve Tarayıcı Temizliği](gorseller/04_bakim_ders_sonu.png)
+* **Masaüstü & Dosya Temizliği:** Seçili bilgisayarların Masaüstü, İndirilenler, Çöp Kutusu ve Geçici klasörlerini temizler. Silinen dosyalar güvenlik amacıyla öğrenci bilgisayarında yerel karantinaya alınır.
+* **Chromium Güvenli Temizlik:** Öğrencilerin açık bıraktığı oturumları, tarayıcı geçmişini ve şifreleri profil ayarlarını bozmadan sıfırlar; okul web kısayollarını yerinde tutar.
 
-* **Eğitim ve Kodlama Vitrini:** Thonny Python IDE, Scratch, Arduino, Blender, GIMP, LibreOffice, Krita, Geogebra, VS Code/C++ araçları gibi popüler eğitim yazılımları kategorize edilmiş mağaza kartlarında listelenir.
-* **Depoda Arama:** Pardus'un tanımlı APT depolarında dilediğiniz paketi aratabilir ve tek tıkla seçim sepetine ekleyebilirsiniz.
-* **Güvenli Kaldırma:** Kurulu uygulamaları listeyebilir, istemediğiniz programları kaldırabilirsiniz. Lab Kaptanı kritik sistem bileşenlerinin (`gdm3`, `sudo`, `network-manager`, `openssh-server` vb.) kazara kaldırılmasını otomatik olarak engeller.
+#### 2. Güç ve Uyku Ayarları (Uyku Kilidi)
+![Güç ve Uyku Ayarları](gorseller/05_bakim_guc_uyku.png)
+* **Hiç Kapanmasın (Uyku Kilidi):** Bilgisayarlar boşta kalsa dahi uykuya geçmez, askıya alınmaz ve ekranları kararmadan hep açık kalır. Hem GNOME dconf kilitleri hem de X11 DPMS donanımsal koruması ile erişim kopmaları tamamen engellenir.
+* **Şimdi Yeniden Başlat / Kapat:** Tek tıkla seçili tüm makineleri anında kapatır veya yeniden başlatır.
 
----
-
-## 7. SSH Komut Merkezi (Komut Gönder)
-
-Laboratuvardaki tüm bilgisayarlara veya seçtiğiniz bilgisayarlara aynı anda sistem komutu gönderebilirsiniz.
-
-![Komut Gönder](gorseller/06_komut_merkezi.png)
-
-* **Kayıtlı Komutlar:** Kütüphanedeki hazır komutları (Veyon servisini kontrol edip kapalıysa ayağa kaldırma, kullanıcı silme, disk/RAM kontrolü, paket onarımı vb.) veya **"🔄 Veyon Servisini Aç (Hızlı Yükle)"** düğmesini kullanarak tek tıkla düzenleyiciye yükleyebilir ve sınıfa gönderebilirsiniz.
-* **Veyon Servis Kurtarma:** Öğrenciler Veyon servisini veya süreçlerini kapattığında bağlantı kopsa bile, SSH üzerinden tek tıkla servisi kontrol edip yeniden ayağa kaldırabilirsiniz.
-* **Canlı Çıktı:** Komutun her bilgisayardaki çalışma sonucu, başarı durumu ve terminal çıktısı anında ekranda listelenir.
-* **Hızlı `/etc/hosts` Ekleme:** Yerel sunucuların veya öğretmen bilgisayarının adını (`ogretmen.lab`) öğrenci bilgisayarlarına tek tıkla kaydedebilirsiniz.
+#### 3. Zamanlı Kapatma Planı
+![Zamanlı Kapatma Planı](gorseller/06_bakim_zamanli_kapatma.png)
+* **Otomatik Kapanma Takvimi:** Hafta içi her gün ders bitiş saatinde (ör. 17:30) veya belirli bir günde bilgisayarların kendiliğinden kapanması için plan oluşturabilirsiniz.
+* Kapanmadan 5 dakika önce öğrenci ekranına uyarı bildirimi gönderilir; kayıtlı planlar tablodan tek tıkla iptal edilebilir.
 
 ---
 
-## 8. Ödev Dağıtımı, Masaüstüne Dosya & Web Bağlantısı Bırakma (M3-S1)
+## 4. ARAÇ KUTUSU
 
-Öğrenciler ödevlerini internete ihtiyaç duymadan, yerel ağ üzerinden öğretmen bilgisayarına yükleyebilir; öğretmen ise tek tıkla öğrenci masaüstlerine dosya ve bağlantı dağıtabilir.
+### 4.1. 🏪 Komut Mağazası & Araçlar
 
-![Ödevler ve Teslim](gorseller/07_odevler.png)
+Komut Mağazası, laboratuvar yönetiminde ihtiyaç duyulan özel betikleri ve araçları tek tıkla çalıştırmanızı, öğretmenler arası paylaşmanızı ve resmi GitHub deposundan güncel kalmanızı sağlayan modüldür.
 
-1. **🚀 Masaüstüne Dosya / Materyal Bırakma (SFTP):**
-   * Çalışma kâğıdı, sunum, kaynak kod, PDF veya görsel gibi ders materyallerini (en çok 50 MB) sürükle-bırak alanına bırakarak veya dosya seçerek tüm sınıfın `/home/ogrenci/Masaüstü` klasörüne kopyalayabilirsiniz.
-   * Dosyalar güvenli SFTP aktarımıyla iletilir ve Linux komut satırı sınırlarına takılmaz.
-2. **🌐 Doğrudan Tarayıcıda Açılan Web Bağlantısı ve Ödev Portalı:**
-   * Öğrencilerin masaüstüne tıklanabilir web kısayolu bırakabilirsiniz. Pardus GNOME ortamında kırık görünmeyen `.html` yönlendirici ve güvenilir başlatıcı birlikte oluşturulur.
-   * **Öğrenci Ekranlarında Web Sayfasını Hemen Aç:** İşaretlendiğinde açık öğrenci oturumlarında gönderilen web sayfası veya teslim portalı tarayıcıda otomatik olarak hemen açılır.
-   * **🎯 Ödev Portalını Sınıfa Gönder ve Aç:** Tek tıkla öğretmen bilgisayarının yerel ağ adresini (`ogretmen.lab`) tüm öğrenci bilgisayarlarının `/etc/hosts` dosyasına işler ve portalı öğrenci ekranlarında anında açar.
-3. **Ödev Oluşturma:** Başlık, son teslim tarihi ve izinli dosya türlerini belirleyin.
-4. **Öğrenci Teslim Kodları:** Öğrenciler kendi adlarına üretilen 8 karakterli kodla `http://ogretmen.lab:8090` adresinden ödevlerini gönderir.
-5. **Toplu İndirme (ZIP):** Öğretmen tek tıkla tüm sınıfın ödevlerini öğrenci numarası ve ada göre klasörlenmiş tek bir ZIP arşivi olarak indirebilir.
+* **Resmi Mağaza Deposu:** [https://github.com/mukaddesalat/pardus_yonet_magaza](https://github.com/mukaddesalat/pardus_yonet_magaza)
+* **Git Clone Adresi:** `https://github.com/mukaddesalat/pardus_yonet_magaza.git`
+* **Ham Katalog URL:** `https://raw.githubusercontent.com/mukaddesalat/pardus_yonet_magaza/main/katalog.json`
+
+![Komut Mağazası Kataloğu](gorseller/07_magaza_katalog.png)
+
+#### 5 İşlevsel Sekme:
+1. **🏪 Mağaza (Katalog):**
+   * Topluluk ve resmi depodaki tüm hazır araçları kartlar halinde listeler (Veyon servisini ayağa kaldır, Hosts dağıt, Kullanıcı sil, Ağ sıfırla, Paketleri güncelle vb.).
+   * Kategori filtreleri (Veyon, Ağ & DNS, Kullanıcı, Sistem, Paket, Bakım) ve anlık arama desteği sunar.
+   * **🔄 Kataloğu Güncelle:** GitHub deposundaki son sürüm araçları tek tıkla çeker ve çevrimdışı önbelleğe alır.
+2. **🧰 Araçlarım & Sabitlenenler:**
+   ![Araçlarım ve Sabitlenenler](gorseller/08_magaza_araclarim.png)
+   * Sık kullandığınız araçları bu ekrandan yönetebilir, dilediğiniz araçları **"Sınıf Masası Panosuna Sabitle"** diyerek canlı ders ekranına 1-tık butonu olarak ekleyebilirsiniz.
+3. **⚡ Aracı Çalıştır:**
+   ![Aracı Çalıştır](gorseller/09_magaza_calistir.png)
+   * Seçilen aracın varsa parametrelerini girip seçili bilgisayarlarda anında çalıştırabilirsiniz.
+4. **➕ Yeni Araç Taslağı:**
+   ![Yeni Araç Taslağı](gorseller/10_magaza_yeni_arac.png)
+   * Kendi geliştirdiğiniz Bash betiklerini mağaza formatına dönüştürmek için JSON ve betik şablonları sunar.
+5. **💻 Serbest Uçbirim & Hosts:**
+   ![Serbest Uçbirim ve Hosts Dağıtımı](gorseller/11_magaza_serbest_ucbirim.png)
+   * Gelişmiş kullanıcılar için seçili bilgisayarlara anlık serbest SSH Bash komutları gönderme ve `/etc/hosts` dosyasını toplu düzenleme imkânı tanır.
 
 ---
 
-## 9. Okul Kimliği ve Öğretmen Hesapları
+### 4.2. 📦 Yazılım Kurulumu (.deb Paket Merkezi)
 
-**Kurulum, Okul & Öğretmen** ekranından okulunuza özel ayarları yapabilirsiniz:
+Öğretmen bilgisayarından kalkmadan tüm sınıfa aynı anda `.deb` uygulamaları kurmanızı veya kaldırmanızı sağlar.
 
-![Okul Kimliği ve Öğretmenler](gorseller/08_okul_ve_ogretmen.png)
+![Yazılım Kurulumu ve Paket Merkezi](gorseller/12_yazilim_kurulumu.png)
 
-* **Okul Adı ve Logosu:** Okulunuzun adını yazabilir (varsayılan: *Şehit Cengiz Polat Fen ve Teknoloji Anadolu İmam Hatip Lisesi*) ve bilgisayarınızdan okul armasını yükleyebilirsiniz.
-* **Öğretmen Hesapları:** Laboratuvarı paylaşan zümre öğretmenleri için ayrı hesaplar tanımlayabilirsiniz.
-* **Yetki Rolleri:**
-  * **Admin Öğretmen:** Tüm sistem ayarlarına, paket kurulumuna, sistem yedekleme/geri yükleme işlemlerine ve okul ayarlarına tam erişim sahibidir.
-  * **Standart Öğretmen:** Yalnızca canlı ders araçlarını, Sınıf Masası'nı ve ödev modülünü kullanır; kritik sistem ayarları gizlenir.
+* **Eğitim Vitrini:** Thonny IDE, Scratch, Geogebra, Blender, GIMP, VS Code, Arduino gibi ders yazılımlarını tek tıkla kurun.
+* **Yerel `.deb` Yükle:** Bilgisayarınızdaki herhangi bir `.deb` dosyasını sisteme yükleyerek tüm öğrenci bilgisayarlarına toplu dağıtın.
+* **Güvenli Paket Kaldırma:** Kritik sistem paketlerinin (`sudo`, `network-manager`, `gdm3`) yanlışlıkla silinmesini önleyen koruma kalkanı mevcuttur.
 
 ---
 
-## 10. Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma
+### 4.3. 🖼️ Masaüstü Görünümü ve Duvar Kâğıdı Galerisi
 
-Öğretmen bilgisayarını değiştirdiğinizde, formatladığınızda veya düzenli yedek almak istediğinizde **Kurulum, Okul & Öğretmen** sayfasının altındaki **Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma** bölümünü kullanabilirsiniz:
+Laboratuvar bilgisayarlarının masaüstü görünümünü tek tıkla kurumsal ve düzenli hale getirir.
 
-![Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma](gorseller/12_sistem_yedekleme.png)
+![Masaüstü Görünümü ve Duvar Kâğıdı](gorseller/13_masaustu_gorunumu.png)
 
-* **Tam Sistem Yedeği Oluşturma:** Tek tıkla tüm bilgisayar envanterini, öğretmen hesaplarını, SSH yönetim anahtarlarını (öğrenci bilgisayarlarını yeniden hazırlamaya gerek kalmaması için), Veyon paket/anahtarlarını, duvar kâğıdı galerisini, ödevleri ve uygulamanın `.deb` kurulum paketini tek bir `.tar.gz` arşivinde indirebilirsiniz.
-* **Sıfırdan Pardus Bilgisayara Kurulum (`yedekten-kur.sh`):** Yeni bir Pardus bilgisayarda yedek arşivini açıp `sudo bash yedekten-kur.sh` komutunu çalıştırdığınızda uygulama `.deb` paketinden otomatik kurulur ve tüm ayarlarınız/anahtarlarınız eksiksiz geri yüklenir.
-* **Web Panelinden Geri Yükleme:** Uygulama kuruluysa doğrudan web arayüzünden `.tar.gz` yedek dosyasını seçip içeriğini kontrol ederek veya sunucuda kayıtlı geçmiş yedeklerden birini seçerek tek tıkla geri dönebilirsiniz.
+* **Duvar Kâğıdı Galerisi:** Okul fotoğraflarını yükleyin veya hazır Pardus kurumsal temalarını seçin.
+* **🏷️ Köşede Bilgisayar Numarası Rozeti:** Duvar kâğıdı atanırken her bilgisayarın adına göre (örn. `ogrenci05` için **`05`**) seçtiğiniz köşeye yüksek kontrastlı numara rozeti otomatik işlenir.
+* **Windows 10 Tarzı Panel Düzeni:** Tek tıkla görev çubuğunu alta alır ve başlat menüsünü standartlaştırır.
+* **Simge ve Panel Kilidi:** Öğrencilerin masaüstü simgelerini ve panel ayarlarını bozmasını engeller.
+
+---
+
+## 5. YÖNETİCİ & KURULUM
+
+### 5.1. 📜 İşlem Geçmişi ve Raporlama
+
+Laboratuvarda kimin, ne zaman, hangi bilgisayarda ne işlem yaptığını şeffaf bir şekilde denetlemenizi sağlar.
+
+![İşlem Geçmişi](gorseller/14_islem_gecmisi.png)
+
+* İşlem türü (paket, güç, temizlik, komut vb.), başlatan öğretmen, hedef makineler ve sonuç kayıt altına alınır.
+* Şifreler ve gizli bilgiler hiçbir günlüğe kaydedilmez.
+* İstenirse tüm kayıtlar **CSV Raporu** olarak dışa aktarılabilir.
+
+---
+
+### 5.2. 🏫 Okul Kimliği ve Öğretmen Hesapları
+
+Uygulamayı kurumunuza özel hale getirir ve zümre öğretmenleriniz için ayrı hesaplar tanımlar.
+
+![Okul Kimliği ve Öğretmen Hesapları](gorseller/15_okul_ve_ogretmenler.png)
+
+* **Okul Adı ve Logosu:** Giriş ekranında, sol menüde ve kod kartlarında görünecek okul adı ve logosunu ayarlayın.
+* **Rol Dağılımı:**
+  * **🛡️ Admin Öğretmen:** Tüm teknik ayarlara, yedeklemeye ve kuruluma tam yetkili hesap.
+  * **👨‍🏫 Standart Öğretmen:** Yalnızca canlı ders araçları ve ödev modülünü gören, teknik ayarların gizlendiği sade arayüz.
+
+---
+
+### 5.3. 🔑 Bilgisayar Kurulum Sihirbazı (4 Adım)
+
+Laboratuvara yeni bilgisayarlar eklendiğinde **yalnızca bir kez** yürütülen 4 adımlı sihirbazdır. Hazırlık tamamlandıktan sonra günlük derslerde bir daha asla şifre gerekmez.
+
+#### 1. Adım: Ağda Bilgisayar Bul
+![Kurulum Adım 1: Ağda Bilgisayar Bul](gorseller/16_kurulum_agda_bul.png)
+Laboratuvar IP aralığını tarar, açık bilgisayarları tespit eder ve envantere ekler.
+
+#### 2. Adım: İlk Hazırlık (SSH & Sudo)
+![Kurulum Adım 2: SSH ve Sudo Hazırlığı](gorseller/17_kurulum_ssh_sudo.png)
+Öğrenci bilgisayarlarındaki varsayılan şifreyi (`pardus` veya `hp`) bir kez girerek Ed25519 yönetim anahtarını kurar, parolasız sudo yetkisi tanımlar ve fazla hesapları tekilleştirir.
+
+#### 3. Adım: Veyon Kurulumu
+![Kurulum Adım 3: Veyon Kurulumu](gorseller/18_kurulum_veyon.png)
+Ders esnasında ekran izleme servisi olan Veyon'u ve yetki anahtarlarını seçili makinelere toplu olarak kurar ve servisi ayağa kaldırır.
+
+#### 4. Adım: Bağlantı Sağlığını Doğrula (Final Sağlık Testi)
+![Kurulum Adım 4: Sağlık Testi](gorseller/19_kurulum_saglik_testi.png)
+Kurulumu biten tüm bilgisayarların Ağ Erişimi (Ping), SSH Anahtarı, Sudo Yetkisi ve Veyon Servis durumunu tek tıkla test eder; yeşil **"DERS İÇİN HAZIR"** rozetiyle doğrular.
+
+---
+
+### 5.4. 💾 Yedekleme ve Başka Bilgisayara Taşıma
+
+Öğretmen bilgisayarını değiştirdiğinizde veya format attığınızda tüm emeklerinizi tek tıkla korur.
+
+![Sistem Yedekleme ve Taşıma](gorseller/20_sistem_yedekleme.png)
+
+* **Tam Sistem Yedeği (.tar.gz):** Bilgisayar listesini, öğretmen hesaplarını, SSH anahtarlarını, Veyon sertifikalarını, duvar kâğıtlarını ve `.deb` paketini tek bir sıkıştırılmış arşivde toplar.
+* **Tek Komutla Kurulum (`yedekten-kur.sh`):** Yeni bir Pardus bilgisayara geçtiğinizde arşiv içindeki `sudo bash yedekten-kur.sh` komutunu çalıştırmanız yeterlidir; sıfırdan kurulum yapılır ve eski bilgisayardaki tüm ayarlar, anahtarlar ve laboratuvar bağlantıları aynen geri yüklenir. Öğrenci bilgisayarlarını yeniden hazırlamanız gerekmez.

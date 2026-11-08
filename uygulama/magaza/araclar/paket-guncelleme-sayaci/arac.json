@@ -1,0 +1,37 @@
+{
+  "id": "paket-guncelleme-sayaci",
+  "ad": "Güncellenebilir Paket Sayacı ve Raporu",
+  "kategori": "bakim",
+  "risk": "okuma",
+  "ozet": "Sınıftaki bilgisayarlarda kaç adet güncellenebilir paket ve güvenlik yaması olduğunu bilgisayar başına hesaplayıp temiz bir liste halinde raporlar.",
+  "yazar": "Pardus Lab Topluluğu",
+  "surum": "1.0.0",
+  "sudo": false,
+  "parametreler": [
+    {
+      "ad": "onbellek_guncelle",
+      "etiket": "Önce Depo Listesini Güncelle (apt update)",
+      "tip": "secim",
+      "secenekler": [
+        "hayir",
+        "evet"
+      ],
+      "varsayilan": "hayir",
+      "zorunlu": true,
+      "aciklama": "'evet' seçilirse önce depolardan güncel liste çekilir (sudo gerektirir); 'hayir' seçilirse mevcut yerel önbellek hızlıca taranır."
+    },
+    {
+      "ad": "detay_goster",
+      "etiket": "Rapor Detay Düzeyi",
+      "tip": "secim",
+      "secenekler": [
+        "ayrintili",
+        "ozet"
+      ],
+      "varsayilan": "ayrintili",
+      "zorunlu": true,
+      "aciklama": "'ayrintili' seçildiğinde güncellenecek paket adları ve sürümleri listelenir; 'ozet' seçildiğinde sadece toplam sayılar gösterilir."
+    }
+  ]
+}
+

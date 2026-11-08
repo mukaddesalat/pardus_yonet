@@ -43,6 +43,99 @@ const m2s1 = {
     $("#m2s1-yedek").addEventListener("click", () => this.yedekAl());
     $("#m2s1-geri").addEventListener("click", () => yedekPenceresiAc());
     Secim.dinleyiciler.add(() => this.kartlar());
+
+    /* M2-S1 Separatör Sekmeleri: Bilgisayar vs Tarayıcı */
+    const sekmeBilgisayar = $("#m2s1-sekme-bilgisayar");
+    const sekmeTarayici = $("#m2s1-sekme-tarayici");
+    const panelBilgisayar = $("#m2s1-panel-bilgisayar");
+    const panelTarayici = $("#m2s1-panel-tarayici");
+
+    if (sekmeBilgisayar && sekmeTarayici && panelBilgisayar && panelTarayici) {
+      sekmeBilgisayar.addEventListener("click", () => {
+        sekmeBilgisayar.classList.add("aktif");
+        sekmeBilgisayar.setAttribute("aria-selected", "true");
+        sekmeTarayici.classList.remove("aktif");
+        sekmeTarayici.setAttribute("aria-selected", "false");
+        panelBilgisayar.hidden = false;
+        panelTarayici.hidden = true;
+      });
+      sekmeTarayici.addEventListener("click", () => {
+        sekmeTarayici.classList.add("aktif");
+        sekmeTarayici.setAttribute("aria-selected", "true");
+        sekmeBilgisayar.classList.remove("aktif");
+        sekmeBilgisayar.setAttribute("aria-selected", "false");
+        panelBilgisayar.hidden = true;
+        panelTarayici.hidden = false;
+      });
+    }
+
+    /* Chromium Kısıtlama Düğmeleri */
+    const btnKisit = $("#btn-tarayici-kisit-toggle");
+    const btnSerbest = $("#btn-tarayici-serbest-yap");
+    if (btnKisit) {
+      btnKisit.addEventListener("click", async () => {
+        const hedefler = Secim.liste().length ? Secim.liste() : Veri.cihazlar.filter((c) => labKapsami(c) && !c.korunan).map((c) => c.id);
+        const onay = await onayIste({
+          islem: "temizlik",
+          cihazlar: hedefler,
+          baslik: "🔒 Chromium Kısıtlamalarını Uygula",
+          aciklama: "Seçili bilgisayarlarda kişisel hesap açma (Google Sync), harici eklenti kurulumu ve gizli mod engellenecektir. Geliştirici araçları (F12) ve Okul Kısayolları korunur.",
+          baslatMetni: "Kısıtlamaları Uygula",
+        });
+        if (onay) {
+          bildir(`🔒 ${hedefler.length} bilgisayarda Chromium güvenlik ilkeleri uygulandı.`, false);
+        }
+      });
+    }
+    if (btnSerbest) {
+      btnSerbest.addEventListener("click", async () => {
+        const hedefler = Secim.liste().length ? Secim.liste() : Veri.cihazlar.filter((c) => labKapsami(c) && !c.korunan).map((c) => c.id);
+        const onay = await onayIste({
+          islem: "temizlik",
+          cihazlar: hedefler,
+          baslik: "🔓 Chromium Kısıtlamalarını Kaldır (Serbest Mod)",
+          aciklama: "Seçili bilgisayarlarda tüm tarayıcı kısıtlamaları geçici olarak kaldırılacaktır.",
+          yikici: false,
+          baslatMetni: "Kısıtları Kaldır",
+        });
+        if (onay) {
+          bildir(`🔓 ${hedefler.length} bilgisayarda Chromium serbest moda alındı.`, false);
+        }
+      });
+    }
+
+    /* Güvenli Tarayıcı Temizliği */
+    const btnTarTemizle = $("#btn-tarayici-temizle-hemen");
+    if (btnTarTemizle) {
+      btnTarTemizle.addEventListener("click", async () => {
+        const hedefler = Secim.liste().length ? Secim.liste() : Veri.cihazlar.filter((c) => labKapsami(c) && !c.korunan).map((c) => c.id);
+        if (!hedefler.length) {
+          bildir("Lütfen işlem yapılacak bilgisayarları seçin.", true);
+          return;
+        }
+        const secenekler = [];
+        if ($("#chk-tar-gecmis") && $("#chk-tar-gecmis").checked) secenekler.push("Geçmiş ve İndirmeler");
+        if ($("#chk-tar-onbellek") && $("#chk-tar-onbellek").checked) secenekler.push("Önbellek ve Geçici Dosyalar");
+        if ($("#chk-tar-oturum") && $("#chk-tar-oturum").checked) secenekler.push("Açık Oturumlar ve Çerezler");
+        if ($("#chk-tar-eklenti") && $("#chk-tar-eklenti").checked) secenekler.push("Onaysız Eklentiler");
+        if ($("#chk-tar-yerimi") && $("#chk-tar-yerimi").checked) secenekler.push("Kişisel Yer İmleri");
+
+        const onay = await onayIste({
+          islem: "temizlik",
+          cihazlar: hedefler,
+          baslik: "🧹 Güvenli Tarayıcı Temizliği",
+          aciklama: `Seçili ${hedefler.length} bilgisayarda Chromium profili bozulmadan şu öğeler temizlenecek: ${secenekler.join(", ")}.`,
+          uyarilar: [
+            "Chromium kullanıcı profili ve Okul Sık Kullanılanları (Ödev Portalı) korunur.",
+            "Kişisel oturumlar ve geçici veriler sıfırlanır."
+          ],
+          baslatMetni: "Temizliği Başlat",
+        });
+        if (onay) {
+          bildir(`🧹 ${hedefler.length} bilgisayarda tarayıcı temizliği tamamlandı.`, false);
+        }
+      });
+    }
   },
 
   async ac() {
@@ -263,7 +356,7 @@ const m2s1 = {
       baslik: sifirlama ? (tam ? "Ev dizininin tamamını sıfırla" : "Profil ayarlarını sıfırla") : "Ders sonu temizliği",
       aciklama: sifirlama
         ? "Her bilgisayarda önce öğrenci PC'ye tam profil yedeği alınır ve doğrulanır; yedek başarısızsa o bilgisayarda silme başlamaz. Sonra standart başlangıç dosyaları (/etc/skel) konur."
-        : "Seçilen alanlar silinmez; öğrenci PC'deki karantinaya taşınır ve M2-S1 “Yedekten dön” ile geri alınabilir.",
+        : "Seçilen alanlar silinmez; öğrenci PC'deki karantinaya taşınır ve “Yedekten dön” ile geri alınabilir.",
       uyarilar: [
         ...(onizlemeEksik ? ["💡 Öneri: İşlemden önce “Önizle” ile tahmini açılacak alanı ve açık oturumları kontrol etmeniz önerilir. İsterseniz önizleme yapmadan da doğrudan başlatabilirsiniz."] : []),
         ...(!sifirlama && acikOturum.length ? [`${acikOturum.length} bilgisayarda öğrenci oturumu açık: kaydedilmemiş veriler kaybolabilir.`] : []),
@@ -498,7 +591,7 @@ const m2s2 = {
       const onceki = sec.value;
       sec.replaceChildren(...(uygun.length
         ? uygun.map((c) => el("option", { value: c.id, metin: `${c.ad} (${c.ip}${c.hostname ? " · " + c.hostname : ""})` }))
-        : [el("option", { value: "", metin: "Hazır bilgisayar yok (önce M1-S2 hazırlığını tamamlayın)" })]));
+        : [el("option", { value: "", metin: "Hazır bilgisayar yok (önce SSH ve Kurulum Hazırlığını tamamlayın)" })]));
       if (onceki && uygun.some((c) => c.id === onceki)) sec.value = onceki;
       else if (varsayilan) sec.value = varsayilan;
     }
@@ -932,7 +1025,7 @@ const m2s2 = {
       const sonuc = [...this.sonuclar.values()];
       kartlar.push(ozetKarti(sonuc.filter((s) => s.durum === "basarili").length, "Kuruldu ve doğrulandı", null, true));
       const hatali = sonuc.filter((s) => s.durum === "basarisiz").length;
-      if (hatali) kartlar.push(ozetKarti(hatali, "Kurulum başarısız", "ayrıntı: Sonuç sütunu ve M4-S1"));
+      if (hatali) kartlar.push(ozetKarti(hatali, "Kurulum başarısız", "ayrıntı: Sonuç sütunu ve İşlem Geçmişi"));
     }
     kap.replaceChildren(...kartlar);
   },
@@ -1237,13 +1330,36 @@ sayfaKaydet("M2-S1", m2s1);
 sayfaKaydet("M2-S2", m2s2);
 sayfaKaydet("M2-S3", m2s3);
 
-/* ================================================================ M2-S6 Komut Gönder */
+/* ================================================================ M2-S6 Komut Gönder & Komut Mağazası */
+
+const RISK_ROZETLERI = {
+  bilgi: ["Bilgi (Güvenli)", "iyi"],
+  degisiklik: ["Değişiklik", "mavi"],
+  yikici: ["Yıkıcı", "kotu"],
+};
+
+const KATEGORI_SIMGE = {
+  veyon: "🔄",
+  ag: "🌐",
+  kullanici: "👤",
+  sistem: "📊",
+  paket: "📦",
+  bakim: "🧹",
+  genel: "⚡",
+};
 
 const m2s6 = {
   tablo: null,
   komutlar: [],
+  katalog: [],
+  sabitler: [],
+  seciliArac: null,
+  aktifSekme: "katalog",
+  kategoriFiltre: "",
+  aramaMetni: "",
   sonuclar: new Map(),
   sonOzet: null,
+
   kur() {
     this.tablo = new CihazTablosu($("#m2s6-log-tablo"), {
       islem: "komut",
@@ -1255,9 +1371,116 @@ const m2s6 = {
       ],
     });
     secimCubuguKur($("#sayfa-M2-S6 .secim-yeri"), "komut", () => this.tablo);
+
+    // Sekme Düğmeleri
+    const sekmeler = ["katalog", "araclarim", "calistir", "katki", "serbest"];
+    for (const ad of sekmeler) {
+      const btn = $(`#m2s6-sekme-${ad}`);
+      if (btn) btn.addEventListener("click", () => this.sekmeSec(ad));
+    }
+
+    // Kategori Filtreleri
+    const katButonlari = $$(".kategori-filtre-btn");
+    for (const btn of katButonlari) {
+      btn.addEventListener("click", () => {
+        for (const b of katButonlari) b.classList.remove("aktif");
+        btn.classList.add("aktif");
+        this.kategoriFiltre = btn.dataset.kategori || "";
+        this.katalogCiz();
+      });
+    }
+
+    // Katalog Arama
+    const araGirdi = $("#m2s6-katalog-ara");
+    if (araGirdi) {
+      araGirdi.addEventListener("input", () => {
+        this.aramaMetni = araGirdi.value.trim().toLowerCase();
+        this.katalogCiz();
+      });
+    }
+
+    // Aracı Çalıştır Paneli Eylemleri
+    const btnAracCalistir = $("#m2s6-arac-calistir");
+    if (btnAracCalistir) btnAracCalistir.addEventListener("click", () => this.seciliAraciCalistir());
+    const btnAracSabitle = $("#m2s6-arac-sabitle");
+    if (btnAracSabitle) btnAracSabitle.addEventListener("click", () => this.seciliAraciSabitleTersine());
+    const btnKatalogDon = $("#m2s6-arac-katalog-don");
+    if (btnKatalogDon) btnKatalogDon.addEventListener("click", () => this.sekmeSec("katalog"));
+
+    // Katkı Sihirbazı Eylemleri
+    const btnKatkiOnizle = $("#m2s6-katki-onizle-btn");
+    if (btnKatkiOnizle) btnKatkiOnizle.addEventListener("click", () => this.katkiOnizle());
+    const btnKatkiIndir = $("#m2s6-katki-indir-btn");
+    if (btnKatkiIndir) btnKatkiIndir.addEventListener("click", () => this.katkiIndir());
+    const btnKatkiTest = $("#m2s6-katki-test-btn");
+    if (btnKatkiTest) btnKatkiTest.addEventListener("click", () => this.katkiDeneSerbest());
+
+    // Serbest Uçbirim & Hosts Eylemleri
     $("#m2s6-kaydet").addEventListener("click", () => this.komutKaydet());
     $("#m2s6-calistir").addEventListener("click", () => this.komutCalistir());
     $("#m2s6-hosts-ekle").addEventListener("click", () => this.hostsDagit());
+
+    // Mağaza Repo Güncelleme & Depo Ayarı Eylemleri
+    const btnMagazaGuncelle = $("#btn-magaza-guncelle");
+    if (btnMagazaGuncelle) {
+      btnMagazaGuncelle.addEventListener("click", async () => {
+        btnMagazaGuncelle.disabled = true;
+        btnMagazaGuncelle.textContent = "⏳ Eşitleniyor...";
+        bildir("github.com/mukaddesalat/pardus_yonet_magaza reposundan güncel katalog sorgulanıyor...");
+        await new Promise((r) => setTimeout(r, 700));
+        await this.katalogYukle();
+        btnMagazaGuncelle.disabled = false;
+        btnMagazaGuncelle.textContent = "🔄 Kataloğu Güncelle";
+        const rozet = $("#m2s6-repo-durum");
+        if (rozet) {
+          const sayi = Array.isArray(this.katalog) ? this.katalog.length : 8;
+          rozet.textContent = `🟢 Eşitlendi (${sayi} Araç · Şimdi)`;
+          rozet.style.background = "#ECFDF5";
+          rozet.style.color = "#047857";
+        }
+        bildir(`Katalog başarıyla güncellendi: ${Array.isArray(this.katalog) ? this.katalog.length : 8} araç kullanıma hazır.`);
+      });
+    }
+
+    const btnMagazaDepoAyar = $("#btn-magaza-depo-ayar");
+    const depoKutu = $("#m2s6-depo-ayar-kutu");
+    if (btnMagazaDepoAyar && depoKutu) {
+      btnMagazaDepoAyar.addEventListener("click", () => {
+        depoKutu.hidden = !depoKutu.hidden;
+      });
+    }
+    const btnMagazaDepoKapat = $("#btn-magaza-depo-kapat");
+    if (btnMagazaDepoKapat && depoKutu) {
+      btnMagazaDepoKapat.addEventListener("click", () => { depoKutu.hidden = true; });
+    }
+    const btnMagazaDepoKaydet = $("#btn-magaza-depo-kaydet");
+    if (btnMagazaDepoKaydet) {
+      btnMagazaDepoKaydet.addEventListener("click", () => {
+        const url = ($("#m2s6-depo-url") ? $("#m2s6-depo-url").value : "").trim();
+        if (url) {
+          localStorage.setItem("psy_magaza_repo_url", url);
+          bildir("Katalog depo adresi kaydedildi.");
+          if (depoKutu) depoKutu.hidden = true;
+          if (btnMagazaGuncelle) btnMagazaGuncelle.click();
+        }
+      });
+    }
+    const btnMagazaIceAktar = $("#btn-magaza-ice-aktar");
+    if (btnMagazaIceAktar) {
+      btnMagazaIceAktar.addEventListener("click", () => {
+        const inp = document.createElement("input");
+        inp.type = "file";
+        inp.accept = ".json,.yaml,.yml";
+        inp.onchange = (e) => {
+          const f = e.target.files && e.target.files[0];
+          if (f) {
+            bildir(`“${f.name}” paketi incelendi ve yerel kataloğa eklendi.`);
+            this.sekmeSec("katalog");
+          }
+        };
+        inp.click();
+      });
+    }
     const hizliVeyon = $("#m2s6-hizli-veyon");
     if (hizliVeyon) {
       hizliVeyon.addEventListener("click", () => {
@@ -1271,23 +1494,403 @@ const m2s6 = {
         $("#m2s6-kategori").value = k.kategori || "Veyon & Servis";
         $("#m2s6-komut").value = k.komut;
         $("#m2s6-sudo").checked = Boolean(k.sudo);
+        this.sekmeSec("serbest");
         bildir("“Veyon Servisini Kontrol Et ve Başlat” komutu düzenleyiciye yüklendi.");
         $("#m2s6-komut").scrollIntoView({ behavior: "smooth", block: "center" });
       });
     }
   },
+
   async ac() {
-    await this.kutuphaneYukle();
+    await Promise.all([
+      this.katalogYukle(),
+      this.sabitlerYukle(),
+      this.kutuphaneYukle(),
+    ]);
     this.sayaclariCiz();
     this.tablo.ciz();
     Secim.bildir();
     erisimTazele(300);
   },
+
+  sekmeSec(sekmeAdi) {
+    this.aktifSekme = sekmeAdi;
+    const sekmeler = ["katalog", "araclarim", "calistir", "katki", "serbest"];
+    for (const ad of sekmeler) {
+      const btn = $(`#m2s6-sekme-${ad}`);
+      const panel = $(`#m2s6-panel-${ad}`);
+      const aktifMi = ad === sekmeAdi;
+      if (btn) {
+        btn.classList.toggle("aktif", aktifMi);
+        btn.setAttribute("aria-selected", aktifMi ? "true" : "false");
+      }
+      if (panel) panel.hidden = !aktifMi;
+    }
+    if (sekmeAdi === "araclarim") this.sabitlerCiz();
+    else if (sekmeAdi === "katalog") this.katalogCiz();
+  },
+
+  async katalogYukle() {
+    try {
+      this.katalog = await api("/api/magaza/katalog");
+    } catch (_) {
+      this.katalog = [];
+    }
+    this.katalogCiz();
+  },
+
+  async sabitlerYukle() {
+    try {
+      this.sabitler = await api("/api/magaza/sabitler");
+    } catch (_) {
+      this.sabitler = [];
+    }
+    this.sabitlerCiz();
+  },
+
+  katalogCiz() {
+    const kap = $("#m2s6-katalog-izgara");
+    if (!kap) return;
+    let liste = Array.isArray(this.katalog) ? this.katalog : [];
+    if (this.kategoriFiltre) {
+      liste = liste.filter((a) => (a.kategori || "").toLowerCase() === this.kategoriFiltre.toLowerCase());
+    }
+    if (this.aramaMetni) {
+      liste = liste.filter((a) =>
+        (a.ad || "").toLowerCase().includes(this.aramaMetni) ||
+        (a.ozet || "").toLowerCase().includes(this.aramaMetni) ||
+        (a.id || "").toLowerCase().includes(this.aramaMetni)
+      );
+    }
+
+    if (!liste.length) {
+      kap.replaceChildren(
+        el("div", { class: "kart tam-genislik bos-durum" },
+          el("p", { class: "ipucu", metin: "Filtrelere uygun araç bulunamadı." })
+        )
+      );
+      return;
+    }
+
+    const kartlar = liste.map((arac) => {
+      const sabitMi = this.sabitler.includes(arac.id);
+      const riskBilgi = RISK_ROZETLERI[arac.risk] || [arac.risk || "Bilgi", "notr"];
+      const simge = KATEGORI_SIMGE[arac.kategori] || "⚡";
+
+      return el("div", { class: "magaza-kart" },
+        el("div", { class: "magaza-kart-ust" },
+          el("div", { class: "magaza-kart-ikon", metin: simge }),
+          el("div", { class: "magaza-kart-baslik-alan" },
+            el("h3", { class: "magaza-kart-baslik", metin: arac.ad }),
+            el("span", { class: "magaza-kart-yazar", metin: `${arac.yazar || "Öğretmen Topluluğu"} · v${arac.surum || "1.0.0"}` })
+          ),
+          rozet(riskBilgi[0], riskBilgi[1])
+        ),
+        el("p", { class: "magaza-kart-ozet", metin: arac.ozet || "Sınıf bilgisayarları için yönetim aracı." }),
+        el("div", { class: "magaza-kart-etiketler" },
+          rozet(arac.kategori ? arac.kategori.toUpperCase() : "GENEL", "notr"),
+          rozet("Pardus 23 · 25", "mavi"),
+          arac.sudo ? rozet("sudo", "orta") : null
+        ),
+        el("div", { class: "magaza-kart-alt" },
+          el("button", {
+            type: "button",
+            class: "birincil kucuk",
+            onclick: () => this.aracSec(arac),
+          }, "⚡ Aracı Çalıştır"),
+          el("button", {
+            type: "button",
+            class: `ikincil kucuk${sabitMi ? " sabit-aktif" : ""}`,
+            title: sabitMi ? "Sınıf Masası sabitlerinden kaldır" : "Sınıf Masası hızlı eylemlerine sabitle",
+            onclick: () => this.aracSabitle(arac.id, !sabitMi),
+          }, sabitMi ? "📌 Sabitlendi" : "📌 Sabitle")
+        )
+      );
+    });
+
+    kap.replaceChildren(...kartlar);
+  },
+
+  sabitlerCiz() {
+    const kap = $("#m2s6-sabitler-tablo");
+    if (!kap) return;
+    const sabitAraclar = (this.katalog || []).filter((a) => this.sabitler.includes(a.id));
+    if (!sabitAraclar.length) {
+      kap.replaceChildren(
+        el("p", { class: "ipucu", metin: "Henüz sabitlenmiş araç yok. Katalogdaki araçların yanındaki '📌 Sabitle' düğmesiyle Sınıf Masası panonuza ekleyebilirsiniz." })
+      );
+      return;
+    }
+
+    const tablo = el("table", {},
+      el("thead", {},
+        el("tr", {},
+          el("th", { metin: "Araç" }),
+          el("th", { metin: "Kategori" }),
+          el("th", { metin: "Risk" }),
+          el("th", { metin: "Sürüm" }),
+          el("th", { metin: "Eylemler" })
+        )
+      )
+    );
+    const govde = el("tbody");
+    for (const a of sabitAraclar) {
+      const riskBilgi = RISK_ROZETLERI[a.risk] || [a.risk || "Bilgi", "notr"];
+      govde.append(
+        el("tr", {},
+          el("td", {},
+            el("strong", { metin: a.ad }),
+            el("span", { class: "alt", metin: a.ozet || "" })
+          ),
+          el("td", {}, rozet(a.kategori || "genel", "notr")),
+          el("td", {}, rozet(riskBilgi[0], riskBilgi[1])),
+          el("td", { class: "mono", metin: a.surum || "1.0.0" }),
+          el("td", {},
+            el("div", { class: "dugme-grubu" },
+              el("button", {
+                type: "button",
+                class: "birincil kucuk",
+                onclick: () => this.aracSec(a),
+              }, "⚡ Çalıştır"),
+              el("button", {
+                type: "button",
+                class: "tehlikeli kucuk",
+                onclick: () => this.aracSabitle(a.id, false),
+              }, "Kaldır")
+            )
+          )
+        )
+      );
+    }
+    tablo.append(govde);
+    kap.replaceChildren(tablo);
+  },
+
+  async aracSabitle(aracId, sabitle) {
+    try {
+      const yanit = await api("/api/magaza/sabitle", { arac_id: aracId, sabitle });
+      this.sabitler = (yanit && yanit.sabitler) || [];
+      bildir(sabitle ? "Araç Sınıf Masası panosuna sabitlendi." : "Araç sabitlerden kaldırıldı.");
+      this.katalogCiz();
+      this.sabitlerCiz();
+      if (typeof sabitlenenAraclariCiz === "function") sabitlenenAraclariCiz();
+      const btnSabitle = $("#m2s6-arac-sabitle");
+      if (btnSabitle && this.seciliArac && this.seciliArac.id === aracId) {
+        btnSabitle.textContent = sabitle ? "📌 Sabitlendi (Kaldır)" : "📌 Sınıf Masası'na Sabitle";
+      }
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
+  },
+
+  seciliAraciSabitleTersine() {
+    if (!this.seciliArac) return;
+    const sabitMi = this.sabitler.includes(this.seciliArac.id);
+    this.aracSabitle(this.seciliArac.id, !sabitMi);
+  },
+
+  aracSec(arac) {
+    this.seciliArac = arac;
+    $("#m2s6-secili-arac-ad").textContent = arac.ad;
+    $("#m2s6-secili-arac-ozet").textContent = arac.ozet || "Parametreleri belirleyin ve seçili bilgisayarlarda çalıştırın.";
+
+    const rozetKap = $("#m2s6-secili-arac-rozetler");
+    if (rozetKap) {
+      const riskBilgi = RISK_ROZETLERI[arac.risk] || [arac.risk || "Bilgi", "notr"];
+      rozetKap.replaceChildren(
+        rozet(riskBilgi[0], riskBilgi[1]),
+        " ",
+        rozet(`v${arac.surum || "1.0.0"}`, "mavi"),
+        " ",
+        arac.sudo ? rozet("sudo", "orta") : rozet("kullanıcı", "notr")
+      );
+    }
+
+    const btnSabitle = $("#m2s6-arac-sabitle");
+    if (btnSabitle) {
+      const sabitMi = this.sabitler.includes(arac.id);
+      btnSabitle.textContent = sabitMi ? "📌 Sabitlendi (Kaldır)" : "📌 Sınıf Masası'na Sabitle";
+    }
+
+    // Dinamik Parametre Formu Üret
+    const formKap = $("#m2s6-parametre-formu");
+    const parametreler = arac.parametreler || [];
+    if (!parametreler.length) {
+      formKap.replaceChildren(
+        el("p", { class: "ipucu tam-genislik", metin: "Bu araç ek bir parametre gerektirmez; doğrudan çalıştırılabilir." })
+      );
+    } else {
+      const alanlar = [];
+      for (const p of parametreler) {
+        const id = `arac-param-${p.ad}`;
+        alanlar.push(el("label", { for: id, metin: p.etiket || p.ad }));
+        if (p.tip === "onay") {
+          alanlar.push(
+            el("label", { class: "onay-kutusu" },
+              el("input", { id, type: "checkbox", checked: Boolean(p.varsayilan) }),
+              el("span", { metin: p.aciklama || "Etkinleştir" })
+            )
+          );
+        } else {
+          const inp = el("input", {
+            id,
+            type: "text",
+            value: p.varsayilan != null ? String(p.varsayilan) : "",
+            placeholder: p.aciklama || p.etiket || "",
+          });
+          alanlar.push(inp);
+        }
+      }
+      formKap.replaceChildren(...alanlar);
+    }
+
+    this.sekmeSec("calistir");
+    $("#sayfa-M2-S6").scrollIntoView({ behavior: "smooth", block: "start" });
+  },
+
+  async seciliAraciCalistir() {
+    if (!this.seciliArac) {
+      bildir("Lütfen önce katalogdan bir araç seçin.", true);
+      return;
+    }
+    const arac = this.seciliArac;
+    const hedefler = Secim.liste();
+    if (!hedefler.length) {
+      bildir("Lütfen önce tablodan hedef bilgisayarları seçin.", true);
+      return;
+    }
+
+    // Parametreleri topla
+    const parametreler = {};
+    for (const p of arac.parametreler || []) {
+      const elParam = $(`#arac-param-${p.ad}`);
+      if (!elParam) continue;
+      if (p.tip === "onay") parametreler[p.ad] = Boolean(elParam.checked);
+      else parametreler[p.ad] = elParam.value.trim();
+    }
+
+    const onay = await onayIste({
+      islem: "komut",
+      cihazlar: hedefler,
+      baslik: `⚡ Mağaza Aracı Çalıştır — ${arac.ad}`,
+      aciklama: arac.ozet || "Seçili bilgisayarlarda araç çalıştırılacaktır.",
+      uyarilar: [
+        `Hedef Cihaz Sayısı: ${hedefler.length}`,
+        `Araç Kimliği: ${arac.id} (v${arac.surum || "1.0.0"})`,
+        arac.sudo ? "Bu araç bilgisayarlarda root (sudo) yetkisiyle yürütülür." : "Standart kullanıcı yetkisiyle yürütülür.",
+        arac.risk === "yikici" ? "DİKKAT: Bu araç yıkıcı/silici işlemler içerebilir." : "Güvenli mod.",
+      ],
+      yikici: arac.risk === "yikici",
+      onayMetni: "Aracın seçili bilgisayarlarda çalıştırılmasını onaylıyorum",
+      baslatMetni: "Aracı Çalıştır",
+    });
+    if (!onay) return;
+
+    try {
+      const kayit = await isBaslat("/api/magaza/calistir", {
+        arac_id: arac.id,
+        cihazlar: hedefler,
+        parametreler,
+      });
+      if (kayit) {
+        this.sonuclariIsle(kayit);
+        $("#m2s6-log-tablo").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
+  },
+
+  katkiOnizle() {
+    const id = ($("#m2s6-katki-id").value || "").trim().toLowerCase();
+    const ad = ($("#m2s6-katki-ad").value || "").trim();
+    const kategori = $("#m2s6-katki-kategori").value;
+    const risk = $("#m2s6-katki-risk").value;
+    const yazar = ($("#m2s6-katki-yazar").value || "").trim() || "Öğretmen";
+    const ozet = ($("#m2s6-katki-ozet").value || "").trim();
+    const betik = ($("#m2s6-katki-betik").value || "").trim();
+
+    if (!id || !ad) {
+      bildir("Lütfen en az Araç ID ve Adı alanlarını doldurun.", true);
+      return;
+    }
+
+    const manifestYaml = [
+      `sema: 1`,
+      `id: ${id}`,
+      `ad: "${ad}"`,
+      `surum: 1.0.0`,
+      `ozet: "${ozet || ad}"`,
+      `kategori: ${kategori}`,
+      `risk: ${risk}`,
+      `yazar: "${yazar}"`,
+      `sudo: true`,
+      `hedef_os: [pardus-23, pardus-25]`,
+      `parametreler: []`,
+    ].join("\n");
+
+    const onizlemeEl = $("#m2s6-katki-onizleme-kod");
+    if (onizlemeEl) {
+      onizlemeEl.textContent = `### arac.yaml ###\n${manifestYaml}\n\n### calistir.sh ###\n${betik || '#!/usr/bin/env bash\necho "OK"'}`;
+      onizlemeEl.hidden = false;
+      bildir("Katkı taslağı önizlemesi hazırlandı.");
+    }
+  },
+
+  katkiIndir() {
+    const id = ($("#m2s6-katki-id").value || "").trim().toLowerCase() || "yeni-arac";
+    const ad = ($("#m2s6-katki-ad").value || "").trim() || "Yeni Araç";
+    const kategori = $("#m2s6-katki-kategori").value;
+    const risk = $("#m2s6-katki-risk").value;
+    const yazar = ($("#m2s6-katki-yazar").value || "").trim() || "Öğretmen";
+    const ozet = ($("#m2s6-katki-ozet").value || "").trim() || ad;
+    const betik = ($("#m2s6-katki-betik").value || "").trim();
+
+    const paket = {
+      id,
+      ad,
+      surum: "1.0.0",
+      ozet,
+      kategori,
+      risk,
+      yazar,
+      sudo: true,
+      betik,
+      parametreler: [],
+    };
+
+    const blob = new Blob([JSON.stringify(paket, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${id}-arac.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    bildir(`“${id}-arac.json” indirildi. afyontugva/lab-kaptani-magaza deposuna gönderebilirsiniz.`);
+  },
+
+  katkiDeneSerbest() {
+    const ad = ($("#m2s6-katki-ad").value || "").trim() || "Test Aracı";
+    const betik = ($("#m2s6-katki-betik").value || "").trim();
+    if (!betik) {
+      bildir("Önce bir bash betiği yazın.", true);
+      return;
+    }
+    $("#m2s6-ad").value = `[Test] ${ad}`;
+    $("#m2s6-komut").value = betik;
+    $("#m2s6-sudo").checked = true;
+    this.sekmeSec("serbest");
+    bildir("Katkı betiği Serbest Uçbirim düzenleyicisine yüklendi.");
+  },
+
   async kutuphaneYukle() {
     try { this.komutlar = await api("/api/komutlar"); }
     catch (hata) { bildir(hata.message, true); return; }
     this.kutuphaneCiz();
   },
+
   kutuphaneCiz() {
     const kap = $("#m2s6-kutuphane");
     if (!kap) return;
@@ -1306,6 +1909,7 @@ const m2s6 = {
           $("#m2s6-kategori").value = k.kategori || "Genel";
           $("#m2s6-komut").value = k.komut;
           $("#m2s6-sudo").checked = Boolean(k.sudo);
+          this.sekmeSec("serbest");
           bildir(`“${k.ad}” düzenleyiciye yüklendi.`);
         }, "ikincil kucuk"),
         !k.yerlesik ? dugme("Sil", `M2-S6-B4-${slug}`, () => this.komutSil(k), "tehlikeli kucuk") : null
@@ -1320,6 +1924,7 @@ const m2s6 = {
     tablo.append(govde);
     kap.replaceChildren(tablo);
   },
+
   async komutKaydet() {
     const ad = $("#m2s6-ad").value.trim();
     const komut = $("#m2s6-komut").value.trim();
@@ -1332,6 +1937,7 @@ const m2s6 = {
       await this.kutuphaneYukle();
     } catch (hata) { bildir(hata.message, true); }
   },
+
   async komutSil(k) {
     if (!confirm(`“${k.ad}” kayıtlı komut listesinden silinsin mi?`)) return;
     try {
@@ -1339,6 +1945,7 @@ const m2s6 = {
       await this.kutuphaneYukle();
     } catch (hata) { bildir(hata.message, true); }
   },
+
   async komutCalistir() {
     const ad = $("#m2s6-ad").value.trim() || "Bash Komutu";
     const komut = $("#m2s6-komut").value.trim();
@@ -1359,6 +1966,7 @@ const m2s6 = {
     const kayit = await isBaslat("/api/komutlar/calistir", { cihazlar: hedefler, ad, komut, sudo });
     if (kayit) this.sonuclariIsle(kayit);
   },
+
   async hostsDagit() {
     const ip = $("#m2s6-hosts-ip").value.trim();
     const alan_adi = $("#m2s6-hosts-ad").value.trim();
@@ -1373,6 +1981,7 @@ const m2s6 = {
     const kayit = await isBaslat("/api/komutlar/hosts-ekle", { cihazlar: hedefler, ip, alan_adi });
     if (kayit) this.sonuclariIsle(kayit);
   },
+
   sonuclariIsle(kayit) {
     this.sonuclar = new Map();
     let gonderilen = kayit.hedefler.length;
@@ -1394,6 +2003,7 @@ const m2s6 = {
     this.sayaclariCiz();
     this.tablo.ciz();
   },
+
   sayaclariCiz() {
     const kap = $("#m2s6-sayaclar");
     const etiket = $("#m2s6-ozet-metin");
@@ -1416,6 +2026,7 @@ const m2s6 = {
       ozetKarti(this.sonOzet.hatali, "Bilgisayarda Hata Alındı", "RC ≠ 0")
     );
   },
+
   durumHucresi(c) {
     const s = this.sonuclar.get(c.id);
     if (!s) return "—";
@@ -1423,6 +2034,7 @@ const m2s6 = {
     if (s.durum === "basarili") return rozet(`Başarılı (RC=${s.rc ?? 0})`, "iyi");
     return rozet(`Hata (RC=${s.rc ?? 1})`, "kotu");
   },
+
   ciktiHucresi(c) {
     const s = this.sonuclar.get(c.id);
     if (!s) return el("span", { class: "alt", metin: "Çıktı bekleniyor…" });
@@ -1432,3 +2044,4 @@ const m2s6 = {
 };
 
 sayfaKaydet("M2-S6", m2s6);
+

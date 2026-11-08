@@ -75,21 +75,6 @@ const m4s1 = {
 
 /* ================================================================ M5-S1 */
 
-function referansSatirlari() {
-  const satirlar = [];
-  for (const m of REF.menuler) {
-    satirlar.push({ kod: m.kod, ad: m.ad, islev: m.ortak ? "Her sayfada kullanılan ortak araçlar" : "Menü", tur: "menu" });
-    for (const s of m.sayfalar) {
-      const kod = `${m.kod}-${s.kod}`;
-      satirlar.push({ kod, ad: s.ad, islev: s.aciklama || "", tur: "sayfa" });
-      for (const [bk, [ad, islev]] of Object.entries(REF.dugmeler)) {
-        if (bk.startsWith(`${kod}-B`)) satirlar.push({ kod: bk.replace(/-\*$/, "-<kimlik>"), ad, islev, tur: "dugme" });
-      }
-    }
-  }
-  return satirlar;
-}
-
 const m5s1 = {
   sistem: null,
   yedekler: [],
@@ -103,9 +88,6 @@ const m5s1 = {
         bildir(`Her bilgisayarda en fazla ${s.saklama_adedi} yedek/karantina kaydı tutulacak.`);
       } catch (hata) { bildir(hata.message, true); }
     });
-    $("#m5s1-kodlar").addEventListener("click", () => kodlariGoster(!kodlarGorunur()));
-    $("#m5s1-ara").addEventListener("input", () => this.rehber());
-    $("#m5s1-indir").addEventListener("click", () => this.markdown());
 
     const btnOlustur = $("#m5s1-yedek-olustur");
     if (btnOlustur) btnOlustur.addEventListener("click", () => this.yedekOlustur(true));
@@ -119,7 +101,6 @@ const m5s1 = {
     if (btnYukle) btnYukle.addEventListener("click", () => this.dosyadanGeriYukle());
   },
   async ac() {
-    this.rehber();
     try {
       const a = await api("/api/ayarlar");
       $("#m5s1-saklama").value = a.saklama_adedi;
@@ -323,32 +304,6 @@ const m5s1 = {
       this.yedekTablosuCiz();
       bildir("Yedek arşivi silindi.");
     } catch (hata) { bildir(hata.message, true); }
-  },
-  rehber() {
-    const a = $("#m5s1-ara").value.trim().toLocaleLowerCase("tr-TR");
-    const satirlar = referansSatirlari().filter((s) => !a || `${s.kod} ${s.ad} ${s.islev}`.toLocaleLowerCase("tr-TR").includes(a));
-    const tablo = el("table", {}, el("thead", {}, el("tr", {}, ...["Kod", "Ad", "İşlev"].map((b) => el("th", { metin: b })))));
-    const g = el("tbody");
-    for (const s of satirlar) {
-      g.append(el("tr", { class: s.tur === "menu" ? "rehber-menu" : "" },
-        el("td", {}, el("span", { class: "kod-cip", metin: s.kod })), el("td", { metin: s.tur === "sayfa" ? `  ${s.ad}` : s.ad }),
-        el("td", { metin: s.islev })));
-    }
-    tablo.append(g);
-    const emekli = Object.entries(REF.emekli || {});
-    $("#m5s1-rehber").replaceChildren(tablo, ...(emekli.length ? [el("p", { class: "ipucu",
-      metin: `Emekli kodlar (bir daha kullanılmaz): ${emekli.map(([k, n]) => `${k} (${n})`).join(", ")}` })] : []));
-  },
-  markdown() {
-    const satirlar = ["# Pardus Sınıf Yönetimi — arayüz referans haritası", "",
-      `Sürüm ${REF.surum}. M = menü, S = sayfa, B = düğme. Satır düğmeleri bilgisayar kimliğiyle biter (M2-S1-B4-LAB01).`, "",
-      "| Kod | Ad | İşlev |", "| --- | --- | --- |",
-      ...referansSatirlari().map((s) => `| ${s.kod} | ${s.ad} | ${s.islev.replace(/\|/g, "/")} |`), ""];
-    const blob = new Blob([satirlar.join("\n")], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = el("a", { href: url, download: "arayuz-referans-haritasi.md" });
-    document.body.append(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
   },
 };
 

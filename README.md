@@ -5,7 +5,7 @@
 <h1 align="center">Lab Kaptanı</h1>
 
 <p align="center">
-  <strong>Pardus Sınıf Yönetimi (Sürüm 0.8.2)</strong><br>
+  <strong>Pardus Sınıf Yönetimi (Sürüm 0.9.0)</strong><br>
   Pardus ve Debian tabanlı okul bilgisayar laboratuvarları için teknik bilgi gerektirmeyen, Türkçe ve modern merkezi yönetim uygulaması.
 </p>
 
@@ -13,7 +13,7 @@
   <img alt="Lisans: GPL-3.0-or-later" src="https://img.shields.io/badge/lisans-GPL--3.0--or--later-blue">
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
   <img alt="Pardus 23 EDU" src="https://img.shields.io/badge/Pardus-23%20EDU-1B5FC1">
-  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.8.2-brightgreen">
+  <img alt="Durum: Kararlı" src="https://img.shields.io/badge/durum-kararl%C4%B1%20v0.9.0-brightgreen">
 </p>
 
 ---
@@ -40,24 +40,25 @@ Lab Kaptanı, öğretmenlerin teknik detaylarla vakit kaybetmeden dersi verimli 
 * 🔍 **Bilgisayar Durumları ve Cihaz Detay Özeti:**
   * Bilgisayarlar durum renkleriyle izlenir (Hazır, Öğrenci Çalışıyor, Kapalı, Anahtar Gerekli, Yönetim Yetkisi Yok vb.).
   * Bilgisayar kutucuğuna tıklandığında **Hostname** ve **IP adresi**, donanım bilgisi ve Veyon sürümü açılır özet penceresinde görüntülenir. Formdan bilgisayar adı (hostname) tek tıkla değiştirilebilir.
-* 📦 **Pardus Yazılım Merkezi & Uzaktan Program Kurulumu (M2-S2):**
+* 📦 **Pardus Yazılım Merkezi & Uzaktan Program Kurulumu:**
   * Tanımlı APT depolarında arama yapabilir, vitrinden (Thonny, Scratch, Arduino, Blender, GIMP vb.) seçerek tek veya çoklu bilgisayara uzaktan program kurabilirsiniz.
   * İstemediğiniz kurulu programları kritik sistem bileşenleri koruma altında olacak şekilde güvenle kaldırabilirsiniz.
-* 🖼️ **Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası Etiketi (M2-S3):**
+* 🖼️ **Duvar Kâğıdı Galerisi ve Köşede Bilgisayar Numarası Etiketi:**
   * Birden fazla okul fotoğrafı yükleyebilir veya 3 hazır kurumsal şablondan seçim yapabilirsiniz.
   * Duvar kâğıdı atanırken her bilgisayarın `hostname` numarası (örn. `ogrenci01` → **01**) sağ/sol üst köşeye rozet olarak otomatik işlenir.
 * ⚡ **Güç ve Ekran Koruyucu Yönetimi:**
   * Bilgisayarların boşta uykuya geçmesi veya ekranının kararması ("Hiç kapanmasın") X11 DPMS ve GNOME/GDM kilitleriyle tamamen önlenir.
   * Ders çıkış saatine özel bir kezlik veya haftalık zamanlı kapatma planı oluşturulabilir.
-* 📡 **Veyon Tek Tıkla Standart Kurulum ve Uzman Ayarları (M1-S4):**
+* 📡 **Veyon Tek Tıkla Standart Kurulum ve Uzman Ayarları:**
   * Yüklenen `.deb` ve `public key` ile anahtar dosya yetkilendirmesi, `root` erişim grubu, dahili VNC ve yüksek kalite ayarları soru sorulmadan otomatik uygulanır. Uzmanlar için katlanabilir ayar paneli sunulur.
 * 📚 **Ödev ve Materyal Dağıtımı:**
   * Öğrenci bilgisayarlarının masaüstüne ders materyali veya web bağlantısı gönderilebilir.
   * Öğrenciler `http://ogretmen.lab:8090` adresinden sınıf kodlarıyla ödevlerini tarayıcıdan teslim eder.
   * Öğretmen tüm teslimleri tek tıkla düzenli bir ZIP arşivi olarak indirebilir.
-* 💻 **SSH Komut Merkezi:**
-  * Kayıtlı kütüphaneden veya özel olarak yazılan Bash komutları tüm sınıfa aynı anda gönderilir; çıktılar canlı olarak izlenir.
-  * Tek tıkla `/etc/hosts` dosyasında yerel alan adı eşleştirmesi yapılır.
+* 🏪 **Komut Mağazası ve Topluluk Araçları:**
+  * Resmi GitHub deposundan ([pardus_yonet_magaza](https://github.com/mukaddesalat/pardus_yonet_magaza)) tek tıkla güncellenen hazır yönetim betikleri ve araç kataloğu.
+  * Sık kullanılan araçları doğrudan Sınıf Masası panosuna sabitleme, yeni araç taslağı geliştirme ve serbest uçbirim üzerinden anlık komut gönderme.
+  * Tek tıkla `/etc/hosts` dosyasında yerel alan adı eşleştirmesi (`ogretmen.lab`).
 * 🏫 **Okul Kimliği ve Öğretmen Hesapları:**
   * Okul adı ve okul logosu özelleştirilebilir (Varsayılan: Şehit Cengiz Polat Fen ve Teknoloji AİHL).
   * Laboratuvarı kullanan diğer öğretmenler için Standart Öğretmen hesapları tanımlanabilir; yetkiler sınırlandırılabilir.
@@ -71,7 +72,7 @@ Lab Kaptanı, öğretmenlerin teknik detaylarla vakit kaybetmeden dersi verimli 
 Öğretmen bilgisayarında (Pardus 23 EDU) terminal açarak paketi kurun:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.8.2_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.9.0_amd64.deb
 ```
 
 > **Not:** Paket, kendi gömülü Python çalışma ortamını ve gerekli tüm kütüphaneleri taşır. Kurulum için internet bağlantısı gerekmez.
@@ -91,8 +92,9 @@ Detaylı rehber için: [Öğretmenler İçin Kullanım Kılavuzu](belgeler/kulla
 
 | Belge | Açıklama |
 | --- | --- |
-| 📘 [Kullanım Kılavuzu](belgeler/kullanim_kilavuzu.md) | Öğretmenler için adım adım, ekran alıntılarıyla hazırlanmış sade rehber. |
+| 📘 [Kullanım Kılavuzu](belgeler/kullanim_kilavuzu.md) | Öğretmenler için adım adım, bol ekran alıntılarıyla hazırlanmış güncel kullanım rehberi. |
 | 🛠️ [Yönetici Kılavuzu](belgeler/yonetici_kilavuzu.md) | Sistem yöneticileri için mimari, servisler, veri konumları, portlar ve güvenlik modeli. |
+| 🏪 [Komut Mağazası ve Betik Kılavuzu](belgeler/magaza_kilavuzu.md) | Mağaza deposu mimarisi, parametre şeması ve adım adım Bash betiği geliştirme rehberi. |
 | 📚 [Ödev Kılavuzu](belgeler/odev_kilavuzu.md) | Ödev teslim portalı, sınıf listeleri, öğrenci kartları ve dosya toplama akışı. |
 | 📊 [Örnek Sınıf Listesi (CSV)](belgeler/ornek_sinif_listesi.csv) | Öğrenci listelerini içeri aktarmak için şablon dosya (`sınıf;numara;ad soyad`). |
 

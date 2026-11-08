@@ -69,10 +69,10 @@ def _yol_yetki_hata_mesaji(yol: str, metod: str, ogr: dict | None) -> str | None
     if yol.startswith(("/api/paketler", "/api/gorunum", "/api/duvar-kagidi")):
         if not _yetki_var_mi(ogr, "paket_gorunum"):
             return "Paket kurulumu ve görünüm ayarları için ek yetki veya Admin Öğretmen hesabı gereklidir"
-    # Ek Yetki 2: SSH Komut Gönder
-    if yol.startswith("/api/komutlar"):
+    # Ek Yetki 2: SSH Komut Gönder & Komut Mağazası
+    if yol.startswith(("/api/komutlar", "/api/magaza")):
         if not _yetki_var_mi(ogr, "komut_gonder"):
-            return "SSH Komut Gönderme menüsü için ek yetki veya Admin Öğretmen hesabı gereklidir"
+            return "SSH Komut ve Mağaza işlemleri için ek yetki veya Admin Öğretmen hesabı gereklidir"
     # Yalnız Admin Öğretmen uçları
     admin_on_ekleri = ("/api/hazirlik", "/api/tekillestirme", "/api/kesif")
     if yol.startswith(admin_on_ekleri):
@@ -329,11 +329,13 @@ class MasaustuUrlIstek(CihazListesiIstek):
     otomatik_ac: bool = False
     hosts_ip: str | None = None
     hosts_ad: str | None = None
+    klasor: str = "Odevler"
 
 
 class MasaustuDosyaIstek(CihazListesiIstek):
     dosya_adi: str
     icerik_b64: str
+    klasor: str = "Odevler"
 
 
 class KomutKaydetIstek(BaseModel):
@@ -353,6 +355,16 @@ class KomutCalistirIstek(CihazListesiIstek):
 class HostsEkleIstek(CihazListesiIstek):
     ip: str
     alan_adi: str
+
+
+class AracCalistirIstek(CihazListesiIstek):
+    arac_id: str
+    parametreler: dict = Field(default_factory=dict)
+
+
+class AracSabitleIstek(BaseModel):
+    arac_id: str
+    sabitle: bool = True
 
 
 class OkulBilgiIstek(BaseModel):
@@ -1174,13 +1186,14 @@ async def sinif_masaustu_url(istek: MasaustuUrlIstek):
         "baslik": istek.baslik,
         "url": istek.url,
         "otomatik_ac": istek.otomatik_ac,
+        "klasor": istek.klasor or "Odevler",
     }
     if istek.hosts_ip:
         ek_param["hosts_ip"] = istek.hosts_ip
     if istek.hosts_ad:
         ek_param["hosts_ad"] = istek.hosts_ad
     return _is_baslat(
-        "sinif_masaustu_url", {"baslik": istek.baslik, "url": istek.url, "otomatik_ac": istek.otomatik_ac}, istek.cihazlar,
+        "sinif_masaustu_url", {"baslik": istek.baslik, "url": istek.url, "otomatik_ac": istek.otomatik_ac, "klasor": istek.klasor}, istek.cihazlar,
         lambda is_id, iptal: sinif_araclari.sinif_isi(
             is_id, istek.cihazlar, "masaustu_url", ek_param, iptal))
 
@@ -1188,10 +1201,10 @@ async def sinif_masaustu_url(istek: MasaustuUrlIstek):
 @uygulama.post("/api/sinif/masaustu-dosya", dependencies=[korumali])
 async def sinif_masaustu_dosya(istek: MasaustuDosyaIstek):
     return _is_baslat(
-        "sinif_masaustu_dosya", {"dosya_adi": istek.dosya_adi}, istek.cihazlar,
+        "sinif_masaustu_dosya", {"dosya_adi": istek.dosya_adi, "klasor": istek.klasor}, istek.cihazlar,
         lambda is_id, iptal: sinif_araclari.sinif_isi(
             is_id, istek.cihazlar, "masaustu_dosya",
-            {"dosya_adi": istek.dosya_adi, "icerik_b64": istek.icerik_b64}, iptal))
+            {"dosya_adi": istek.dosya_adi, "icerik_b64": istek.icerik_b64, "klasor": istek.klasor or "Odevler"}, iptal))
 
 
 # ---- M2-S6 Komut Gönder (SSH Komut Merkezi) ----
@@ -1246,6 +1259,55 @@ async def komut_hosts_ekle_uc(istek: HostsEkleIstek):
     return _is_baslat(
         "hosts_ekle", {"ip": ip, "alan_adi": alan_adi}, istek.cihazlar,
         lambda is_id, iptal: komutlar.hosts_ekle_isi(is_id, istek.cihazlar, ip, alan_adi, iptal))
+
+
+# ---- Komut Mağazası API ----
+
+@uygulama.get("/api/magaza/katalog", dependencies=[korumali])
+async def magaza_katalog_uc():
+    return komutlar.resmi_magaza_katalogu()
+
+
+@uygulama.post("/api/magaza/guncelle", dependencies=[korumali])
+async def magaza_guncelle_uc():
+    return await komutlar.magaza_katalogu_guncelle()
+
+
+@uygulama.get("/api/magaza/sabitler", dependencies=[korumali])
+async def magaza_sabitler_uc():
+    return komutlar.sabit_araclari_al()
+
+
+@uygulama.post("/api/magaza/sabitle", dependencies=[korumali])
+async def magaza_sabitle_uc(istek: AracSabitleIstek):
+    mevcut = komutlar.sabit_araclari_al()
+    if istek.sabitle:
+        if istek.arac_id not in mevcut:
+            mevcut.append(istek.arac_id)
+    else:
+        mevcut = [x for x in mevcut if x != istek.arac_id]
+    komutlar.sabit_arac_kaydet(mevcut)
+    return {"sabitler": mevcut}
+
+
+@uygulama.post("/api/magaza/calistir", dependencies=[korumali])
+async def magaza_arac_calistir_uc(istek: AracCalistirIstek):
+    arac = komutlar.magaza_araci_getir(istek.arac_id)
+    if not arac:
+        raise HTTPException(404, "Mağaza aracı bulunamadı")
+    try:
+        uretilmis_komut = komutlar.arac_komutu_uret(arac, istek.parametreler)
+    except (komutlar.KomutHatasi, ValueError) as hata:
+        raise HTTPException(422, str(hata))
+
+    is_adi = f"Mağaza: {arac.get('ad', istek.arac_id)}"
+    return _is_baslat(
+        "ssh_komut",
+        {"ad": is_adi, "arac_id": istek.arac_id, "sudo": arac.get("sudo", True)},
+        istek.cihazlar,
+        lambda is_id, iptal: komutlar.komut_isi(
+            is_id, istek.cihazlar, uretilmis_komut, arac.get("sudo", True), is_adi, iptal),
+    )
 
 
 # ---- M4-S1 İşlem Geçmişi ----

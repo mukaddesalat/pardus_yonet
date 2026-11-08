@@ -15,11 +15,17 @@ async function uygulamayiAc(bilgi) {
   $("#giris-ekrani").hidden = true;
   $("#uygulama").hidden = false;
   $("#surum").textContent = `sürüm ${bilgi.versiyon || ""}`;
+  try { Uyg.gelismisMod = localStorage.getItem("psy_gelismis_mod") === "1"; } catch (_) { Uyg.gelismisMod = false; }
+  gelismisModAyarla(Uyg.gelismisMod);
   menuKur();
   if (!sayfalarKuruldu) {
     sayfalarKuruldu = true;
     Secim.yukle();
-    for (const s of Object.values(SAYFALAR)) if (s.kur) s.kur();
+    for (const [ad, s] of Object.entries(SAYFALAR)) {
+      if (s.kur) {
+        try { s.kur(); } catch (e) { console.error(`[${ad}] Sayfa kur hatası:`, e); }
+      }
+    }
     refRozeti($$("[data-ui-id]"));
     let goster = true;
     try { goster = localStorage.getItem("psy-kodlar") !== "0"; } catch (_) { /* depolama yok */ }
@@ -115,6 +121,8 @@ $("#cikis").addEventListener("click", async () => {
 });
 
 $("#kod-dugmesi").addEventListener("click", () => kodlariGoster(!kodlarGorunur()));
+const btnGelismis = $("#btn-gelismis-mod");
+if (btnGelismis) btnGelismis.addEventListener("click", () => gelismisModAyarla());
 $("#secim-cipi").addEventListener("click", secimListesiAc);
 $("#is-paneli-kapat").addEventListener("click", () => { $("#is-paneli").hidden = true; });
 $("#is-paneli-iptal").addEventListener("click", async () => {

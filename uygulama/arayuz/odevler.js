@@ -41,6 +41,34 @@ const m3s1 = {
   kur() {
     const secimYeri = $("#sayfa-M3-S1 .secim-yeri");
     if (secimYeri) secimCubuguKur(secimYeri, "sinif");
+
+    const sekmeTeslim = $("#m3-sekme-teslim");
+    const sekmeKartlar = $("#m3-sekme-kartlar");
+    const panelTeslim = $("#m3-panel-teslim");
+    const panelKartlar = $("#m3-panel-kartlar");
+    if (sekmeTeslim && sekmeKartlar && panelTeslim && panelKartlar) {
+      sekmeTeslim.addEventListener("click", () => {
+        sekmeTeslim.classList.add("aktif");
+        sekmeTeslim.setAttribute("aria-selected", "true");
+        sekmeKartlar.classList.remove("aktif");
+        sekmeKartlar.setAttribute("aria-selected", "false");
+        panelTeslim.hidden = false;
+        panelKartlar.hidden = true;
+      });
+      sekmeKartlar.addEventListener("click", () => {
+        sekmeKartlar.classList.add("aktif");
+        sekmeKartlar.setAttribute("aria-selected", "true");
+        sekmeTeslim.classList.remove("aktif");
+        sekmeTeslim.setAttribute("aria-selected", "false");
+        panelKartlar.hidden = false;
+        panelTeslim.hidden = true;
+        if (window.m3s2 && window.m3s2.ac) window.m3s2.ac();
+      });
+    }
+
+    if ($("#m3s1-hedef-klasor")) {
+      $("#m3s1-hedef-klasor").addEventListener("input", _m3s1HedefKlasorGuncelle);
+    }
   },
   async ac() {
     Secim.bildir();
@@ -105,8 +133,8 @@ async function odevListesiniYukle() {
     const p = document.createElement("p");
     p.className = "ipucu";
     p.textContent = odevSiniflar.length
-      ? "Henüz ödev yok. “Yeni ödev” (M3-S1-B1) ile başlayın."
-      : "Önce M3-S2 Sınıflar ve Kodlar sayfasından sınıf listesini ekleyin.";
+      ? "Henüz ödev yok. “Yeni ödev” düğmesi ile başlayın."
+      : "Önce “Sınıf Listeleri & Kodlar” sekmesinden sınıf listesini ekleyin.";
     kap.append(p);
     return;
   }
@@ -176,7 +204,7 @@ function sinifSecenekleri(secim, seciliId) {
 
 function odevFormunuAc(odev = null) {
   if (!odevSiniflar.length) {
-    bildir("Önce bir sınıf listesi ekleyin (M3-S2 Sınıflar ve Kodlar).", true);
+    bildir("Önce “Sınıf Listeleri & Kodlar” sekmesinden bir sınıf listesi ekleyin.", true);
     return;
   }
   duzenlenenOdevId = odev ? odev.id : null;
@@ -562,14 +590,15 @@ async function _m3s1WebBaglantisiGonder(baslik, url, otomatikAc, zorunluHosts = 
   } catch (_) {}
 
   const adaylar = _m3s1HedefCihazlar();
+  const klasor = _m3s1HedefKlasor();
   const aciklamaEk = otomatikAc
-    ? "Masaüstüne doğrudan tarayıcıda açılan web bağlantısı bırakılacak ve açık oturumlarda sayfa hemen açılacaktır."
-    : "Masaüstüne doğrudan tarayıcıda açılan web bağlantısı bırakılacaktır.";
+    ? `Masaüstü / ${klasor} klasörüne web bağlantısı bırakılacak ve öğrenci ekranlarında Chromium tarayıcısında tam ekranda ve en üstte hemen açılacaktır.`
+    : `Masaüstü / ${klasor} klasörüne doğrudan Chromium ile açılan web bağlantısı bırakılacaktır.`;
   const hedefler = await onayIste({
     islem: "sinif",
     cihazlar: adaylar,
-    baslik: `Masaüstüne web bağlantısı gönder — ${baslik}`,
-    aciklama: `“${url}” adresi öğrenci bilgisayarlarının Masaüstü klasörüne gönderilecek. ${aciklamaEk}`,
+    baslik: `Web bağlantısı gönder — ${baslik}`,
+    aciklama: `“${url}” adresi öğrenci bilgisayarlarında Masaüstü / ${klasor} klasörüne gönderilecek. ${aciklamaEk}`,
   });
   if (hedefler) {
     await isBaslat("/api/sinif/masaustu-url", {
@@ -579,6 +608,7 @@ async function _m3s1WebBaglantisiGonder(baslik, url, otomatikAc, zorunluHosts = 
       otomatik_ac: Boolean(otomatikAc),
       hosts_ip: hostsIp,
       hosts_ad: hostsAd,
+      klasor,
     });
   }
 }
@@ -682,18 +712,36 @@ if ($("#m3s1-dosya-gonder")) {
       return;
     }
     const adaylar = _m3s1HedefCihazlar();
+    const klasor = _m3s1HedefKlasor();
     const hedefler = await onayIste({
       islem: "sinif",
       cihazlar: adaylar,
-      baslik: `Masaüstüne dosya dağıt — ${dosya.name}`,
-      aciklama: `“${dosya.name}” (${boyutYaz(dosya.size)}) seçili öğrenci bilgisayarlarının Masaüstü klasörüne SFTP ile kopyalanacaktır.`,
+      baslik: `${klasor} klasörüne dosya dağıt — ${dosya.name}`,
+      aciklama: `“${dosya.name}” (${boyutYaz(dosya.size)}) seçili öğrenci bilgisayarlarında Masaüstü / ${klasor} klasörüne SFTP ile kopyalanacaktır.`,
     });
     if (hedefler) {
-      await isBaslat("/api/sinif/masaustu-dosya", { cihazlar: hedefler, dosya_adi: dosya.name, icerik_b64: b64 });
+      await isBaslat("/api/sinif/masaustu-dosya", { cihazlar: hedefler, dosya_adi: dosya.name, icerik_b64: b64, klasor });
       if ($("#m3s1-dosya-sec")) $("#m3s1-dosya-sec").value = "";
       _m3s1DosyaSecildi(null);
     }
   });
+}
+
+function _m3s1HedefKlasor() {
+  const el = $("#m3s1-hedef-klasor");
+  let deger = el ? el.value.trim() : "";
+  if (!deger) deger = "Odevler";
+  deger = deger.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "") || "Odevler";
+  return deger;
+}
+
+function _m3s1HedefKlasorGuncelle() {
+  const klasor = _m3s1HedefKlasor();
+  if ($("#m3s1-yol-ipucu")) $("#m3s1-yol-ipucu").textContent = `/home/ogrenci/Masaüstü/${klasor}`;
+  if ($("#m3s1-url-hedef-yol")) $("#m3s1-url-hedef-yol").textContent = `/home/ogrenci/Masaüstü/${klasor}/`;
+  if ($("#m3s1-dosya-hedef-yol")) $("#m3s1-dosya-hedef-yol").textContent = `/home/ogrenci/Masaüstü/${klasor}/`;
+  if ($("#m3s1-dosya-klasor-etiket")) $("#m3s1-dosya-klasor-etiket").textContent = klasor;
+  if ($("#m3s1-dosya-gonder")) $("#m3s1-dosya-gonder").textContent = `📤 ${klasor}'e Dağıt`;
 }
 
 /* Kodlar pencere kapanınca bellekten ve sayfadan silinir. Tek bir olaya

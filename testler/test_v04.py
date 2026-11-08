@@ -48,7 +48,7 @@ def _kayit_defteri():
 def _kullanilan_kodlar():
     """HTML ve JS'teki data-ui-id değerleri; `${...}` satır kimlikleri '*' olur."""
     kodlar = set()
-    for dosya in [ARAYUZ / "index.html", *ARAYUZ.glob("*.js")]:
+    for dosya in [ARAYUZ / "index.html", *(f for f in ARAYUZ.glob("*.js") if f.name != "referans.js")]:
         metin = dosya.read_text(encoding="utf-8")
         for es in re.finditer(r'data-ui-id="(M\d+-S\d+(?:-B\d+)?)"', metin):
             kodlar.add(es.group(1))
@@ -88,9 +88,6 @@ class TestReferansKodlari:
                 kayit.add(f"{menu.group(1)}-{sayfa}")
         assert sayfalar_html == kayit
         assert {"M1-S1", "M1-S2", "M2-S1", "M2-S2", "M2-S3", "M3-S1", "M4-S1", "M5-S1"} <= kayit
-        for kod in sayfalar_html:
-            m, s = kod.split("-")
-            assert f'<span class="kod-cip">{m} · {s}</span>' in html, f"{kod} başlığında kod yok"
 
     def test_ornek_satir_kodu_bicimi(self):
         dugmeler, _, _ = _kayit_defteri()

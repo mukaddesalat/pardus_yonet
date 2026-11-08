@@ -1,6 +1,8 @@
 # Lab Kaptanı — Ödev ve Dosya Dağıtım Kılavuzu
 
-Bu belge, Lab Kaptanı'nın **Ödev Teslim ve Materyal Dağıtım Modülü**'nün hem öğretmen hem de öğrenci tarafındaki kullanımını açıklar. Sistem tamamen yerel ağda çalışır; internet veya harici bulut servisi gerektirmez.
+Bu belge, Lab Kaptanı'nın **Ödev Teslim ve Materyal Dağıtım Modülü**'nün hem öğretmen hem de öğrenci tarafındaki kullanımını ayrıntılı olarak açıklar. Sistem tamamen yerel ağda çalışır; internet veya harici bulut servisi gerektirmez.
+
+![Ödev ve Materyal Dağıtım Ekranı](gorseller/02_odev_dagitim.png)
 
 ---
 
@@ -9,13 +11,15 @@ Bu belge, Lab Kaptanı'nın **Ödev Teslim ve Materyal Dağıtım Modülü**'nü
 ### 1. Sınıf Listesini Ekleyin
 **Ödev & Dosya Dağıt → Sınıf Listeleri & Öğrenci Kod Kartları**
 
+![Sınıf Listeleri ve Kod Kartları](gorseller/03_odev_sinif_listeleri.png)
+
 * **CSV ile İçe Aktarma:** `sınıf;öğrenci numarası;ad soyad` formatındaki CSV dosyanızı yükleyebilirsiniz. Şablon dosya için depodaki [`belgeler/ornek_sinif_listesi.csv`](ornek_sinif_listesi.csv) örneğini kullanabilirsiniz.
 * **Elle Ekleme:** Dilerseniz sınıfı oluşturup öğrencileri ad ve numaralarıyla tek tek listeye ekleyebilirsiniz.
 
 ### 2. Öğrenci Teslim Kodlarını Dağıtın
 1. **Kodu Olmayanlara Kod Üret** butonuna tıklayın. Sistem her öğrenci için tahmin edilemeyen, güvenli 8 karakterlik bir kişisel kod (`XXXX-XXXX`) üretir.
 2. **Kartları Yazdır** butonuna basarak her öğrenciye ait sınıf, numara, kod ve portal adresini içeren teslim fişlerini yazdırıp öğrencilere dağıtın.
-3. *Güvenlik Notu:* Kodunu kaybeden öğrenci olursa, listeden öğrenciyi seçip **Seçililere Yeni Kod Üret** diyebilirsiniz; eski kod anında iptal edilir.
+3. *Güvenlik Notu:* Kodunu kaybeden öğrenci olursa, listeden öğrenciyi seçip **Seçililere Yeni Kod Üret** diyebilirsiniz; eski kod anında iptal edilir ve öğrencinin yeni koduyla giriş yapması sağlanır.
 
 ### 3. Ödev Oluşturun ve Teslimleri Açın
 **Ödev & Dosya Dağıt → Yeni Ödev**
@@ -25,8 +29,14 @@ Bu belge, Lab Kaptanı'nın **Ödev Teslim ve Materyal Dağıtım Modülü**'nü
 * **Dosya Kısıtlamaları:** İzin verilen dosya uzantıları (`.pdf`, `.py`, `.sb3`, `.docx`, `.zip` vb.), maksimum dosya sayısı ve boyut sınırını tanımlayın.
 * Ödev ilk başta **Taslak** durumundadır. Öğrencilerin görmesi için **Teslimleri Aç** butonuna basın.
 
-### 4. Masaüstüne Ders Materyali Dağıtın
-* Dilerseniz öğrencilerin bilgisayarlarındaki `/home/ogrenci/Masaüstü` klasörüne çalışma kağıdı, PDF, proje şablonu veya doğrudan tıklanabilir web bağlantısı (URL kısayolu) gönderebilirsiniz.
+### 4. Masaüstüne Ders Materyali ve Dosya Dağıtımı
+Öğretmenler öğrencilerin bilgisayarlarına doğrudan çalışma kağıdı, PDF, proje şablonu veya web bağlantısı gönderebilir.
+
+* **Hedef Klasör Özelleştirmesi:**
+  - Dosyalar varsayılan olarak öğrenci masaüstündeki `Odevler` klasörüne aktarılır: `/home/ogrenci/Masaüstü/Odevler`
+  - Öğretmen dilerse bu hedef klasörü değiştirebilir (örneğin `/home/ogrenci/Masaüstü/DersNotlari` veya `/home/ogrenci/Projeler`). Belirtilen klasör hedef bilgisayarda yoksa otomatik olarak oluşturulur ve dosya güvenle içine yerleştirilir.
+* **Dağıtım Kapsamı:** Dağıtım tüm sınıfa veya yalnızca seçili bilgisayarlara yapılabilir.
+* **URL Dağıtımı:** Bir web sayfası linki girildiğinde, öğrencinin masaüstüne tek tıkla açılabilecek bir `.desktop` web kısayolu oluşturulur.
 
 ### 5. Teslimleri Takip Edin ve Toplu İndirin (ZIP)
 * **Takip** ekranında sınıftaki her öğrencinin teslim durumu anlık listelenir:
@@ -56,5 +66,5 @@ Bu belge, Lab Kaptanı'nın **Ödev Teslim ve Materyal Dağıtım Modülü**'nü
 ## 🌐 Bölüm 3: Ağ ve Teknik Notlar
 
 * **Portal Portu:** Ödev teslim portalı varsayılan olarak `8090` portunda çalışır (`http://<öğretmen-ip>:8090`).
-* **Ad Çözümleme (`ogretmen.lab`):** Öğrencilerin IP adresi yerine kolayca `ogretmen.lab:8090` yazabilmesi için, Lab Kaptanı'nın **Komut Gönder** ekranındaki **Hızlı /etc/hosts Ekleme** aracıyla öğretmen IP'si sınıfa tek tıkla tanımlanabilir.
+* **Ad Çözümleme (`ogretmen.lab`):** Öğrencilerin IP adresi yerine kolayca `ogretmen.lab:8090` yazabilmesi için, Lab Kaptanı'nın **Komut Mağazası & Araçlar** sekmesindeki **Serbest Uçbirim / Hızlı /etc/hosts Dağıtımı** aracıyla öğretmen IP'si sınıftaki tüm makinelere tek tıkla tanımlanabilir.
 * **Depolama Güvenliği:** Öğrenci teslimleri öğretmen bilgisayarında `/var/lib/pardus-sinif-odev/` altında güvenle saklanır.

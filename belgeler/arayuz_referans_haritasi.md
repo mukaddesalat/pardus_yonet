@@ -341,9 +341,6 @@ Yönetim uygulamasını başka bilgisayara taşıma (.tar.gz yedek + .deb + yede
 | Kod | Ad | İşlev |
 | --- | --- | --- |
 | `M5-S1-B1` | Saklama sayısını kaydet | Her bilgisayarda tutulacak yedek/karantina sayısı |
-| `M5-S1-B2` | Referans kodlarını göster/gizle | M0-S1-B1 ile aynı işlev |
-| `M5-S1-B3` | Rehberde ara | Kod veya ada göre süzer |
-| `M5-S1-B4` | Referans haritasını indir | Tüm kodları Markdown dosyası olarak indirir |
 | `M5-S1-B5` | Tam sistem yedeği oluştur | Envanter, SSH anahtarları, Veyon, galeri, ödevler ve .deb paketini .tar.gz olarak yedekler |
 | `M5-S1-B6` | Yedek dosyası seç (.tar.gz) | Bilgisayardan geri yüklenecek tam sistem yedeğini seçer ve doğrular |
 | `M5-S1-B7` | Seçilen yedeği geri yükle | Doğrulanan .tar.gz yedek arşivini canlı sisteme geri yükler |
@@ -367,4 +364,6 @@ Okul adı ve logosu, öğretmen hesapları, Admin/Standart rolü ve isteğe bağ
 
 ## Emekli kodlar
 
-Henüz yok.
+- `M5-S1-B2` — Referans kodlarını göster/gizle (0.8.0)
+- `M5-S1-B3` — Rehberde ara (0.8.0)
+- `M5-S1-B4` — Referans haritasını indir (0.8.0)

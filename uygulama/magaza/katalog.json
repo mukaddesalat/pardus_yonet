@@ -1,0 +1,175 @@
+[
+  {
+    "id": "veyon-servis-ac",
+    "ad": "Veyon Servisini Kontrol Et ve Başlat",
+    "kategori": "veyon",
+    "risk": "degisiklik",
+    "ozet": "Öğrenciler Veyon servisini kapattığında servisi unmask/enable yapıp anında yeniden ayağa kaldırır.",
+    "yazar": "Pardus Lab Ekibi",
+    "surum": "1.2.0",
+    "sudo": true,
+    "parametreler": [],
+    "betik": "if systemctl is-active --quiet veyon && pgrep -x veyon-service >/dev/null; then\n  echo '::psy:bilgi=Veyon servisi zaten aktif ve çalışıyor.'\n  echo 'OK: Veyon servisi ve arka plan süreçleri çalışıyor (aktif).'\nelse\n  echo '::psy:bilgi=Veyon servisi kapalı; yeniden ayağa kaldırılıyor...'\n  systemctl unmask veyon 2>/dev/null || true\n  systemctl enable veyon 2>/dev/null || true\n  systemctl restart veyon 2>/dev/null || systemctl restart veyon-service 2>/dev/null || true\n  sleep 1\n  if systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service; then\n    echo '::psy:sonuc=ok'\n    echo 'BAŞARILI: Veyon servisi ayağa kaldırıldı ve aktif duruma getirildi.'\n  else\n    echo 'HATA: Veyon servisi başlatılamadı!'\n    systemctl status veyon --no-pager -n 5 2>/dev/null || true\n    exit 1\n  fi\nfi"
+  },
+  {
+    "id": "hosts-kayit-ekle",
+    "ad": "Yerel Alan Adı (Hosts) Dağıt",
+    "kategori": "ag",
+    "risk": "degisiklik",
+    "ozet": "Öğrenci bilgisayarlarının /etc/hosts dosyasına yerel sunucu IP ve alan adını güvenle ekler veya günceller.",
+    "yazar": "Kemal Öğretmen",
+    "surum": "1.1.0",
+    "sudo": true,
+    "parametreler": [
+      {
+        "ad": "ip",
+        "etiket": "Hedef IP Adresi",
+        "tip": "metin",
+        "varsayilan": "192.168.1.100",
+        "zorunlu": true,
+        "aciklama": "Öğretmen bilgisayarı veya yerel sunucu IP adresi"
+      },
+      {
+        "ad": "alan_adi",
+        "etiket": "Alan Adı (Hostname)",
+        "tip": "metin",
+        "varsayilan": "ogretmen.lab",
+        "zorunlu": true,
+        "aciklama": "Örn. ogretmen.lab veya portal.yerel"
+      }
+    ],
+    "betik": ": \"${PSY_P_ip:?ip parametresi gerekli}\"\n: \"${PSY_P_alan_adi:?alan_adi parametresi gerekli}\"\nAD_KACIS=$(printf \"%s\" \"$PSY_P_alan_adi\" | sed \"s/\\./\\\\./g\")\nif grep -qE \"(^|[[:space:]])${AD_KACIS}([[:space:]]|$)\" /etc/hosts; then\n  sed -i \"s/.*[[:space:]]${AD_KACIS}.*/$PSY_P_ip\\t$PSY_P_alan_adi/\" /etc/hosts\n  echo \"::psy:degisti=/etc/hosts\"\n  echo \"OK: /etc/hosts içindeki $PSY_P_alan_adi kaydı $PSY_P_ip olarak güncellendi.\"\nelse\n  printf \"\\n%s\\t%s\\n\" \"$PSY_P_ip\" \"$PSY_P_alan_adi\" >> /etc/hosts\n  echo \"::psy:degisti=/etc/hosts\"\n  echo \"OK: /etc/hosts dosyasına $PSY_P_ip -> $PSY_P_alan_adi kaydı eklendi.\"\nfi\ngrep \"$PSY_P_alan_adi\" /etc/hosts\n"
+  },
+  {
+    "id": "kullanici-ev-dizini-sil",
+    "ad": "Kullanıcı ve Ev Dizinini Sil",
+    "kategori": "kullanici",
+    "risk": "yikici",
+    "ozet": "Sistem ve yönetim hesapları hariç belirtilen kullanıcının açık süreçlerini sonlandırıp ev diziniyle birlikte siler.",
+    "yazar": "Fatma Öğretmen",
+    "surum": "1.0.0",
+    "sudo": true,
+    "parametreler": [
+      {
+        "ad": "kullanici",
+        "etiket": "Silinecek Kullanıcı Adı",
+        "tip": "metin",
+        "varsayilan": "misafir",
+        "zorunlu": true,
+        "yasak": [
+          "root",
+          "pardus",
+          "hp",
+          "ogrenci"
+        ],
+        "aciklama": "Sistem kullanıcıları koruma altındadır ve silinemez"
+      },
+      {
+        "ad": "yedek_al",
+        "etiket": "Silmeden önce ev dizinini arşivle",
+        "tip": "onay",
+        "varsayilan": true,
+        "aciklama": "/var/lib/pardus-sinif-yonetimi/karantina/ altına geçici yedek alır"
+      }
+    ],
+    "betik": ": \"${PSY_P_kullanici:?kullanici parametresi gerekli}\"\nHEDEF=\"$PSY_P_kullanici\"\nif [ \"$HEDEF\" = \"root\" ] || [ \"$HEDEF\" = \"pardus\" ] || [ \"$HEDEF\" = \"hp\" ] || [ \"$HEDEF\" = \"ogrenci\" ]; then\n  echo \"HATA: $HEDEF korumalı sistem hesabıdır, silinemez!\" >&2\n  exit 1\nfi\nif id \"$HEDEF\" &>/dev/null; then\n  if [ \"${PSY_P_yedek_al:-0}\" = \"1\" ] && [ -d \"/home/$HEDEF\" ]; then\n    mkdir -p /var/lib/pardus-sinif-yonetimi/karantina 2>/dev/null || true\n    tar -czf \"/var/lib/pardus-sinif-yonetimi/karantina/silinen_${HEDEF}_$(date +%s).tar.gz\" -C /home \"$HEDEF\" 2>/dev/null || true\n    echo \"::psy:bilgi=Ev dizini karantinaya yedeklendi.\"\n  fi\n  pkill -KILL -u \"$HEDEF\" 2>/dev/null || true\n  userdel -r \"$HEDEF\"\n  echo \"::psy:degisti=/home/$HEDEF\"\n  echo \"OK: $HEDEF kullanıcısı ve ev dizini sistemden silindi.\"\nelse\n  echo \"ATLANDI: $HEDEF adlı kullanıcı sistemde bulunamadı.\"\nfi\n"
+  },
+  {
+    "id": "disk-bellek-raporu",
+    "ad": "Disk ve RAM Sağlık Özeti",
+    "kategori": "sistem",
+    "risk": "bilgi",
+    "ozet": "Öğrenci bilgisayarlarındaki boş disk alanını ve RAM kullanımını hızlıca raporlar (salt okunur).",
+    "yazar": "Bilişim Zümresi",
+    "surum": "1.0.0",
+    "sudo": false,
+    "parametreler": [],
+    "betik": "echo \"=== HOST: $(hostname) ===\"\necho \"--- BELLEK (RAM) ---\"\nfree -h | awk 'NR<=2'\necho \"--- DİSK ALANI ---\"\ndf -h / /home 2>/dev/null | awk 'NR<=3'\n"
+  },
+  {
+    "id": "bozuk-paket-onar",
+    "ad": "Kilitli ve Bozuk Paketleri Onar",
+    "kategori": "paket",
+    "risk": "degisiklik",
+    "ozet": "Yarım kalmış apt kilitlerini, bozuk bağımlılıkları ve eksik paket kurulumlarını onarır.",
+    "yazar": "Pardus Lab Ekibi",
+    "surum": "1.1.0",
+    "sudo": true,
+    "parametreler": [],
+    "betik": "export DEBIAN_FRONTEND=noninteractive\ndpkg --configure -a 2>&1\napt-get -f install -y 2>&1\necho '::psy:sonuc=ok'\necho 'OK: Paket sistemi ve kilitler başarıyla onarıldı.'\n"
+  },
+  {
+    "id": "ogrenci-masaustu-temizle",
+    "ad": "Öğrenci Masaüstü ve İndirilenleri Temizle",
+    "kategori": "bakim",
+    "risk": "yikici",
+    "ozet": "Ders bitiminde /home/ogrenci/Masaüstü ve İndirilenler klasöründeki gereksiz dosyaları temizler.",
+    "yazar": "Mehmet Öğretmen",
+    "surum": "1.0.0",
+    "sudo": true,
+    "parametreler": [
+      {
+        "ad": "copu_bosalt",
+        "etiket": "Çöp kutusunu da tamamen temizle",
+        "tip": "onay",
+        "varsayilan": true
+      }
+    ],
+    "betik": "rm -rf /home/ogrenci/İndirilenler/* /home/ogrenci/Downloads/* 2>/dev/null || true\nfind /home/ogrenci/Masaüstü -mindepth 1 ! -name '*.desktop' -delete 2>/dev/null || true\nif [ \"${PSY_P_copu_bosalt:-0}\" = \"1\" ]; then\n  rm -rf /home/ogrenci/.local/share/Trash/* 2>/dev/null || true\nfi\necho '::psy:degisti=/home/ogrenci/Masaüstü'\necho 'OK: Öğrenci masaüstü ve indirilenler temizlendi.'\n"
+  },
+  {
+    "id": "tarayici-sifirla",
+    "ad": "Tarayıcı Önbellek ve Açık Oturumları Temizle",
+    "kategori": "bakim",
+    "risk": "degisiklik",
+    "ozet": "Chromium ve Firefox profillerini sıfırlamadan önbellek, çerezler ve açık oturumları temizler.",
+    "yazar": "Pardus Lab Ekibi",
+    "surum": "1.0.0",
+    "sudo": true,
+    "parametreler": [],
+    "betik": "pkill -f chromium 2>/dev/null || true\npkill -f firefox 2>/dev/null || true\nrm -rf /home/ogrenci/.cache/chromium/Default/* 2>/dev/null || true\nrm -rf /home/ogrenci/.cache/mozilla/firefox/* 2>/dev/null || true\necho '::psy:sonuc=ok'\necho 'OK: Tarayıcı önbelleği ve açık oturumlar güvenle temizlendi.'\n"
+  },
+  {
+    "id": "ag-baglanti-testi",
+    "ad": "Ağ ve Ağ Geçidi Bağlantı Testi",
+    "kategori": "ag",
+    "risk": "bilgi",
+    "ozet": "Bilgisayarın yerel ağ geçidi (Gateway) ve MEB DNS erişimini test ederek gecikme sürelerini raporlar.",
+    "yazar": "Bilişim Zümresi",
+    "surum": "1.0.0",
+    "sudo": false,
+    "parametreler": [],
+    "betik": "GW=$(ip route | awk '/default/ {print $3}' | head -n1)\necho \"=== Ağ Geçidi: $GW ===\"\nif [ -n \"$GW\" ]; then\n  ping -c 3 -W 2 \"$GW\" || echo \"Ağ geçidine ulaşılamadı!\"\nfi\necho \"=== DNS Testi (195.175.39.39) ===\"\nping -c 2 -W 2 195.175.39.39 2>/dev/null || echo \"Dış DNS erişimi başarısız!\"\n"
+  },
+  {
+    "id": "paket-guncelleme-sayaci",
+    "ad": "Güncellenebilir Paket Sayacı ve Raporu",
+    "kategori": "bakim",
+    "risk": "bilgi",
+    "ozet": "Sınıftaki bilgisayarlarda kaç adet güncellenebilir paket ve güvenlik yaması olduğunu bilgisayar başına hesaplayıp temiz bir liste halinde raporlar.",
+    "yazar": "Pardus Lab Topluluğu",
+    "surum": "1.0.0",
+    "sudo": false,
+    "parametreler": [
+      {
+        "ad": "onbellek_guncelle",
+        "etiket": "Önce Depo Listesini Güncelle (apt update)",
+        "tip": "secim",
+        "secenekler": ["hayir", "evet"],
+        "varsayilan": "hayir",
+        "zorunlu": true,
+        "aciklama": "'evet' seçilirse önce depolardan güncel liste çekilir; 'hayir' seçilirse mevcut önbellek taranır."
+      },
+      {
+        "ad": "detay_goster",
+        "etiket": "Rapor Detay Düzeyi",
+        "tip": "secim",
+        "secenekler": ["ayrintili", "ozet"],
+        "varsayilan": "ayrintili",
+        "zorunlu": true,
+        "aciklama": "'ayrintili' seçildiğinde güncellenecek paket adları listelenir; 'ozet' seçildiğinde sadece toplam sayılar gösterilir."
+      }
+    ],
+    "betik": "ONBELLEK=\"${PSY_P_onbellek_guncelle:-hayir}\"\nDETAY=\"${PSY_P_detay_goster:-ayrintili}\"\nHOSTNAME_VAL=$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || echo \"Bilinmiyor\")\nIP_VAL=$(hostname -I 2>/dev/null | awk '{print $1}')\necho \"==================================================\"\necho \"  PARDUS PAKET GÜNCELLEME SAYACI VE ANALİZİ\"\necho \"  Bilgisayar: $HOSTNAME_VAL ($IP_VAL)\"\necho \"  Tarih: $(date '+%Y-%m-%d %H:%M:%S')\"\necho \"==================================================\"\nif [ \"$ONBELLEK\" = \"evet\" ]; then\n  echo -e \"\\n[*] Depolar taranıyor (apt-get update)...\"\n  sudo -n apt-get update -qq 2>/dev/null || true\nfi\nSIM_OUT=$(LC_ALL=C apt-get -s dist-upgrade 2>/dev/null || true)\nUPG_COUNT=$(echo \"$SIM_OUT\" | grep -E \"^[0-9]+ upgraded\" | awk '{print $1}')\n[ -z \"$UPG_COUNT\" ] && UPG_COUNT=0\nSEC_COUNT=$(echo \"$SIM_OUT\" | grep \"^Inst \" | grep -Ei \"(security|debian-security|pardus-security|-updates)\" | wc -l || echo 0)\nKERNEL_UPG=$(echo \"$SIM_OUT\" | grep \"^Inst linux-image\" | wc -l || echo 0)\necho \"\"\necho \"::psy:bilgi=Güncelleme analizi: $UPG_COUNT paket güncellenebilir.\"\nif [ \"$UPG_COUNT\" -eq 0 ]; then\n  echo \"  Durum                          : [GÜNCEL] Sistem günceldir.\"\n  echo \"  Toplam Güncellenebilir Paket   : 0\"\n  echo \"  Güvenlik Güncellemesi          : 0\"\n  echo \"==================================================\"\n  echo \"::psy:sonuc=guncel\"\n  exit 0\nfi\necho \"  Durum                          : [GÜNCELLEME GEREKLİ]\"\necho \"  Toplam Güncellenebilir Paket   : $UPG_COUNT\"\necho \"  Güvenlik Güncellemesi          : $SEC_COUNT\"\nif [ \"$KERNEL_UPG\" -gt 0 ]; then\n  echo \"  Çekirdek (Kernel) Güncellemesi : VAR ($KERNEL_UPG adet yeni çekirdek)\"\nelse\n  echo \"  Çekirdek (Kernel) Güncellemesi : Yok\"\nfi\necho \"==================================================\"\nif [ \"$DETAY\" = \"ayrintili\" ]; then\n  echo \"\"\n  echo \"Güncellenecek Paketlerin Listesi:\"\n  echo \"--------------------------------------------------\"\n  echo \"$SIM_OUT\" | grep \"^Inst \" | while read -r line; do\n    PKG=$(echo \"$line\" | awk '{print $2}')\n    NEW_VER=$(echo \"$line\" | sed -n 's/.*(\\(.*\\) .*/\\1/p' | awk '{print $1}')\n    IS_SEC=$(echo \"$line\" | grep -Ei \"(security|debian-security|-updates)\" >/dev/null && echo \"[GÜVENLİK]\" || echo \"\")\n    printf \"  %-32s -> %-20s %s\\n\" \"$PKG\" \"$NEW_VER\" \"$IS_SEC\"\n  done\n  echo \"--------------------------------------------------\"\nfi\necho \"\"\necho \"Öneri:\"\nif [ \"$SEC_COUNT\" -gt 0 ]; then\n  echo \"  [DİKKAT] $SEC_COUNT adet güvenlik güncellemesi mevcut!\"\nfi\necho \"  Güncellemek için: Lab Kaptanı 'Yazılım Merkezi' veya 'Serbest Uçbirim' kullanabilirsiniz.\"\necho \"==================================================\"\n"
+  }
+]

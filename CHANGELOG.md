@@ -3,6 +3,28 @@
 Bu dosya [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) biçimini izler ve
 sürüm numaraları [Anlamsal Sürümleme](https://semver.org/lang/tr/) ile verilir.
 
+## [0.9.0] — 2026-11-08
+
+### Eklenen & Geliştirilen
+- **Komut Mağazası ve Topluluk Araçları Modülü (M2-S6):**
+  - Resmi GitHub deposu ([`mukaddesalat/pardus_yonet_magaza`](https://github.com/mukaddesalat/pardus_yonet_magaza)) entegrasyonu; tüm depoyu klonlamadan `katalog.json` üzerinden tek tıkla canlı güncelleme.
+  - 5 işlevsel sekme: *🏪 Komut Kataloğu*, *🧰 Araçlarım & Sabitlenenler*, *⚡ Aracı Çalıştır*, *➕ Yeni Araç Taslağı* ve *💻 Serbest Uçbirim & Hosts*.
+  - Sık kullanılan araçları tek tıkla doğrudan canlı **Sınıf Masası Panosu**'na sabitleme (`M1-S1-PANO`) ve derste 1-tık ile çalıştırma.
+  - Yeni hazır araç: **Güncellenebilir Paket Sayacı ve Raporu (`paket-guncelleme-sayaci`)** ile sınıftaki bilgisayarların bekleyen güncelleme ve güvenlik yamalarını tek tek sayıp raporlama.
+- **Arayüz ve Menü Sadeleştirmesi:**
+  - Modern 3 ana grup hiyerarşisi: *Günlük Ders Akışı*, *Araç Kutusu*, *Yönetici & Kurulum*.
+  - Menü başlığı taşmaları ve seperatör hizalamaları düzeltildi; alt sekmeli gezinim getirildi.
+- **Ödev ve Materyal Dağıtımı (M1-S3):**
+  - Öğrenci masaüstü hedef klasörünü dinamik olarak belirleme (varsayılan `/home/ogrenci/Masaüstü/Odevler`, öğretmen dilerse `/home/ogrenci/Masaüstü/DersNotlari` vb. olarak değiştirebilir; klasör yoksa uzaktan otomatik oluşturulur).
+  - Admin öğretmen ve standart ders öğretmeni rol yetkileri ayrıştırıldı.
+- **Belirgin ve Kendiliğinden Kapanan Öğrenci Bildirim Sistemi (OSD):**
+  - GNOME bildirimlerinin kaybolmama ve fark edilmeme sorununa karşılık ekranda belirgin, 8 saniye sonra otomatik kapanan kurumsal duyuru katmanı eklendi.
+- **Dokümantasyon ve 23 Yeni Yüksek Çözünürlüklü Ekran Görüntüsü:**
+  - `belgeler/gorseller/` dizinine 23 yeni yüksek çözünürlüklü arayüz görseli eklendi.
+  - `kullanim_kilavuzu.md`, `yonetici_kilavuzu.md` ve `odev_kilavuzu.md` yeni menü yapısına göre baştan sona güncellendi.
+  - Yeni [belgeler/magaza_kilavuzu.md](belgeler/magaza_kilavuzu.md) dokümanı eklendi (Mağaza mimarisi, parametre şeması, paket güncelleme sayacı senaryosu ve katkı rehberi).
+  - Arayüz referans haritası (`belgeler/arayuz_referans_haritasi.md`) güncellendi.
+
 ## [0.8.2] — 2026-11-07
 
 ### Düzeltilen & Geliştirilen

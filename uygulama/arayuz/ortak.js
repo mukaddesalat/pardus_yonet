@@ -225,9 +225,10 @@ function sayfaYetkiliMi(kod) {
   const ogr = Uyg.ogretmen;
   if (!ogr || ogr.rol === "admin") return true;
   const yetkiler = Array.isArray(ogr.yetkiler) ? ogr.yetkiler : [];
-  if (["M1-S1", "M2-S1", "M2-S4", "M2-S5", "M3-S1", "M3-S2", "M4-S1"].includes(kod)) return true;
+  if (["M1-S1", "M2-S1", "M2-S4", "M2-S5", "M3-S1", "M3-S2"].includes(kod)) return true;
+  if (kod === "M4-S1") return false; // Yalnızca Admin rolündeki öğretmenler görebilir (Soru 1 kararı)
   if (["M2-S2", "M2-S3"].includes(kod)) return yetkiler.includes("paket_gorunum");
-  if (kod === "M2-S6") return yetkiler.includes("komut_gonder");
+  if (kod === "M2-S6") return true; // Araç Mağazası tüm öğretmenlere açıktır; yetki kontrolü çalıştırma anında yapılır.
   return false;
 }
 
@@ -239,7 +240,7 @@ const SEZGISEL_MENULER = [
         id: "nav-sinif",
         emoji: "🖥️",
         baslik: "Sınıf Masası",
-        alt: "Ekran Kilit, Duyuru, İnternet, Güç",
+        alt: "Ekran Kilit, Duyuru, İnternet, Hızlı Araçlar",
         sayfalar: [["M1-S1", "🖥️ Sınıf Masası"]],
       },
       {
@@ -249,36 +250,45 @@ const SEZGISEL_MENULER = [
         alt: "Teslimler, Materyal, Öğrenci Kartları",
         sayfalar: [
           ["M3-S1", "📚 Ödev Teslimleri & Masaüstüne Dağıtım"],
-          ["M3-S2", "🪪 Sınıf Listeleri & Öğrenci Kod Kartları"],
         ],
       },
       {
         id: "nav-bakim",
         emoji: "🧹",
-        baslik: "Bakım, Görünüm & Güç",
-        alt: "Temizlik, Güç, Zamanlı Kapatma, Paket & Görünüm",
-        altStandart: "Ders Sonu Temizliği, Güç & Zamanlı Kapatma",
+        baslik: "Bakım & Güç",
+        alt: "Ders Sonu Temizliği, Güç & Zamanlı Kapatma",
         sayfalar: [
           ["M2-S1", "🧹 Ders Sonu Temizliği & Yedek"],
           ["M2-S4", "🔌 Güç & Uyku Ayarı"],
           ["M2-S5", "⏰ Zamanlı Kapatma"],
-          ["M2-S2", "📦 .deb Paket Kurulumu"],
-          ["M2-S3", "🖼️ Masaüstü Görünümü"],
         ],
       },
+    ],
+  },
+  {
+    bolum: "🧰 ARAÇ KUTUSU",
+    gelismis: true,
+    ogeler: [
       {
-        id: "nav-komut",
-        emoji: "💻",
-        baslik: "Komut Gönder",
-        alt: "SSH Bash, Hosts, Canlı Çıktı",
-        sayfalar: [["M2-S6", "💻 SSH Komut & Hosts Merkezi"]],
+        id: "nav-magaza",
+        emoji: "🏪",
+        baslik: "Komut Mağazası",
+        alt: "Katalog, Araçlarım, Uçbirim & Hosts",
+        sayfalar: [["M2-S6", "🏪 Komut Mağazası & Araçlar"]],
       },
       {
-        id: "nav-gecmis",
-        emoji: "📋",
-        baslik: "İşlem Geçmişi",
-        alt: "Yapılan İşlemler & CSV Rapor",
-        sayfalar: [["M4-S1", "📋 İşlem Geçmişi"]],
+        id: "nav-paket",
+        emoji: "📦",
+        baslik: "Yazılım Kurulumu",
+        alt: ".deb Paket Kurulumu & Yönetimi",
+        sayfalar: [["M2-S2", "📦 .deb Paket Kurulumu"]],
+      },
+      {
+        id: "nav-gorunum",
+        emoji: "🖼️",
+        baslik: "Masaüstü Görünümü",
+        alt: "Duvar Kâğıdı, Panel & Simge Kilidi",
+        sayfalar: [["M2-S3", "🖼️ Masaüstü Görünümü"]],
       },
     ],
   },
@@ -287,17 +297,37 @@ const SEZGISEL_MENULER = [
     yalnizAdmin: true,
     ogeler: [
       {
+        id: "nav-gecmis",
+        emoji: "📜",
+        baslik: "İşlem Geçmişi",
+        alt: "Yapılan İşlemler & CSV Rapor",
+        sayfalar: [["M4-S1", "📜 İşlem Geçmişi"]],
+      },
+      {
+        id: "nav-okul",
+        emoji: "🏫",
+        baslik: "Okul ve Öğretmenler",
+        alt: "Logo, İsim & Öğretmen Hesapları",
+        sayfalar: [["M5-S2", "🏫 Okul Logosu & Öğretmenler"]],
+      },
+      {
         id: "nav-kurulum",
-        emoji: "⚙️",
-        baslik: "Kurulum, Okul & Öğretmen",
-        alt: "Logo, Hesaplar, İlk Hazırlık, Veyon, Yedek",
+        emoji: "🔑",
+        baslik: "Bilgisayar Kurulumu",
+        alt: "Ağda Bul, SSH & Sudo Hazırla, Veyon",
         sayfalar: [
-          ["M5-S2", "🏫 Okul Logosu & Öğretmenler"],
-          ["M1-S2", "🔑 İlk Hazırlık (SSH & Sudo)"],
           ["M1-S3", "🔍 Ağda Bilgisayar Bul"],
+          ["M1-S2", "🔑 İlk Hazırlık (SSH & Sudo)"],
           ["M1-S4", "👁️ Veyon Kurulumu"],
-          ["M5-S1", "🛠️ Sistem Ayarları & Yedekleme"],
+          ["M1-SAGLIK", "🩺 Sağlık Testi"],
         ],
+      },
+      {
+        id: "nav-yedek",
+        emoji: "💾",
+        baslik: "Yedek ve Taşıma",
+        alt: "Sistem Yedeği Al, Geri Yükle & Arşiv",
+        sayfalar: [["M5-S1", "🛠️ Sistem Ayarları & Yedekleme"]],
       },
     ],
   },
@@ -423,30 +453,119 @@ function yanDurumGuncelle(ekranKilitli, internetKisitli) {
   }
 }
 
-/** Sezgisel sol menü (demo_arayuz.html düzeni): büyük ikonlu kartlar + üst alt-sekme çubuğu. */
+/** Gelişmiş Görünüm modu: Araç Kutusu ve teknik ayrıntıları açar/kapatır. */
+function gelismisModAyarla(acik) {
+  Uyg.gelismisMod = typeof acik === "boolean" ? acik : !Uyg.gelismisMod;
+  try {
+    localStorage.setItem("psy_gelismis_mod", Uyg.gelismisMod ? "1" : "0");
+  } catch (_) { /* depolama yok */ }
+  const btn = $("#btn-gelismis-mod");
+  if (btn) {
+    btn.classList.toggle("aktif", Boolean(Uyg.gelismisMod));
+    btn.setAttribute("aria-pressed", Uyg.gelismisMod ? "true" : "false");
+    btn.textContent = Uyg.gelismisMod ? "⚙️ Gelişmiş: Açık" : "⚙️ Gelişmiş Görünüm";
+  }
+  document.body.classList.toggle("gelismis-mod-aktif", Boolean(Uyg.gelismisMod));
+  menuKur();
+}
+
+/** Sınıf Masası'na panoya sabitlenen araçları 1-tık düğmeleri olarak çizer */
+async function sabitlenenAraclariCiz() {
+  const kap = $("#m1s1-sabit-arac-butonlar");
+  if (!kap) return;
+  try {
+    const [katalog, sabitler] = await Promise.all([
+      api("/api/magaza/katalog"),
+      api("/api/magaza/sabitler"),
+    ]);
+    if (!sabitler || !sabitler.length) {
+      kap.replaceChildren(
+        el("span", { class: "ipucu", metin: "Sabitlenmiş araç yok. Komut Mağazası'ndan sık kullandığınız araçları sabitleyebilirsiniz." })
+      );
+      return;
+    }
+    const dugmeler = [];
+    for (const sid of sabitler) {
+      const arac = (katalog || []).find((a) => a.id === sid);
+      if (!arac) continue;
+      const simge = arac.kategori === "veyon" ? "🔄" : arac.kategori === "ag" ? "🌐" : arac.kategori === "kullanici" ? "👤" : arac.kategori === "sistem" ? "📊" : "⚡";
+      const btn = el("button", {
+        type: "button",
+        class: "sabit-arac-dugme",
+        title: arac.ozet || arac.ad,
+        onclick: async () => {
+          const hedefler = Secim.liste();
+          if (!hedefler.length) {
+            bildir("Lütfen önce işlem yapılacak bilgisayarları tablodan seçin.", true);
+            return;
+          }
+          const onay = await onayIste({
+            islem: "komut",
+            cihazlar: hedefler,
+            baslik: `⚡ Hızlı Araç: ${arac.ad}`,
+            aciklama: arac.ozet || "Seçili bilgisayarlarda araç çalıştırılacaktır.",
+            uyarilar: [
+              `Araç ID: ${arac.id} (Sürüm: ${arac.surum || "1.0.0"})`,
+              arac.sudo ? "Bu işlem bilgisayarlarda root (sudo) yetkisiyle yürütülür." : "Standart kullanıcı yetkisiyle yürütülür.",
+            ],
+            yikici: arac.risk === "yikici",
+            baslatMetni: "Çalıştır",
+          });
+          if (!onay) return;
+          try {
+            const yanit = await api("/api/magaza/calistir", {
+              arac_id: arac.id,
+              cihazlar: hedefler,
+              parametreler: {},
+            });
+            if (yanit && yanit.is_id) {
+              bildir(`“${arac.ad}” ${hedefler.length} bilgisayarda başlatıldı.`);
+            }
+          } catch (hata) {
+            bildir(hata.message, true);
+          }
+        },
+      },
+      el("span", { class: "sabit-arac-simge", metin: simge }),
+      el("span", { class: "sabit-arac-ad", metin: arac.ad })
+      );
+      dugmeler.push(btn);
+    }
+    kap.replaceChildren(...dugmeler);
+  } catch (_) {
+    /* çevrimdışı veya hata */
+  }
+}
+
+/** Sezgisel sol menü: ilk bölüm hep açık; nadir gruplar katlanır, durumu hatırlanır. */
+function _grupAnahtar(bolum) { return `psy_menu_${bolum.ogeler[0].id}`; }
+
 function menuKur() {
   const nav = $("#menu");
+  if (!nav) return;
   nav.replaceChildren();
   const ogr = Uyg.ogretmen;
   const adminMi = !ogr || ogr.rol === "admin";
+  const gelismisMi = Boolean(Uyg.gelismisMod || adminMi);
   const yetkiler = (ogr && Array.isArray(ogr.yetkiler)) ? ogr.yetkiler : [];
 
-  for (const bolum of SEZGISEL_MENULER) {
-    if (bolum.yalnizAdmin && !adminMi) continue;
+  SEZGISEL_MENULER.forEach((bolum, i) => {
+    if (bolum.yalnizAdmin && !adminMi) return;
+    if (bolum.gelismis && !gelismisMi) return;
     const gorunenOgeler = bolum.ogeler.map((oge) => ({
       ...oge,
       yetkiliSayfalar: oge.sayfalar.filter(([kod]) => sayfaYetkiliMi(kod)),
     })).filter((oge) => oge.yetkiliSayfalar.length > 0);
-    if (!gorunenOgeler.length) continue;
+    if (!gorunenOgeler.length) return;
 
-    nav.append(el("div", { class: "sezgisel-bolum-baslik", metin: bolum.bolum }));
-    for (const oge of gorunenOgeler) {
+    const aktifGrupMu = gorunenOgeler.some((oge) => oge.sayfalar.some(([k]) => k === aktifSayfa));
+    const dugmeler = gorunenOgeler.map((oge) => {
       const altMetin = (!adminMi && oge.altStandart && !yetkiler.includes("paket_gorunum"))
         ? oge.altStandart
         : oge.alt;
-      const btn = el("button", {
+      return el("button", {
         type: "button",
-        class: "sezgisel-nav-dugme",
+        class: `sezgisel-nav-dugme${oge.sayfalar.some(([k]) => k === aktifSayfa) ? " aktif" : ""}`,
         "data-grup-id": oge.id,
         "data-ilk-sayfa": oge.yetkiliSayfalar[0][0],
         onclick: () => git(oge.yetkiliSayfalar[0][0]),
@@ -456,35 +575,23 @@ function menuKur() {
         el("strong", { class: "sezgisel-nav-baslik", metin: oge.baslik }),
         el("span", { class: "sezgisel-nav-alt", metin: altMetin })
       ));
-      nav.append(btn);
-    }
-  }
-}
+    });
 
-function _altSekmeleriCiz(aktifKod) {
-  let cubuk = $("#alt-sekme-cubugu");
-  if (!cubuk) {
-    cubuk = el("div", { id: "alt-sekme-cubugu", class: "alt-sekme-cubugu", role: "tablist" });
-    const sayfalarKap = $("#sayfalar");
-    if (sayfalarKap) sayfalarKap.prepend(cubuk);
-  }
-  const grup = _sayfayiIcerenGrup(aktifKod);
-  const yetkili = grup ? grup.sayfalar.filter(([k]) => sayfaYetkiliMi(k)) : [];
-  if (yetkili.length <= 1) {
-    cubuk.hidden = true;
-    cubuk.replaceChildren();
-    return;
-  }
-  cubuk.replaceChildren(
-    ...yetkili.map(([kod, etiket]) => el("button", {
-      type: "button",
-      role: "tab",
-      class: `alt-sekme-dugme${kod === aktifKod ? " aktif" : ""}`,
-      "aria-selected": kod === aktifKod ? "true" : "false",
-      onclick: () => git(kod),
-    }, etiket))
-  );
-  cubuk.hidden = false;
+    if (i === 0) {
+      nav.append(el("div", { class: "sezgisel-bolum-baslik", metin: bolum.bolum }), ...dugmeler);
+      return;
+    }
+    let acik = aktifGrupMu;
+    try { acik = acik || localStorage.getItem(_grupAnahtar(bolum)) === "1"; } catch (_) { /* depolama yok */ }
+    const grup = el("details", { class: `sezgisel-grup${aktifGrupMu ? " aktif-grup" : ""}`, open: acik },
+      el("summary", { class: "sezgisel-bolum-baslik", metin: bolum.bolum }),
+      ...dugmeler);
+    grup.addEventListener("toggle", () => {
+      if (grup.dataset.oto) { delete grup.dataset.oto; return; }
+      try { localStorage.setItem(_grupAnahtar(bolum), grup.open ? "1" : "0"); } catch (_) { /* depolama yok */ }
+    });
+    nav.append(grup);
+  });
 }
 
 function sayfaGoster(kod) {
@@ -494,12 +601,18 @@ function sayfaGoster(kod) {
   for (const s of $$(".sayfa")) s.hidden = s.id !== `sayfa-${kod}`;
   const grup = _sayfayiIcerenGrup(kod);
   for (const b of $$(".sezgisel-nav-dugme")) {
-    b.classList.toggle("aktif", Boolean(grup && b.dataset.grupId === grup.id));
+    const aktif = Boolean(grup && b.dataset.grupId === grup.id);
+    b.classList.toggle("aktif", aktif);
+    const katlanir = b.closest("details.sezgisel-grup");
+    if (katlanir) {
+      katlanir.classList.toggle("aktif-grup", aktif);
+      if (aktif && !katlanir.open) { katlanir.dataset.oto = "1"; katlanir.open = true; }
+    }
   }
-  _altSekmeleriCiz(kod);
   const { sayfa } = sayfaAdi(kod);
   const sekmeEtiketi = grup && grup.sayfalar.find(([k]) => k === kod);
-  $("#ust-baslik").textContent = (sekmeEtiketi && sekmeEtiketi[1]) || (sayfa && sayfa.ad) || "Lab Kaptanı";
+  const sayfaEtiketi = ((sekmeEtiketi && sekmeEtiketi[1]) || (sayfa && sayfa.ad) || "Lab Kaptanı").replace(/^[^\p{L}\p{N}]+/u, "");
+  $("#ust-baslik").textContent = (grup && grup.sayfalar.length > 1) ? `${grup.baslik} › ${sayfaEtiketi}` : sayfaEtiketi;
   document.title = `${(sayfa && sayfa.ad) || "Sınıf Masası"} — ${(Uyg.okul && Uyg.okul.ad) || "Lab Kaptanı"}`;
   window.scrollTo(0, 0);
   if (SAYFALAR[kod].ac) SAYFALAR[kod].ac();
@@ -515,6 +628,70 @@ window.addEventListener("hashchange", () => {
   const kod = location.hash.slice(1);
   if (kod && kod !== aktifSayfa) sayfaGoster(kod);
 });
+
+// Güvenli (CSP uyumlu) data-git yönlendirme dinleyicisi
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-git]");
+  if (btn) {
+    e.preventDefault();
+    const hedef = btn.dataset.git;
+    if (hedef) {
+      git(hedef);
+      if (btn.dataset.tikla) {
+        const hedefEl = $(btn.dataset.tikla);
+        if (hedefEl) hedefEl.click();
+      }
+    }
+  }
+});
+
+/** Kurulum durumu ve envanter yeni cihaz filtreleme deposu */
+const Kurulum = {
+  yeniler: new Set(),
+  aktif() { return this.yeniler.size > 0; },
+  temizle() { this.yeniler.clear(); this.kaydet(); },
+  ekle(id) { this.yeniler.add(id); this.kaydet(); },
+  kaydet() {
+    try { sessionStorage.setItem("psy_kurulum_yeniler", JSON.stringify([...this.yeniler])); } catch (_) {}
+  },
+  yukle() {
+    try {
+      const v = JSON.parse(sessionStorage.getItem("psy_kurulum_yeniler") || "[]");
+      this.yeniler = new Set(v);
+    } catch (_) { this.yeniler = new Set(); }
+  }
+};
+Kurulum.yukle();
+function kurulumKapsami(c) { return !Kurulum.aktif() || Kurulum.yeniler.has(c.id); }
+
+/** Kurulum sihirbazı adımları üst çubuğunu üretir (M1-S3, M1-S2, M1-S4, M1-SAGLIK) */
+function wizardCubuguCiz(adim) {
+  const adimlar = [
+    { no: 1, kod: "M1-S3", baslik: "1. Ağda Bul", alt: "Ağ taraması ve envanter" },
+    { no: 2, kod: "M1-S2", baslik: "2. SSH & Sudo", alt: "Yönetici yetkisi" },
+    { no: 3, kod: "M1-S4", baslik: "3. Veyon", alt: "Ekran izleme servisi" },
+    { no: 4, kod: "M1-SAGLIK", baslik: "4. Sağlık Testi", alt: "Ping, SSH, Veyon doğrula" },
+  ];
+  const cubuk = el("div", { class: "wizard-cubuk alt-bosluk" });
+  adimlar.forEach((a, i) => {
+    if (i > 0) cubuk.append(el("div", { class: `wizard-ayirici-cizgi${adim > a.no ? " tamam" : ""}` }));
+    const durumSinif = a.no === adim ? " aktif" : (adim > a.no ? " tamam" : "");
+    const adimEl = el("div", {
+      class: `wizard-adim${durumSinif}`,
+      role: "button",
+      tabindex: "0",
+      "data-git": a.kod,
+    },
+      el("div", { class: "wizard-no", metin: adim > a.no ? "✓" : String(a.no) }),
+      el("div", { class: "wizard-metin" },
+        el("strong", { metin: a.baslik }),
+        el("span", { metin: a.alt })
+      )
+    );
+    cubuk.append(adimEl);
+  });
+  return cubuk;
+}
 
 /* ================================================================ veri ve seçim deposu */
 
@@ -722,11 +899,11 @@ class CihazTablosu {
 
 function secimOzeti(islem, tablo) {
   const secili = Secim.liste().map((id) => Veri.bul(id));
-  const disarida = secili.filter((c) => c.uygunluk[islem]);
-  const uygun = secili.filter((c) => !c.uygunluk[islem]);
-  const erisilemiyor = uygun.filter((c) => c.erisim === 0);
-  const korunan = Veri.cihazlar.filter((c) => c.korunan && labKapsami(c)).length;
-  const filtreDisi = tablo ? (() => { const f = new Set(tablo.filtreli().map((c) => c.id)); return secili.filter((c) => !f.has(c.id)).length; })() : 0;
+  const disarida = secili.filter((c) => c && c.uygunluk && c.uygunluk[islem]);
+  const uygun = secili.filter((c) => c && (!c.uygunluk || !c.uygunluk[islem]));
+  const erisilemiyor = uygun.filter((c) => c && c.erisim === 0);
+  const korunan = Veri.cihazlar.filter((c) => c && c.korunan && labKapsami(c)).length;
+  const filtreDisi = tablo && typeof tablo.filtreli === "function" ? (() => { const f = new Set(tablo.filtreli().map((c) => c.id)); return secili.filter((c) => c && !f.has(c.id)).length; })() : 0;
   return { secili, disarida, uygun, erisilemiyor, korunan, filtreDisi };
 }
 
@@ -734,18 +911,26 @@ function secimCubuguKur(kap, islem, tabloGetir) {
   const ozetYeri = el("div", { class: "secim-ozeti", role: "status" });
   const labSec = el("select", { "data-ui-id": "M0-S2-B6", "aria-label": "Laboratuvar",
     onchange: (o) => { Secim.lab = o.target.value; Secim.bildir(); } });
+  const dugmeler = [];
+  if (typeof tabloGetir === "function") {
+    dugmeler.push(dugme("Görünen uygun bilgisayarları seç", "M0-S2-B1", () => {
+      const t = tabloGetir();
+      if (t && typeof t.gorunen === "function") {
+        for (const c of t.gorunen()) if (t.uygunMu(c)) Secim.sec(c.id, true);
+        Secim.bildir();
+      }
+    }, "ikincil kucuk"));
+  }
+  dugmeler.push(
+    dugme("Laboratuvardaki tüm uygun bilgisayarları seç", "M0-S2-B2", () => {
+      for (const c of Veri.cihazlar) if (labKapsami(c) && !c.korunan && (!c.uygunluk || !c.uygunluk[islem])) Secim.sec(c.id, true);
+      Secim.bildir();
+    }, "ikincil kucuk"),
+    dugme("Seçimi temizle", "M0-S2-B3", () => Secim.temizle(), "ikincil kucuk")
+  );
   const cubuk = el("div", { class: "secim-cubugu", "data-ui-id": "M0-S2" },
     el("label", { class: "satir-ici", metin: "Laboratuvar" }), labSec, ozetYeri,
-    dugme("Görünen uygun bilgisayarları seç", "M0-S2-B1", () => {
-      const t = tabloGetir();
-      for (const c of t.gorunen()) if (t.uygunMu(c)) Secim.sec(c.id, true);
-      Secim.bildir();
-    }, "ikincil kucuk"),
-    dugme("Laboratuvardaki tüm uygun bilgisayarları seç", "M0-S2-B2", () => {
-      for (const c of Veri.cihazlar) if (labKapsami(c) && !c.korunan && !c.uygunluk[islem]) Secim.sec(c.id, true);
-      Secim.bildir();
-    }, "ikincil kucuk"),
-    dugme("Seçimi temizle", "M0-S2-B3", () => Secim.temizle(), "ikincil kucuk"));
+    ...dugmeler);
   kap.replaceChildren(cubuk);
 
   const guncelle = () => {
@@ -755,7 +940,8 @@ function secimCubuguKur(kap, islem, tabloGetir) {
       ...labler.map((l) => el("option", { value: l, metin: l }))];
     labSec.replaceChildren(...secenekler);
     labSec.value = labler.includes(Secim.lab) ? Secim.lab : "";
-    const o = secimOzeti(islem, tabloGetir());
+    const t = typeof tabloGetir === "function" ? tabloGetir() : null;
+    const o = secimOzeti(islem, t);
     const parcalar = [`${o.secili.length} bilgisayar seçili`];
     if (o.erisilemiyor.length) parcalar.push(`${o.erisilemiyor.length} erişilemiyor`);
     if (o.korunan) parcalar.push(`${o.korunan} korunan cihaz kapsam dışında`);

@@ -208,7 +208,13 @@ const m1s1 = {
       ozetKarti(t.filter((c) => c.ogrenci_oturumu === 1).length, "Öğrenci oturumu açık"),
       ozetKarti(t.filter((c) => c.korunan).length, "Korunan (EBA/ETAP)"));
   },
-  ac() { this.kartlar(); this.tablo.ciz(); Secim.bildir(); erisimTazele(300); },
+  ac() {
+    this.kartlar();
+    this.tablo.ciz();
+    Secim.bildir();
+    erisimTazele(300);
+    if (typeof sabitlenenAraclariCiz === "function") sabitlenenAraclariCiz();
+  },
 };
 
 let duzenlenenCihaz = null;
@@ -259,11 +265,11 @@ $("#cihaz-penceresi").addEventListener("close", async () => {
       const s = await api(`/api/cihazlar/${duzenlenenCihaz.id}`, govde, "PATCH");
       const mesajlar = ["Kaydedildi."];
       if (s.hostname_mesaj) mesajlar.push(s.hostname_mesaj);
-      if (s.hesap_degisti) mesajlar.push("Yönetim hesabı değişti: bu bilgisayarı M1-S2'den yeniden hazırlayın.");
+      if (s.hesap_degisti) mesajlar.push("Yönetim hesabı değişti: bu bilgisayarı SSH ve Kurulum Hazırlığı ekranından yeniden hazırlayın.");
       bildir(mesajlar.join(" "));
     } else {
       await api("/api/cihazlar", govde);
-      bildir("Eklendi. Bağlantı kurulmadı; sunucu kimliğini M1-S2'de okuyup onaylayın.");
+      bildir("Eklendi. Bağlantı kurulmadı; sunucu kimliğini SSH ve Kurulum Hazırlığı ekranında okuyup onaylayın.");
     }
     await cihazlariYukle();
   } catch (hata) { bildir(hata.message, true); }
@@ -461,7 +467,13 @@ const m1s2 = {
     await isBaslat("/api/tekillestirme/uygula", { korunacaklar, onay: true });
     this.tekOnizleme = new Map();
   },
-  ac() { this.sayaclar(); this.tablo.ciz(); Secim.bildir(); },
+  ac() {
+    const wz = $("#sayfa-M1-S2 .wizard-kap");
+    if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(2));
+    this.sayaclar();
+    this.tablo.ciz();
+    Secim.bildir();
+  },
   sayaclar() {
     const t = Veri.cihazlar.filter((c) => labKapsami(c) && !c.korunan && !c.ogretmen_pc);
     const say = (f) => t.filter(f).length;
@@ -523,6 +535,8 @@ const m1s3 = {
     });
   },
   async ac() {
+    const wz = $("#sayfa-M1-S3 .wizard-kap");
+    if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(1));
     try {
       this.oneri = await api("/api/kesif/ag");
       $("#m1s3-oneri-metin").textContent = this.oneri.ag

@@ -34,6 +34,8 @@ HOSTS_YOLU = Path("/etc/hosts")
 YOL = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 KILIT_BETIGI = Path("/run/psy-bana-bakin.py")
 KILIT_GUNLUGU = Path("/run/psy-bana-bakin.log")
+DUYURU_BETIGI = Path("/run/psy-duyuru.py")
+DUYURU_GUNLUGU = Path("/run/psy-duyuru.log")
 
 # Öğrenci masaüstünde öğrenci hesabıyla çalışan tam ekran "Bana Bakın" katmanı.
 # GTK3 (Pardus GNOME'da hazır) ile; olmazsa Tk ile. Klavye ve fare yakalanır,
@@ -229,6 +231,159 @@ except Exception as hata:
     tk_katman()
 '''
 
+# Öğrenci masaüstünde beliren, dikkat çekici ve 5-10 saniye (varsayılan 8 sn) sonra
+# kendiliğinden kaybolan OSD duyuru penceresi betiği.
+DUYURU_KODU = r'''
+import html, json, os, signal, subprocess, sys
+p = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
+BASLIK = (p.get("baslik") or "Öğretmen Duyurusu").strip()
+MESAJ = (p.get("mesaj") or "").strip()
+SURE_SN = max(5, min(10, int(p.get("sure_sn") or 8)))
+
+def ses_cal():
+    for cmd in [
+        ["canberra-gtk-play", "-i", "message"],
+        ["paplay", "/usr/share/sounds/freedesktop/stereo/message.oga"],
+        ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"],
+    ]:
+        try:
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1)
+            break
+        except Exception:
+            pass
+
+def gtk_duyuru():
+    import gi
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("Gdk", "3.0")
+    from gi.repository import Gdk, GLib, Gtk
+
+    ses_cal()
+
+    css = Gtk.CssProvider()
+    css.load_from_data(b"""
+      window.psy-duyuru-pencere {
+        background: transparent;
+      }
+      .psy-duyuru-kart {
+        background-color: #0F172A;
+        border: 3px solid #F59E0B;
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      }
+      .psy-duyuru-ust {
+        margin-bottom: 12px;
+      }
+      .psy-duyuru-ikon {
+        font-size: 32px;
+        margin-right: 12px;
+      }
+      .psy-duyuru-baslik {
+        color: #FBBF24;
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .psy-duyuru-mesaj {
+        color: #F8FAFC;
+        font-size: 18px;
+        line-height: 1.4;
+      }
+      .psy-duyuru-alt {
+        margin-top: 16px;
+      }
+      .psy-duyuru-sayac {
+        color: #94A3B8;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .psy-duyuru-kapat {
+        background: #1E293B;
+        color: #F8FAFC;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        padding: 6px 16px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .psy-duyuru-kapat:hover {
+        background: #334155;
+        border-color: #F59E0B;
+      }
+    """)
+    Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css,
+                                             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+    win = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+    win.get_style_context().add_class("psy-duyuru-pencere")
+    win.set_title(BASLIK)
+    win.set_decorated(False)
+    win.set_keep_above(True)
+    win.set_skip_taskbar_hint(True)
+    win.set_skip_pager_hint(True)
+    win.set_urgency_hint(True)
+    win.set_position(Gtk.WindowPosition.CENTER)
+    win.set_default_size(540, -1)
+
+    kart = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+    kart.get_style_context().add_class("psy-duyuru-kart")
+
+    ust = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    ust.get_style_context().add_class("psy-duyuru-ust")
+    lbl_ikon = Gtk.Label(label="\U0001F4E2")
+    lbl_ikon.get_style_context().add_class("psy-duyuru-ikon")
+    lbl_baslik = Gtk.Label(label=BASLIK)
+    lbl_baslik.get_style_context().add_class("psy-duyuru-baslik")
+    lbl_baslik.set_halign(Gtk.Align.START)
+    ust.pack_start(lbl_ikon, False, False, 0)
+    ust.pack_start(lbl_baslik, True, True, 0)
+    kart.pack_start(ust, False, False, 0)
+
+    lbl_mesaj = Gtk.Label(label=MESAJ)
+    lbl_mesaj.get_style_context().add_class("psy-duyuru-mesaj")
+    lbl_mesaj.set_line_wrap(True)
+    lbl_mesaj.set_halign(Gtk.Align.START)
+    lbl_mesaj.set_max_width_chars(52)
+    kart.pack_start(lbl_mesaj, False, False, 6)
+
+    alt = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+    alt.get_style_context().add_class("psy-duyuru-alt")
+    kalan = [SURE_SN]
+    lbl_sayac = Gtk.Label(label=f"\u23F1\uFE0F  {kalan[0]} saniye sonra kendili\u011finden kapanacak")
+    lbl_sayac.get_style_context().add_class("psy-duyuru-sayac")
+    lbl_sayac.set_halign(Gtk.Align.START)
+    alt.pack_start(lbl_sayac, True, True, 0)
+
+    btn_kapat = Gtk.Button(label="\u2715 Kapat")
+    btn_kapat.get_style_context().add_class("psy-duyuru-kapat")
+    btn_kapat.connect("clicked", lambda *a: Gtk.main_quit())
+    alt.pack_end(btn_kapat, False, False, 0)
+    kart.pack_start(alt, False, False, 0)
+
+    win.add(kart)
+
+    def tick():
+        kalan[0] -= 1
+        if kalan[0] <= 0:
+            Gtk.main_quit()
+            return False
+        lbl_sayac.set_text(f"\u23F1\uFE0F  {kalan[0]} saniye sonra kendili\u011finden kapanacak")
+        return True
+
+    GLib.timeout_add_seconds(1, tick)
+    win.connect("key-press-event", lambda w, e: Gtk.main_quit() if e.keyval in (Gdk.KEY_Escape, Gdk.KEY_Return, Gdk.KEY_space) else False)
+    win.connect("delete-event", lambda *a: Gtk.main_quit())
+    win.show_all()
+    Gtk.main()
+
+if __name__ == "__main__":
+    try:
+        gtk_duyuru()
+    except Exception as e:
+        sys.stderr.write(f"GTK duyuru basarisiz: {e}\n")
+        sys.exit(1)
+'''
+
 
 def _calistir(argv: list[str], **ek) -> subprocess.CompletedProcess:
     return subprocess.run(argv, text=True, capture_output=True, timeout=15, **ek)
@@ -310,12 +465,14 @@ def _gvariant_metin(metin: str) -> str:
     return "'" + metin.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
-def _kullanici_bildir(baslik: str, mesaj: str, acil: bool = True) -> bool:
-    """Masaüstü bildirimi; asla istisna fırlatmaz (bildirim, asıl işin önüne geçmemeli)."""
+def _kullanici_bildir(baslik: str, mesaj: str, acil: bool = False, sure_sn: int = 8) -> bool:
+    """Masaüstü bildirimi; asla istisna fırlatmaz (bildirim, asıl işin önüne geçmemeli).
+    Normal duyurularda 5-10 saniye (varsayılan 8 sn) sonra kendiliğinden kaybolur."""
     try:
         _, ortam = _oturum_ortami()
         if not ortam:
             return False
+        sure_ms = str(sure_sn * 1000)
         gdbus = _arac("gdbus")
         if gdbus:
             r = _calistir(_ogrenci_komutu([
@@ -324,13 +481,13 @@ def _kullanici_bildir(baslik: str, mesaj: str, acil: bool = True) -> bool:
                 "--method", "org.freedesktop.Notifications.Notify",
                 _gvariant_metin("Lab Kaptanı"), "0", _gvariant_metin("dialog-information"),
                 _gvariant_metin(baslik), _gvariant_metin(mesaj), "[]",
-                "{'urgency': <byte %d>}" % (2 if acil else 1), "15000"], ortam))
+                "{'urgency': <byte %d>}" % (2 if acil else 1), sure_ms], ortam))
             if r.returncode == 0:
                 return True
         notify = _arac("notify-send")
         if notify:
             r = _calistir(_ogrenci_komutu(
-                [notify, "-u", "critical" if acil else "normal", "-a", "Lab Kaptanı", baslik, mesaj], ortam))
+                [notify, "-u", "critical" if acil else "normal", "-t", sure_ms, "-a", "Lab Kaptanı", baslik, mesaj], ortam))
             return r.returncode == 0
     except Exception:
         return False
@@ -416,26 +573,56 @@ def ekran_kilit(p: dict) -> dict:
 def duyuru(p: dict) -> dict:
     baslik = (p.get("baslik") or "Öğretmen Duyurusu").strip()[:100]
     mesaj = (p.get("mesaj") or "").strip()[:1000]
+    sure_sn = max(5, min(10, int(p.get("sure_sn") or 8)))
     if not mesaj:
         return {"hata": "Duyuru metni boş"}
     _, ortam = _oturum_ortami()
     if not ortam:
         return {"hata": "Öğrenci masaüstü oturumu açık değil; duyuru gösterilemedi"}
-    bildirim = _kullanici_bildir(baslik, mesaj, acil=True)
+
+    # 1. GNOME bildirim çubuğu tostu (belirtilen süre, örn 8 sn sonra kendiliğinden kaybolur)
+    bildirim = _kullanici_bildir(baslik, mesaj, acil=False, sure_sn=sure_sn)
+
+    # 2. Belirgin ve göz alıcı OSD duyuru kartı (GTK3 tabanlı, geri sayımlı, 5-10 sn sonra oto-kapanan)
     pencere = False
-    zenity = _arac("zenity")
-    if zenity:
-        try:
-            _arka_planda(_ogrenci_komutu(
-                [zenity, "--info", "--title", baslik, "--text", html.escape(mesaj, quote=False),
-                 "--width=460", "--ok-label=Tamam"], ortam))
+    python = _arac("python3") or sys.executable
+    try:
+        DUYURU_BETIGI.write_text(DUYURU_KODU, encoding="utf-8")
+        os.chmod(DUYURU_BETIGI, 0o644)
+        parametre = json.dumps({"baslik": baslik, "mesaj": mesaj, "sure_sn": sure_sn}, ensure_ascii=False)
+        systemd_run = _arac("systemd-run")
+        if systemd_run:
+            cmd = [
+                systemd_run,
+                "--unit=psy-duyuru",
+                f"--uid={PROFIL}",
+                *[f"--setenv={k}={v}" for k, v in ortam.items()],
+                python, str(DUYURU_BETIGI), parametre
+            ]
+            r = _calistir(cmd)
+            pencere = (r.returncode == 0)
+        if not pencere:
+            _arka_planda(_ogrenci_komutu([python, str(DUYURU_BETIGI), parametre], ortam), DUYURU_GUNLUGU)
             pencere = True
-        except Exception:
-            pencere = False
+    except Exception:
+        pencere = False
+
+    # 3. Yedek yöntem: zenity (en fazla 8 sn bekler ve kapanır)
+    if not pencere:
+        zenity = _arac("zenity")
+        if zenity:
+            try:
+                _arka_planda(_ogrenci_komutu(
+                    [zenity, "--info", "--title", baslik, "--text", html.escape(mesaj, quote=False),
+                     "--width=480", f"--timeout={sure_sn}", f"--ok-label=Tamam ({sure_sn} sn)"], ortam))
+                pencere = True
+            except Exception:
+                pencere = False
+
     if not (bildirim or pencere):
-        return {"hata": "Duyuru gösterilemedi (bildirim servisi ve zenity kullanılamadı)"}
+        return {"hata": "Duyuru gösterilemedi (bildirim servisi ve arayüz kullanılamadı)"}
     return {"tamam": True, "oturum_acik": True, "pencere": pencere, "bildirim": bildirim,
-            "mesaj": "Duyuru öğrenci ekranında gösterildi"}
+            "mesaj": f"Belirgin duyuru ({sure_sn} sn süreli) öğrenci ekranında gösterildi"}
 
 
 def internet(p: dict | str = "kisitla") -> dict:
@@ -570,17 +757,23 @@ def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
 
     masa = Path(_masaustu_dizini(bilgi.pw_dir if bilgi else "/home/ogrenci"))
     masa.mkdir(parents=True, exist_ok=True)
+    klasor_adi = re.sub(r"[^\w\-]", "_", (p.get("klasor") or "Odevler")).strip("_") or "Odevler"
+    hedef_dizin = masa / klasor_adi
+    hedef_dizin.mkdir(parents=True, exist_ok=True)
+    if bilgi:
+        _ogrenci_sahip_yap(hedef_dizin, bilgi, 0o755)
+
     temel_ad = re.sub(r"\s+", "_", baslik)
 
     # 1. Her masaüstü ortamında (GNOME/XFCE) çift tıklayınca doğrudan tarayıcıda açılan .html web dosyası
     html_adi = temel_ad + ".html"
-    html_hedef = masa / html_adi
+    html_hedef = hedef_dizin / html_adi
     html_hedef.write_text(_web_acici_html(baslik, url), encoding="utf-8")
     _ogrenci_sahip_yap(html_hedef, bilgi, 0o644)
 
-    # 2. Uygulama başlatıcısı (.desktop): Type=Application + xdg-open + güvenilir işareti
+    # 2. Uygulama başlatıcısı (.desktop): Type=Application + xdg-open/chromium + güvenilir işareti
     dosya_adi = temel_ad + ".desktop"
-    hedef = masa / dosya_adi
+    hedef = hedef_dizin / dosya_adi
     icerik = (
         "[Desktop Entry]\n"
         "Version=1.0\n"
@@ -601,10 +794,10 @@ def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
 
     acildi = False
     if p.get("otomatik_ac") and ortam:
-        xdg_open = _arac("xdg-open")
-        if xdg_open:
+        tarayici = _arac("chromium") or _arac("chromium-browser") or _arac("xdg-open")
+        if tarayici:
             try:
-                _arka_planda(_ogrenci_komutu([xdg_open, url], ortam))
+                _arka_planda(_ogrenci_komutu([tarayici, url], ortam))
                 acildi = True
             except Exception:
                 acildi = False
@@ -616,7 +809,7 @@ def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
         "dosya": str(html_hedef),
         "desktop_dosya": str(hedef),
         "acildi": acildi,
-        "mesaj": f"Masaüstüne '{html_adi}' web bağlantısı eklendi{ek_bilgi}",
+        "mesaj": f"Masaüstü / {klasor_adi} klasörüne '{html_adi}' web bağlantısı eklendi{ek_bilgi}",
     }
 
 
@@ -637,7 +830,12 @@ def masaustu_dosya(p: dict | str, icerik_b64_arg: str | None = None) -> dict:
         return {"hata": "Geçersiz dosya adı"}
     masa = Path(_masaustu_dizini(bilgi.pw_dir if bilgi else "/home/ogrenci"))
     masa.mkdir(parents=True, exist_ok=True)
-    hedef = masa / temiz_ad
+    klasor_adi = re.sub(r"[^\w\-]", "_", (p.get("klasor") or "Odevler")).strip("_") or "Odevler"
+    hedef_dizin = masa / klasor_adi
+    hedef_dizin.mkdir(parents=True, exist_ok=True)
+    if bilgi:
+        _ogrenci_sahip_yap(hedef_dizin, bilgi, 0o755)
+    hedef = hedef_dizin / temiz_ad
 
     gecici_yol = (p.get("gecici_yol") or "").strip()
     if gecici_yol:

@@ -89,11 +89,11 @@
     </div>
     <nav id="menu"></nav>
     <div id="yan-ogretmen-kutu" class="sidebar-status" hidden>
-      <div class="status-row">
+      <div class="status-row" hidden>
         <span>Aktif Öğretmen:</span>
         <strong id="yan-ogr-ad">Mukaddes ALAT</strong>
       </div>
-      <div class="status-row">
+      <div class="status-row" hidden>
         <span>Yetki Rolü:</span>
         <strong id="yan-ogr-rol" class="yan-ogr-rol-etiket">🛡️ Admin Öğretmen</strong>
       </div>
@@ -110,6 +110,7 @@
       <span id="aktif-ogretmen-cip" class="ogretmen-cip" hidden></span>
       <button id="secim-cipi" class="secim-cipi" type="button" data-ui-id="M0-S1-B3">0 bilgisayar seçili</button>
       <span id="is-gostergesi" class="is-gostergesi" hidden></span>
+      <button id="btn-gelismis-mod" type="button" class="ikincil kucuk mod-dugmesi" title="Teknik ayrıntıları (ve standart öğretmen için Araç Kutusu'nu) göster/gizle" aria-pressed="false">⚙️ Gelişmiş Görünüm</button>
       <button id="kod-dugmesi" type="button" class="ikincil kucuk" data-ui-id="M0-S1-B1"
               aria-pressed="false" hidden>Kodları gizle</button>
       <button id="cikis" type="button" class="ikincil kucuk" data-ui-id="M0-S1-B2">🚪 Çıkış</button>
@@ -120,7 +121,6 @@
       <!-- ================================================= M1-S1 Sınıf Masası -->
       <section id="sayfa-M1-S1" class="sayfa" data-ui-id="M1-S1" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M1 · S1</span>
           <h1>🖥️ Sınıf Masası</h1>
           <p class="sayfa-aciklama">Öğrenci bilgisayarlarını tek ekrandan izleyin; ekran kilitleme, duyuru, internet kısıtlama ve materyal dağıtımını tek tıkla uygulayın.</p>
         </header>
@@ -173,6 +173,15 @@
           </button>
         </div>
 
+        <!-- Sabitlenen Hızlı Araçlar Çubuğu -->
+        <div id="m1s1-sabitlenen-araclar" class="sabit-araclar-cubugu alt-bosluk">
+          <div class="sabit-araclar-baslik">
+            <span class="sabit-araclar-etiket">📌 Sabitlenen Hızlı Araçlar:</span>
+            <span class="ipucu">Komut Mağazası'ndan panoya eklenen araçları tek tıkla çalıştırın</span>
+          </div>
+          <div id="m1s1-sabit-arac-butonlar" class="sabit-arac-butonlar"></div>
+        </div>
+
         <div class="arac-cubugu">
           <button id="m1s1-durum" type="button" class="birincil" data-ui-id="M1-S1-B3">🔄 Bilgisayar Durumlarını Yenile</button>
           <details class="envanter-cekmece">
@@ -180,9 +189,9 @@
             <div class="arac-cubugu envanter-cekmece-ici">
               <button id="m1s1-ekle" type="button" class="birincil kucuk" data-ui-id="M1-S1-B1">➕ Bilgisayar ekle</button>
               <button id="m1s1-ice" type="button" class="ikincil kucuk" data-ui-id="M1-S1-B2">📥 Dosyadan içe aktar</button>
-              <button id="m1s1-cikar" type="button" class="tehlikeli kucuk" data-ui-id="M1-S1-B4">🗑️ Envanterden çıkar</button>
               <a id="m1s1-ansible" class="dugme ikincil kucuk" href="/api/envanter/ansible" download="envanter.ini"
                  data-ui-id="M1-S1-B5">📄 Ansible indir</a>
+              <button id="m1s1-cikar" type="button" class="tehlikeli kucuk" data-ui-id="M1-S1-B4">🗑️ Envanterden çıkar</button>
             </div>
           </details>
           <span class="bosluk"></span>
@@ -212,11 +221,11 @@
       <!-- ================================================= M1-S2 Bilgisayarları Hazırla -->
       <section id="sayfa-M1-S2" class="sayfa" data-ui-id="M1-S2" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M1 · S2</span>
-          <h1>Bilgisayarları Hazırla</h1>
+          <h1>🔑 Adım 2: İlk Hazırlık (SSH &amp; Sudo Yetkisi)</h1>
           <p class="sayfa-aciklama">Her bilgisayar <strong>bir kez</strong> hazırlanır; sonra günlük işlerde hiç parola
             sorulmaz. Bilgisayarları seçin ve adımları sırayla izleyin. Hazır olanlar kendiliğinden atlanır.</p>
         </header>
+        <div class="wizard-kap" data-adim="2"></div>
         <div class="secim-yeri" data-islem="hazirlik"></div>
         <ol class="adim-kartlari">
           <li class="kart adim-karti">
@@ -268,11 +277,11 @@
       <!-- ================================================= M1-S3 Ağda Bul -->
       <section id="sayfa-M1-S3" class="sayfa" data-ui-id="M1-S3" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M1 · S3</span>
-          <h1>Ağda Bul</h1>
+          <h1>🔍 Adım 1: Ağda Bilgisayar Bul</h1>
           <p class="sayfa-aciklama">Kendi ağınızda SSH'ı açık bilgisayarları bulur. Tarama parola
             göndermez ve envantere kayıt eklemez; eklemek ve hazırlamak ayrı, onaylı adımlardır.</p>
         </header>
+        <div class="wizard-kap" data-adim="1"></div>
         <div class="kart">
           <form id="m1s3-form" class="satir-form">
             <label for="m1s3-aralik">Adres aralığı</label>
@@ -297,9 +306,12 @@
       <!-- ================================================= M1-S4 Veyon Ayarları -->
       <section id="sayfa-M1-S4" class="sayfa" data-ui-id="M1-S4" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M1 · S4</span>
-          <h1>Veyon Ayarları</h1>
+          <h1>👁️ Adım 3: Veyon Kurulumu ve Ekran İzleme</h1>
           <p class="sayfa-aciklama">Veyon Configurator gerekmez: paketi ve public key'i buraya yükleyin, bilgisayarları
+            seçin, önizleyip onaylayın. Veyon yalnız sizin yüklediğiniz .deb dosyasından kurulur. SSH anahtarı bakım
+            erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
+        </header>
+        <div class="wizard-kap" data-adim="3"></div>
             seçin, önizleyip onaylayın. Veyon yalnız sizin yüklediğiniz .deb dosyasından kurulur. SSH anahtarı bakım
             erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
         </header>
@@ -314,7 +326,7 @@
           <div class="kart">
             <h2>Veyon paketi</h2>
             <p class="ipucu">veyon.io'dan veya okulunuzun verdiği <code>veyon_&lt;sürüm&gt;_amd64.deb</code> dosyası.
-              Yükleme kurulum başlatmaz; paket adı ve içeriği doğrulanır. Diğer uygulamalar M2-S2'den kurulur.</p>
+              Yükleme kurulum başlatmaz; paket adı ve içeriği doğrulanır. Diğer uygulamalar Paket Kurulumu sayfasından kurulur.</p>
             <div class="arac-cubugu">
               <label class="dugme ikincil" for="m1s4-dosya" data-ui-id="M1-S4-B1">Veyon paketini yükle (.deb)</label>
               <input id="m1s4-dosya" type="file" accept=".deb,application/vnd.debian.binary-package" class="gizli-giris">
@@ -419,53 +431,215 @@
         </div>
       </section>
 
-      <!-- ================================================= M2-S1 Profil Temizliği -->
+      <!-- ================================================= M1-SAGLIK Kurulum Sağlık Testi -->
+      <section id="sayfa-M1-SAGLIK" class="sayfa" data-ui-id="M1-SAGLIK" hidden>
+        <header class="sayfa-baslik">
+          <h1>🩺 Adım 4: Bağlantı Sağlığını Doğrula (Final Testi)</h1>
+          <p class="sayfa-aciklama">Kurulumunu tamamladığınız bilgisayarların Ping (ağ erişimi), SSH anahtar doğrulaması, parolasız Sudo yetkisi ve Veyon ekran yönetim servisinin çalıştığını tek tıkla toplu olarak denetleyin.</p>
+        </header>
+
+        <div class="wizard-kap" data-adim="4"></div>
+        <div class="secim-yeri" data-islem="durum"></div>
+
+        <div class="kart alt-bosluk">
+          <div class="arac-cubugu">
+            <button id="btn-saglik-testi-baslat" type="button" class="birincil">🩺 Seçili Bilgisayarlarda Sağlık Testini Başlat</button>
+          </div>
+          <p id="saglik-testi-durum" class="ipucu">Test başlatıldığında Ping, SSH yetkisi, Sudo ve Veyon servis durumu sırasıyla denetlenir.</p>
+        </div>
+
+        <div id="saglik-sonuc-tablo" class="tablo-kap"></div>
+
+      </section>
+
+      <!-- ================================================= M2-S1 Profil Temizliği & Tarayıcı -->
       <section id="sayfa-M2-S1" class="sayfa" data-ui-id="M2-S1" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M2 · S1</span>
-          <h1>Profil Temizliği</h1>
-          <p class="sayfa-aciklama">Önce önizleyin: her bilgisayar için tek satırda kapsam, oturum,
-            tahmini açılacak alan ve yedek durumu. Yedekler öğrenci bilgisayarında tutulur (karar 18);
-            ödev teslim arşivi bu işleme hiçbir zaman dahil değildir.</p>
+          <h1>Ders Sonu &amp; Tarayıcı Temizliği</h1>
+          <p class="sayfa-aciklama">Ders bitiminde öğrenci bilgisayarlarında masaüstü ve dosya temizliği yapın veya Chromium tarayıcı geçmişini profil bozulmadan güvenle temizleyip okul kısayollarını sabitleyin.</p>
         </header>
+
+        <!-- Üst Separatör: Bakım & Güç Sekmeleri -->
+        <div class="sekmeler" role="tablist">
+          <button type="button" class="sekme aktif" role="tab" aria-selected="true" data-git="M2-S1">
+            <span class="sekme-ikon">🧹</span>
+            <span class="sekme-metin">Ders Sonu &amp; Tarayıcı Temizliği</span>
+          </button>
+          <button type="button" class="sekme" role="tab" aria-selected="false" data-git="M2-S4">
+            <span class="sekme-ikon">🔌</span>
+            <span class="sekme-metin">Güç &amp; Uyku Ayarı</span>
+          </button>
+          <button type="button" class="sekme" role="tab" aria-selected="false" data-git="M2-S5">
+            <span class="sekme-ikon">⏰</span>
+            <span class="sekme-metin">Zamanlı Kapatma</span>
+          </button>
+        </div>
+        <div class="klasor-kutu">
+
+        <!-- M2-S1 İçi Separatör: Bilgisayar Temizliği vs Tarayıcı Yönetimi -->
+        <div class="kapsam-secimi" role="tablist" aria-label="Temizlik türü">
+          <button type="button" id="m2s1-sekme-bilgisayar" class="kapsam aktif" role="tab" aria-selected="true">
+            <span class="sekme-ikon">💻</span>Bilgisayar ve Masaüstü Temizliği
+          </button>
+          <button type="button" id="m2s1-sekme-tarayici" class="kapsam" role="tab" aria-selected="false">
+            <span class="sekme-ikon">🌐</span>Chromium Tarayıcı Yönetimi ve Güvenli Temizlik
+          </button>
+        </div>
+
         <div class="secim-yeri" data-islem="temizlik"></div>
-        <div class="kapsam-secimi" role="radiogroup" aria-label="Temizlik kapsamı">
-          <button type="button" class="kapsam" data-kapsam="alanlar" role="radio" data-ui-id="M2-S1-B1">Ders sonu temizliği</button>
-          <button type="button" class="kapsam" data-kapsam="ayarlar" role="radio" data-ui-id="M2-S1-B2">Profil ayarlarını sıfırla</button>
-          <button type="button" class="kapsam" data-kapsam="tam" role="radio" data-ui-id="M2-S1-B3">Ev dizininin tamamını sıfırla</button>
+
+        <!-- PANEL 1: Bilgisayar ve Masaüstü Temizliği -->
+        <div id="m2s1-panel-bilgisayar">
+          <div class="kapsam-secimi" role="radiogroup" aria-label="Temizlik kapsamı">
+            <button type="button" class="kapsam" data-kapsam="alanlar" role="radio" data-ui-id="M2-S1-B1">Ders sonu temizliği</button>
+            <button type="button" class="kapsam" data-kapsam="ayarlar" role="radio" data-ui-id="M2-S1-B2">Profil ayarlarını sıfırla</button>
+            <button type="button" class="kapsam" data-kapsam="tam" role="radio" data-ui-id="M2-S1-B3">Ev dizininin tamamını sıfırla</button>
+          </div>
+          <fieldset id="m2s1-alanlar" class="alan-secimi" data-ui-id="M2-S1-B14">
+            <legend>Tüm seçili bilgisayarlarda temizlenecek alanlar</legend>
+            <div id="m2s1-alan-kutulari" class="onay-izgara"></div>
+          </fieldset>
+          <p id="m2s1-kapsam-uyari" class="uyari-kutusu" role="note"></p>
+          <div class="arac-cubugu">
+            <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle (Önerilen)</button>
+            <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7">Temizliği başlat</button>
+            <span class="ayrac"></span>
+            <button id="m2s1-yedek" type="button" class="ikincil" data-ui-id="M2-S1-B9">Yalnız yedek al</button>
+            <button id="m2s1-geri" type="button" class="ikincil" data-ui-id="M2-S1-B10">Yedekten dön…</button>
+            <button id="m2s1-oturumlar" type="button" class="tehlikeli" data-ui-id="M2-S1-B5">Tüm öğrenci oturumlarını kapat</button>
+          </div>
+          <div id="m2s1-kartlar" class="ozet-kartlar"></div>
+          <div id="m2s1-tablo" class="tablo-kap"></div>
         </div>
-        <fieldset id="m2s1-alanlar" class="alan-secimi" data-ui-id="M2-S1-B14">
-          <legend>Tüm seçili bilgisayarlarda temizlenecek alanlar</legend>
-          <div id="m2s1-alan-kutulari" class="onay-izgara"></div>
-        </fieldset>
-        <p id="m2s1-kapsam-uyari" class="uyari-kutusu" role="note"></p>
-        <div class="arac-cubugu">
-          <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle (Önerilen)</button>
-          <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7">Temizliği başlat</button>
-          <span class="ayrac"></span>
-          <button id="m2s1-oturumlar" type="button" class="tehlikeli" data-ui-id="M2-S1-B5">Tüm öğrenci oturumlarını kapat</button>
-          <button id="m2s1-yedek" type="button" class="ikincil" data-ui-id="M2-S1-B9">Yalnız yedek al</button>
-          <button id="m2s1-geri" type="button" class="ikincil" data-ui-id="M2-S1-B10">Yedekten dön…</button>
+
+        <!-- PANEL 2: Chromium Tarayıcı Yönetimi ve Güvenli Temizlik -->
+        <div id="m2s1-panel-tarayici" hidden>
+          <div class="tarayici-yonetim-kart alt-bosluk">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px;">
+              <div>
+                <h2 style="margin: 0 0 4px; font-size: 1.15rem; color: #1E293B; display: flex; align-items: center; gap: 8px;">
+                  🌐 Chromium Merkezi Tarayıcı Yönetimi ve Güvenlik Kısıtlamaları
+                </h2>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748B;">
+                  Laboratuvardaki öğrenci bilgisayarlarında Chromium kurumsal ilkelerini (policy) ve yer imlerini merkezden yönetin.
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-tarayici-kisit-toggle" type="button" class="birincil kucuk">🔒 Kısıtlamaları Uygula</button>
+                <button id="btn-tarayici-serbest-yap" type="button" class="ikincil kucuk">🔓 Serbest Mod (Kısıtları Kaldır)</button>
+              </div>
+            </div>
+
+            <!-- Kısıtlama Durumları Şeridi -->
+            <div class="tarayici-kisit-cubuk">
+              <div class="tarayici-kisit-durum">
+                <span class="durum-rozet rozet-kirmizi">🔒 Kilitli</span>
+                <span class="durum-metin"><strong>Kişisel Oturum Açma</strong>Engellendi (Google Sync kapalı)</span>
+              </div>
+              <div class="tarayici-kisit-durum">
+                <span class="durum-rozet rozet-kirmizi">🔒 Kilitli</span>
+                <span class="durum-metin"><strong>Eklenti Yükleme</strong>Web mağazası engellendi</span>
+              </div>
+              <div class="tarayici-kisit-durum">
+                <span class="durum-rozet rozet-kirmizi">🔒 Kilitli</span>
+                <span class="durum-metin"><strong>Gizli Pencere (Incognito)</strong>Devre dışı bırakıldı</span>
+              </div>
+              <div class="tarayici-kisit-durum">
+                <span class="durum-rozet rozet-yesil">✅ Açık</span>
+                <span class="durum-metin"><strong>Geliştirici Araçları (F12)</strong>Öğrenci kodlama/web eğitimi için serbest</span>
+              </div>
+              <div class="tarayici-kisit-durum">
+                <span class="durum-rozet rozet-mavi">⭐ Sabit</span>
+                <span class="durum-metin"><strong>Merkezi Sık Kullanılanlar</strong><code>🏫 Okul Kısayolları</code> klasörü kilitli</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Güvenli Temizlik Kartı -->
+          <div class="kart alt-bosluk">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1rem; color: #1E293B;">🧹 Güvenli Tarayıcı Temizliği (Profil Bozulmadan)</h3>
+                <p class="ipucu sifir-alt">
+                  Öğrenci profili sıfırlanmaz; tarayıcı ilk açılış karşılama ekranına dönmez. Yalnızca istenmeyen veriler temizlenir ve okul kısayolları yenilenir.
+                </p>
+              </div>
+              <span class="rozet iyi">🛡️ Güvenli Mod</span>
+            </div>
+
+            <div class="klasor-onizleme-kutu" style="margin-bottom: 12px; background: #ECFDF5; border-color: #A7F3D0;">
+              <span class="klasor-ikon-buyuk">🎯⭐</span>
+              <div>
+                <strong style="color: #065F46; font-size: 0.92rem;">Ödev Teslim Portalı ve Okul Kısayolları Garantisi</strong>
+                <p style="margin: 2px 0 0; font-size: 0.82rem; color: #047857;">
+                  Temizlik tamamlandığında <code>http://ogretmen.lab:8090/</code> (Ödev Teslim Portalı), EBA ve Pardus kısayolları öğrencinin sık kullanılanlar çubuğundaki <strong>“🏫 Okul Kısayolları”</strong> klasörüne otomatik olarak eklenir.
+                </p>
+              </div>
+            </div>
+
+            <div class="tarayici-secenek-liste">
+              <label class="tarayici-secenek-oge">
+                <input id="chk-tar-gecmis" type="checkbox" checked>
+                <div>
+                  <strong>Tarayıcı Geçmişi ve Son İndirilenler</strong>
+                  <span>Geçmiş ziyaret edilen URL'ler ve dosya indirme kayıtları temizlenir.</span>
+                </div>
+              </label>
+              <label class="tarayici-secenek-oge">
+                <input id="chk-tar-onbellek" type="checkbox" checked>
+                <div>
+                  <strong>Önbellek ve Geçici Web Dosyaları</strong>
+                  <span>Disk belleği ve bellek tamponu temizlenerek diskte yer açılır.</span>
+                </div>
+              </label>
+              <label class="tarayici-secenek-oge">
+                <input id="chk-tar-oturum" type="checkbox" checked>
+                <div>
+                  <strong>Açık Oturumlar ve Web Çerezleri (Cookies)</strong>
+                  <span>Tüm web sitelerindeki açık öğrenci oturumları sonlandırılır.</span>
+                </div>
+              </label>
+              <label class="tarayici-secenek-oge">
+                <input id="chk-tar-eklenti" type="checkbox" checked>
+                <div>
+                  <strong>Onaysız / Sonradan Eklenmiş Eklentiler</strong>
+                  <span>Öğretmen tarafından dağıtılmamış tüm tarayıcı eklentileri kaldırılır.</span>
+                </div>
+              </label>
+              <label class="tarayici-secenek-oge">
+                <input id="chk-tar-yerimi" type="checkbox" checked>
+                <div>
+                  <strong>Kişisel Yer İmlerini Temizle</strong>
+                  <span>Öğrencilerin eklediği yer imleri temizlenir, yalnızca merkezi Okul Kısayolları kalır.</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="arac-cubugu ust-bosluk">
+              <button id="btn-tarayici-temizle-hemen" type="button" class="birincil">🧹 Seçili Bilgisayarlarda Tarayıcıyı Temizle</button>
+              <button id="btn-tarayici-eklenti-dagit" type="button" class="ikincil">📦 Onaylı Eklenti Dağıt (.crx)</button>
+              <button id="btn-tarayici-portal-ekle" type="button" class="ikincil">⭐ Sık Kullanılanları Yenile</button>
+            </div>
+          </div>
         </div>
-        <div id="m2s1-kartlar" class="ozet-kartlar"></div>
-        <div id="m2s1-tablo" class="tablo-kap"></div>
+        </div>
       </section>
 
       <!-- ================================================= M2-S2 Yazılım Merkezi ve Paket -->
       <section id="sayfa-M2-S2" class="sayfa" data-ui-id="M2-S2" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M2 · S2</span>
           <h1>Pardus Yazılım Merkezi ve Paket Yönetimi</h1>
           <p class="sayfa-aciklama">Öğrenci bilgisayarlarının tanımlı Pardus APT depolarından tek tıkla popüler uygulamaları veya aradığınız paketleri kurun, kurulu programları güvenle kaldırın ya da yerel <code>.deb</code> paketi dağıtın. Kritik sistem ve masaüstü paketleri otomatik korunur.</p>
         </header>
 
         <div class="secim-yeri" data-islem="paket"></div>
 
-        <div class="kapsam-secimi magaza-sekmeler" role="tablist" aria-label="Yazılım yönetim yöntemi">
-          <button id="m2s2-sekme-btn-magaza" type="button" class="kapsam aktif" role="tab" aria-selected="true">🏪 Pardus Depodan Uygulama Kur (Yazılım Merkezi)</button>
-          <button id="m2s2-sekme-btn-kaldir" type="button" class="kapsam" role="tab" aria-selected="false">🗑️ Kurulu Uygulamalar ve Güvenli Kaldırma</button>
-          <button id="m2s2-sekme-btn-deb" type="button" class="kapsam" role="tab" aria-selected="false">📦 Yerel .deb Dosyasından Kurulum</button>
+        <div class="sekmeler" role="tablist" aria-label="Yazılım yönetim yöntemi">
+          <button id="m2s2-sekme-btn-magaza" type="button" class="sekme aktif" role="tab" aria-selected="true">🏪 Pardus Depodan Uygulama Kur (Yazılım Merkezi)</button>
+          <button id="m2s2-sekme-btn-kaldir" type="button" class="sekme" role="tab" aria-selected="false">🗑️ Kurulu Uygulamalar ve Güvenli Kaldırma</button>
+          <button id="m2s2-sekme-btn-deb" type="button" class="sekme" role="tab" aria-selected="false">📦 Yerel .deb Dosyasından Kurulum</button>
         </div>
+        <div class="klasor-kutu">
 
         <!-- SEKME 1: PARDUS YAZILIM MERKEZİ / APT REPO KURULUM -->
         <div id="m2s2-panel-magaza" class="magaza-panel">
@@ -556,12 +730,12 @@
 
         <h2 class="alt-tablo-baslik">Hedef Bilgisayarlar (Tek veya Çoklu Seçim)</h2>
         <div id="m2s2-tablo" class="tablo-kap"></div>
+        </div>
       </section>
 
       <!-- ================================================= M2-S3 Görünüm ve Giriş -->
       <section id="sayfa-M2-S3" class="sayfa" data-ui-id="M2-S3" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M2 · S3</span>
           <h1>Görünüm ve Giriş</h1>
           <p class="sayfa-aciklama">Pardus Karşılayıcı'daki Windows 10 benzeri düzeni hedefler; ayarlar
             her bilgisayarın kendi kurulu şemasına göre denetlenir. Masaüstü ortamı ve açık oturum
@@ -623,11 +797,28 @@
       <!-- ================================================= M2-S4 Güç -->
       <section id="sayfa-M2-S4" class="sayfa" data-ui-id="M2-S4" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M2 · S4</span>
-          <h1>Güç ve Uyku</h1>
+          <h1>Güç ve Uyku Ayarı</h1>
           <p class="sayfa-aciklama">Bilgisayarları şimdi yeniden başlatın veya kapatın; uyku ayarıyla da boşta kalan
-            bilgisayarların uykuya geçip erişilemez olmasını önleyin. Kapanma zamanı planlamak için M2-S5.</p>
+            bilgisayarların uykuya geçip erişilemez olmasını önleyin. Kapanma zamanı planlamak için “Zamanlı Kapatma” sekmesini kullanın.</p>
         </header>
+
+        <!-- Üst Separatör: Bakım & Güç Sekmeleri -->
+        <div class="sekmeler" role="tablist">
+          <button type="button" class="sekme" role="tab" aria-selected="false" data-git="M2-S1">
+            <span class="sekme-ikon">🧹</span>
+            <span class="sekme-metin">Ders Sonu &amp; Tarayıcı Temizliği</span>
+          </button>
+          <button type="button" class="sekme aktif" role="tab" aria-selected="true" data-git="M2-S4">
+            <span class="sekme-ikon">🔌</span>
+            <span class="sekme-metin">Güç &amp; Uyku Ayarı</span>
+          </button>
+          <button type="button" class="sekme" role="tab" aria-selected="false" data-git="M2-S5">
+            <span class="sekme-ikon">⏰</span>
+            <span class="sekme-metin">Zamanlı Kapatma</span>
+          </button>
+        </div>
+        <div class="klasor-kutu">
+
         <div class="secim-yeri" data-islem="guc"></div>
         <div class="iki-sutun">
           <div class="kart">
@@ -637,7 +828,6 @@
             <div class="arac-cubugu">
               <button id="m2s4-yeniden" type="button" class="ikincil" data-ui-id="M2-S4-B1">Yeniden başlat</button>
               <button id="m2s4-kapat" type="button" class="tehlikeli" data-ui-id="M2-S4-B2">Kapat</button>
-              <button id="m2s4-zamanli-git" type="button" class="ikincil">⏰ Zamanlı Kapatma Planla →</button>
             </div>
           </div>
           <div class="kart">
@@ -666,21 +856,39 @@
                 (<code>sleep-inactive-*-type='nothing'</code>, <code>idle-delay=0</code>, <code>idle-dim=false</code>,
                 <code>idle-activation-enabled=false</code>); X11 DPMS (<code>90-pardus-sinif-dpms.conf</code> ve
                 <code>xset s off -dpms s noblank</code>) ile donanımsal monitör kapanması engellenir; logind ayarları
-                oturumları düşürmeden anında etkinleştirilir. Zamanlı kapatma (M2-S5) bundan etkilenmez.</p></details>
+                oturumları düşürmeden anında etkinleştirilir. Zamanlı kapatma planları bundan etkilenmez.</p></details>
           </div>
         </div>
         <div id="m2s4-tablo" class="tablo-kap"></div>
+        </div>
       </section>
 
       <!-- ================================================= M2-S5 Zamanlı Kapatma -->
       <section id="sayfa-M2-S5" class="sayfa" data-ui-id="M2-S5" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M2 · S5</span>
           <h1>Zamanlı Kapatma</h1>
           <p class="sayfa-aciklama">Bilgisayarlar seçtiğiniz zamanda kendiliğinden kapanır: <strong>bir kez</strong>
             (belirli bir tarihte) ya da <strong>her hafta</strong> seçtiğiniz günlerde. Saat gelince öğrencilere uyarı
             çıkar, uyarı süresi sonunda kapanır. Bilgisayar o saatte kapalıysa kapatma atlanır.</p>
         </header>
+
+        <!-- Üst Separatör: Bakım & Güç Sekmeleri -->
+        <div class="sekmeler" role="tablist">
+          <button type="button" class="sekme" role="tab" aria-selected="false" data-git="M2-S1">
+            <span class="sekme-ikon">🧹</span>
+            <span class="sekme-metin">Ders Sonu &amp; Tarayıcı Temizliği</span>
+          </button>
+          <button type="button" class="sekme" role="tab" aria-selected="false" data-git="M2-S4">
+            <span class="sekme-ikon">🔌</span>
+            <span class="sekme-metin">Güç &amp; Uyku Ayarı</span>
+          </button>
+          <button type="button" class="sekme aktif" role="tab" aria-selected="true" data-git="M2-S5">
+            <span class="sekme-ikon">⏰</span>
+            <span class="sekme-metin">Zamanlı Kapatma</span>
+          </button>
+        </div>
+        <div class="klasor-kutu">
+
         <div class="secim-yeri" data-islem="guc"></div>
         <div class="iki-sutun">
           <div class="kart">
@@ -726,68 +934,206 @@
           </div>
         </div>
         <div id="m2s5-tablo" class="tablo-kap"></div>
+        </div>
       </section>
 
-      <!-- ================================================= M2-S6 Komut Gönder -->
+      <!-- ================================================= M2-S6 Komut Mağazası & Araçlar -->
       <section id="sayfa-M2-S6" class="sayfa" data-ui-id="M2-S6" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M2 · S6</span>
-          <h1>Komut Gönder</h1>
-          <p class="sayfa-aciklama">Kayıtlı veya özel bash/shell komutunu SSH ile seçili bilgisayarlara gönderin.
-            Her bilgisayarın dönüş kodu (RC), standart çıktısı ve hata çıktısı aşağıdaki canlı log tablosunda
-            ve özet sayaçlarında anlık olarak izlenir.</p>
+          <h1>🏪 Komut Mağazası &amp; Araçlar</h1>
+          <p class="sayfa-aciklama">Hazır sınıf yönetim araçlarını resmi mağazadan inceleyin ve çalıştırın; öğretmenler arası betik paylaşımına katılın veya SSH ile serbest komut gönderin.</p>
         </header>
         <div class="secim-yeri" data-islem="komut"></div>
-        <div class="iki-sutun">
-          <div>
-            <div class="kart">
-              <h2>Kayıtlı Komut Kütüphanesi</h2>
-              <p class="ipucu">Hazır komutlardan birini düzenleyiciye yükleyin veya kendi kaydettiğiniz komutları yönetin.</p>
-              <div class="arac-cubugu alt-bosluk">
-                <button id="m2s6-hizli-veyon" type="button" class="ikincil kucuk" title="Veyon servisini kontrol edip kapalıysa ayağa kaldıran komutu yükler">🔄 Veyon Servisini Aç (Hızlı Yükle)</button>
-              </div>
-              <div id="m2s6-kutuphane" class="komut-kutuphane"></div>
+
+        <!-- Mağaza Sekmeleri -->
+        <div class="sekmeler" role="tablist">
+          <button id="m2s6-sekme-katalog" type="button" class="sekme aktif" role="tab" aria-selected="true">🏪 Mağaza (Katalog)</button>
+          <button id="m2s6-sekme-araclarim" type="button" class="sekme" role="tab" aria-selected="false">🧰 Araçlarım &amp; Sabitlenenler</button>
+          <button id="m2s6-sekme-calistir" type="button" class="sekme" role="tab" aria-selected="false">⚡ Aracı Çalıştır</button>
+          <button id="m2s6-sekme-katki" type="button" class="sekme" role="tab" aria-selected="false">➕ Yeni Araç Taslağı</button>
+          <button id="m2s6-sekme-serbest" type="button" class="sekme" role="tab" aria-selected="false">💻 Serbest Uçbirim &amp; Hosts</button>
+        </div>
+        <div class="klasor-kutu">
+
+        <!-- Sekme 1: Mağaza Kataloğu -->
+        <div id="m2s6-panel-katalog" class="magaza-panel">
+          <div class="magaza-ust-cubuk">
+            <div class="magaza-kategori-filtreler">
+              <button type="button" class="kategori-filtre-btn aktif" data-kategori="">Tümü</button>
+              <button type="button" class="kategori-filtre-btn" data-kategori="veyon">Veyon</button>
+              <button type="button" class="kategori-filtre-btn" data-kategori="ag">Ağ &amp; DNS</button>
+              <button type="button" class="kategori-filtre-btn" data-kategori="kullanici">Kullanıcı</button>
+              <button type="button" class="kategori-filtre-btn" data-kategori="sistem">Sistem</button>
+              <button type="button" class="kategori-filtre-btn" data-kategori="paket">Paket</button>
+              <button type="button" class="kategori-filtre-btn" data-kategori="bakim">Bakım</button>
             </div>
-            <div class="kart ust-bosluk">
-              <h2>Hızlı <code>/etc/hosts</code> Adres Ekleme</h2>
-              <p class="ipucu">Öğrenci bilgisayarlarında yerel alan adını (örn. <code>abc.local</code> → <code>192.168.23.142</code>)
-                <code>/etc/hosts</code> dosyasına idempotent olarak yazar veya günceller.</p>
-              <div class="form-izgara">
-                <label for="m2s6-hosts-ip">Hedef IP adresi</label>
-                <input id="m2s6-hosts-ip" type="text" value="192.168.23.142" placeholder="192.168.23.142">
-                <label for="m2s6-hosts-ad">Alan adı (Hostname)</label>
-                <input id="m2s6-hosts-ad" type="text" value="abc.local" placeholder="abc.local">
-              </div>
-              <div class="arac-cubugu ust-bosluk">
-                <button id="m2s6-hosts-ekle" type="button" class="birincil" data-ui-id="M2-S6-B5">Hosts Kaydını Dağıt</button>
-              </div>
+            <div class="magaza-arama-kutusu">
+              <input id="m2s6-katalog-ara" type="search" placeholder="Araç veya komut ara..." aria-label="Katalogda ara">
             </div>
           </div>
-          <div class="kart">
-            <h2>Bash / Shell Komut Düzenleyici</h2>
-            <div class="form-izgara">
-              <label for="m2s6-ad">Komut başlığı</label>
-              <input id="m2s6-ad" type="text" maxlength="80" value="abc kullanıcısını sil (userdel)" placeholder="örn. abc kullanıcısını sil">
-              <label for="m2s6-kategori">Kategori</label>
-              <select id="m2s6-kategori">
-                <option value="Veyon & Servis">Veyon &amp; Servis</option>
-                <option value="Kullanıcı">Kullanıcı</option>
-                <option value="Ağ / DNS">Ağ / DNS</option>
-                <option value="Sistem">Sistem</option>
-                <option value="Paket">Paket</option>
-                <option value="Genel">Genel</option>
-              </select>
+          <div class="magaza-repo-bilgi">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span>🌐 <strong>Komut Mağazası Deposu:</strong> <code id="m2s6-repo-etiket">github.com/mukaddesalat/pardus_yonet_magaza</code></span>
+              <span id="m2s6-repo-durum" class="rozet rozet-bilgi" style="background: #ECFDF5; color: #047857; font-weight: 600;">🟢 Çevrimdışı Hazır (8 Araç)</span>
             </div>
-            <label for="m2s6-komut" class="ust-bosluk">Çalıştırılacak Bash komutu</label>
-            <textarea id="m2s6-komut" class="komut-editor" rows="5" spellcheck="false">id -u abc &gt;/dev/null 2&gt;&amp;1 &amp;&amp; userdel -r abc &amp;&amp; echo "abc kullanicisi ve ev dizini silindi." || echo "abc kullanicisi bulunamadi."</textarea>
-            <label class="onay-kutusu"><input id="m2s6-sudo" type="checkbox" checked data-ui-id="M2-S6-B6">
-              Parolasız <code>sudo</code> (root yetkisi) ile çalıştır</label>
-            <div class="arac-cubugu">
-              <button id="m2s6-kaydet" type="button" class="ikincil" data-ui-id="M2-S6-B2">Kütüphaneye Kaydet</button>
-              <button id="m2s6-calistir" type="button" class="birincil" data-ui-id="M2-S6-B1">Seçili Bilgisayarlara Gönder</button>
+            <div class="magaza-repo-eylemler" style="display: flex; align-items: center; gap: 6px;">
+              <button id="btn-magaza-guncelle" type="button" class="ikincil kucuk" title="Uzak Git deposundan en güncel araç kataloğunu sorgular ve indirir">🔄 Kataloğu Güncelle</button>
+              <button id="btn-magaza-depo-ayar" type="button" class="ikincil kucuk" title="Mağaza depo adresini yapılandır">⚙️ Depo Ayarı</button>
+              <button id="btn-magaza-ice-aktar" type="button" class="ikincil kucuk" title="Öğretmenler tarafından hazırlanan yerel araç dosyasını (.json) içeri aktar">📥 İçe Aktar</button>
+            </div>
+          </div>
+          <!-- Depo Ayarı Açılır Kutusu (Varsayılan Gizli) -->
+          <div id="m2s6-depo-ayar-kutu" class="kart alt-bosluk" style="background: #F1F5F9; border-color: #CBD5E1;" hidden>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="font-size: 0.9rem; color: #1E293B;">⚙️ Komut Mağazası Katalog Depo Ayarları</strong>
+              <button id="btn-magaza-depo-kapat" type="button" class="ikincil kucuk">✕ Kapat</button>
+            </div>
+            <p class="ipucu sifir-alt">Uygulama, Git araç kataloğunu çekmek için tek bir hafif JSON dosyası (Raw HTTP) kullanır; tüm repoyu klonlamaya gerek kalmaz. MEB veya okul yerel ağındaki özel depo adresinizi girebilirsiniz.</p>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <input id="m2s6-depo-url" type="url" value="https://raw.githubusercontent.com/mukaddesalat/pardus_yonet_magaza/main/katalog.json" style="flex: 1; font-family: monospace; font-size: 0.85rem;" placeholder="https://raw.githubusercontent.com/.../katalog.json">
+              <button id="btn-magaza-depo-kaydet" type="button" class="birincil kucuk">Kaydet ve Dene</button>
+            </div>
+          </div>
+          <div id="m2s6-katalog-izgara" class="magaza-kart-izgara"></div>
+        </div>
+
+        <!-- Sekme 2: Araçlarım & Sabitlenenler -->
+        <div id="m2s6-panel-araclarim" class="magaza-panel" hidden>
+          <div class="kart">
+            <h2>📌 Sabitlenen ve Sık Kullanılan Araçlar</h2>
+            <p class="ipucu">Sınıf Masası'nda tek tıkla çalıştırılmak üzere panoya sabitlenen araçlar aşağıda listelenmiştir.</p>
+            <div id="m2s6-sabitler-tablo" class="tablo-kap"></div>
+          </div>
+        </div>
+
+        <!-- Sekme 3: Aracı Çalıştır -->
+        <div id="m2s6-panel-calistir" class="magaza-panel" hidden>
+          <div class="kart">
+            <div class="arac-calistir-baslik">
+              <div>
+                <h2 id="m2s6-secili-arac-ad">Bir araç seçin</h2>
+                <p id="m2s6-secili-arac-ozet" class="ipucu">Katalogdan veya Araçlarım sekmesinden çalıştırmak istediğiniz bir aracı seçin.</p>
+              </div>
+              <div id="m2s6-secili-arac-rozetler"></div>
+            </div>
+            <div id="m2s6-parametre-alani" class="ust-bosluk">
+              <h3>Parametreler</h3>
+              <div id="m2s6-parametre-formu" class="form-izgara"></div>
+            </div>
+            <div class="arac-cubugu ust-bosluk">
+              <button id="m2s6-arac-calistir" type="button" class="birincil">⚡ Seçili Bilgisayarlarda Çalıştır</button>
+              <button id="m2s6-arac-sabitle" type="button" class="ikincil">📌 Sınıf Masası'na Sabitle</button>
+              <button id="m2s6-arac-katalog-don" type="button" class="ikincil">← Kataloğa Dön</button>
             </div>
           </div>
         </div>
+
+        <!-- Sekme 4: Yeni Araç Taslağı (Öğretmen Katkı Sihirbazı) -->
+        <div id="m2s6-panel-katki" class="magaza-panel" hidden>
+          <div class="kart">
+            <h2>➕ Öğretmen Araç Katkı Sihirbazı</h2>
+            <div class="bilgi-kutusu">
+              <p>💡 <strong>Öğretmenler İçin Basit Katkı Modeli:</strong></p>
+              <p>Öğretmenlerin hazırladığı faydalı komutlar için kurumsal şirketler gibi GPG/minisign anahtar imzalama zorunluluğu yoktur. Aşağıdaki taslak formunu doldurarak aracınızı oluşturabilir, test edebilir ve doğrudan <code>afyontugva/lab-kaptani-magaza</code> GitHub deposuna katkı olarak iletebilirsiniz.</p>
+            </div>
+            <div class="form-izgara ust-bosluk">
+              <label for="m2s6-katki-id">Araç Kimliği (ID)</label>
+              <input id="m2s6-katki-id" type="text" placeholder="orn: libreoffice-sablon-dagit" pattern="[a-z0-9_-]+">
+
+              <label for="m2s6-katki-ad">Araç Adı</label>
+              <input id="m2s6-katki-ad" type="text" placeholder="orn: LibreOffice Çalışma Şablonunu Dağıt">
+
+              <label for="m2s6-katki-kategori">Kategori</label>
+              <select id="m2s6-katki-kategori">
+                <option value="bakim">Bakım &amp; Temizlik</option>
+                <option value="kullanici">Kullanıcı Yönetimi</option>
+                <option value="ag">Ağ &amp; DNS</option>
+                <option value="sistem">Sistem</option>
+                <option value="paket">Paket &amp; Yazılım</option>
+                <option value="veyon">Veyon</option>
+              </select>
+
+              <label for="m2s6-katki-risk">Risk Seviyesi</label>
+              <select id="m2s6-katki-risk">
+                <option value="bilgi">Bilgi (Salt Okunur - Güvenli)</option>
+                <option value="degisiklik">Değişiklik (Sistem ayarı günceller)</option>
+                <option value="yikici">Yıkıcı (Dosya veya kullanıcı siler)</option>
+              </select>
+
+              <label for="m2s6-katki-yazar">Öğretmen / Yazar</label>
+              <input id="m2s6-katki-yazar" type="text" placeholder="orn: Ahmet Öğretmen">
+
+              <label for="m2s6-katki-ozet">Özet Açıklama</label>
+              <input id="m2s6-katki-ozet" type="text" placeholder="Aracın ne yaptığını anlatan tek cümle">
+            </div>
+
+            <label for="m2s6-katki-betik" class="ust-bosluk">Bash Betiği (<code>calistir.sh</code>)</label>
+            <textarea id="m2s6-katki-betik" class="komut-editor" rows="6" placeholder="#!/usr/bin/env bash&#10;set -euo pipefail&#10;echo &quot;İşlem tamamlandı.&quot;"></textarea>
+
+            <div class="arac-cubugu ust-bosluk">
+              <button id="m2s6-katki-onizle-btn" type="button" class="ikincil">📄 Manifest (arac.yaml) Önizle</button>
+              <button id="m2s6-katki-indir-btn" type="button" class="birincil">📥 Katkı Dosyasını İndir (JSON)</button>
+              <button id="m2s6-katki-test-btn" type="button" class="ikincil">🧪 Serbest Düzenleyicide Dene</button>
+            </div>
+            <pre id="m2s6-katki-onizleme-kod" class="komut ust-bosluk" hidden></pre>
+          </div>
+        </div>
+
+        <!-- Sekme 5: Serbest Uçbirim & Hosts (Mevcut Komut Gönder Özellikleri) -->
+        <div id="m2s6-panel-serbest" class="magaza-panel" hidden>
+          <div class="iki-sutun">
+            <div>
+              <div class="kart">
+                <h2>Kayıtlı Komut Kütüphanesi</h2>
+                <p class="ipucu">Hazır komutlardan birini düzenleyiciye yükleyin veya kendi kaydettiğiniz komutları yönetin.</p>
+                <div class="arac-cubugu alt-bosluk">
+                  <button id="m2s6-hizli-veyon" type="button" class="ikincil kucuk" title="Veyon servisini kontrol edip kapalıysa ayağa kaldıran komutu yükler">🔄 Veyon Servisini Aç (Hızlı Yükle)</button>
+                </div>
+                <div id="m2s6-kutuphane" class="komut-kutuphane"></div>
+              </div>
+              <div class="kart ust-bosluk">
+                <h2>Hızlı <code>/etc/hosts</code> Adres Ekleme</h2>
+                <p class="ipucu">Öğrenci bilgisayarlarında yerel alan adını (örn. <code>abc.local</code> → <code>192.168.23.142</code>)
+                  <code>/etc/hosts</code> dosyasına idempotent olarak yazar veya günceller.</p>
+                <div class="form-izgara">
+                  <label for="m2s6-hosts-ip">Hedef IP adresi</label>
+                  <input id="m2s6-hosts-ip" type="text" value="192.168.23.142" placeholder="192.168.23.142">
+                  <label for="m2s6-hosts-ad">Alan adı (Hostname)</label>
+                  <input id="m2s6-hosts-ad" type="text" value="abc.local" placeholder="abc.local">
+                </div>
+                <div class="arac-cubugu ust-bosluk">
+                  <button id="m2s6-hosts-ekle" type="button" class="birincil" data-ui-id="M2-S6-B5">Hosts Kaydını Dağıt</button>
+                </div>
+              </div>
+            </div>
+            <div class="kart">
+              <h2>Bash / Shell Komut Düzenleyici</h2>
+              <div class="form-izgara">
+                <label for="m2s6-ad">Komut başlığı</label>
+                <input id="m2s6-ad" type="text" maxlength="80" value="abc kullanıcısını sil (userdel)" placeholder="örn. abc kullanıcısını sil">
+                <label for="m2s6-kategori">Kategori</label>
+                <select id="m2s6-kategori">
+                  <option value="Veyon &amp; Servis">Veyon &amp; Servis</option>
+                  <option value="Kullanıcı">Kullanıcı</option>
+                  <option value="Ağ / DNS">Ağ / DNS</option>
+                  <option value="Sistem">Sistem</option>
+                  <option value="Paket">Paket</option>
+                  <option value="Genel">Genel</option>
+                </select>
+              </div>
+              <label for="m2s6-komut" class="ust-bosluk">Çalıştırılacak Bash komutu</label>
+              <textarea id="m2s6-komut" class="komut-editor" rows="5" spellcheck="false">id -u abc &gt;/dev/null 2&gt;&amp;1 &amp;&amp; userdel -r abc &amp;&amp; echo "abc kullanicisi ve ev dizini silindi." || echo "abc kullanicisi bulunamadi."</textarea>
+              <label class="onay-kutusu"><input id="m2s6-sudo" type="checkbox" checked data-ui-id="M2-S6-B6">
+                Parolasız <code>sudo</code> (root yetkisi) ile çalıştır</label>
+              <div class="arac-cubugu">
+                <button id="m2s6-kaydet" type="button" class="ikincil" data-ui-id="M2-S6-B2">Kütüphaneye Kaydet</button>
+                <button id="m2s6-calistir" type="button" class="birincil" data-ui-id="M2-S6-B1">Seçili Bilgisayarlara Gönder</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canlı Komut Çıktı Tablosu (Tüm araçlar için ortak) -->
         <div class="kart ust-bosluk">
           <div class="arac-cubugu">
             <h2 class="sifir-alt">Canlı Komut Çıktı (Log) Tablosu ve Özet</h2>
@@ -797,164 +1143,221 @@
           <div id="m2s6-sayaclar" class="ozet-kartlar"></div>
           <div id="m2s6-log-tablo" class="tablo-kap"></div>
         </div>
+        </div>
       </section>
 
       <!-- ================================================= M3-S1 Teslimler -->
       <section id="sayfa-M3-S1" class="sayfa" data-ui-id="M3-S1" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M3 · S1</span>
-          <h1>Teslimler ve Masaüstüne Dağıtım</h1>
+          <h1>Ödev Teslimleri &amp; Masaüstüne Dağıtım</h1>
           <p class="sayfa-aciklama">Öğrenci portal adresi: <strong id="portal-adres" class="adres"></strong>
             <span id="portal-durum"></span></p>
         </header>
-        <div class="secim-yeri" data-islem="sinif"></div>
-        <div class="kart dagitim-ana-kart alt-bosluk">
-          <div class="dagitim-ust-baslik">
-            <div>
-              <h2 class="sifir-alt">🚀 Öğrenci Masaüstüne Dosya ve Web Bağlantısı Bırak</h2>
-              <p class="ipucu sifir-alt">Seçili öğrenci bilgisayarlarının <code>/home/ogrenci/Masaüstü</code> klasörüne ders materyali bırakır veya doğrudan tarayıcıda açılan web bağlantısı gönderir (seçim yoksa laboratuvardaki tüm uygun bilgisayarlar hedeflenir).</p>
-            </div>
-            <button id="m3s1-portal-hemen-gonder" type="button" class="birincil kucuk" title="Ödev Teslim Portalı bağlantısını tüm sınıfa gönderir ve ekranlarda açar">🎯 Ödev Portalını Sınıfa Gönder ve Aç</button>
-          </div>
-          <div class="dagitim-izgara">
-            <div class="dagitim-alt-kart">
-              <div class="dagitim-kart-baslik">
-                <div class="dagitim-ikon-rozet" aria-hidden="true">🌐</div>
-                <div>
-                  <h3>Web Sayfası &amp; Ödev Portalı Bağlantısı</h3>
-                  <p>Öğrenci çift tıkladığında doğrudan web tarayıcısında açılan bağlantı dosyası oluşturur ve isteğe bağlı olarak sayfayı ekranlarda hemen açar.</p>
-                </div>
-              </div>
-              <div class="dagitim-hazir-cubuk">
-                <span class="dagitim-hazir-etiket">Hızlı Doldur:</span>
-                <button id="m3s1-preset-portal" type="button" class="ikincil kucuk">🎯 Ödev Teslim Portalı</button>
-                <button id="m3s1-preset-pardus" type="button" class="ikincil kucuk">🐾 Pardus Kılavuzu</button>
-              </div>
-              <div class="dagitim-giris-grubu">
-                <input id="m3s1-url-baslik" type="text" maxlength="60" placeholder="Bağlantı adı (örn. Ödev Teslim Portalı)" aria-label="Kısayol adı">
-                <input id="m3s1-url-adres" type="url" maxlength="500" placeholder="http://ogretmen.lab:8090/ veya https://..." aria-label="Web adresi">
-              </div>
-              <label class="onay-kutusu"><input id="m3s1-url-otomatik-ac" type="checkbox" checked>
-                Gönderince öğrenci ekranlarında web sayfasını tarayıcıda hemen aç</label>
-              <div class="dagitim-eylem-satir">
-                <span class="ipucu">Hem <code>.html</code> web açıcı hem güvenilir başlatıcı bırakılır.</span>
-                <button id="m3s1-url-gonder" type="button" class="birincil" data-ui-id="M3-S1-B22">🌐 Web Bağlantısını Gönder</button>
-              </div>
-            </div>
 
-            <div class="dagitim-alt-kart">
-              <div class="dagitim-kart-baslik">
-                <div class="dagitim-ikon-rozet" aria-hidden="true">📁</div>
-                <div>
-                  <h3>Masaüstüne Dosya / Materyal Bırak</h3>
-                  <p>Çalışma kağıdı, PDF, örnek kaynak kod, sunum, görsel veya arşiv dosyasını SFTP üzerinden tüm öğrenci masaüstlerine kopyalar.</p>
+        <!-- Bölüm Ayırıcı Çubuk (Separatör Sekmeler) -->
+        <div class="sekmeler" role="tablist">
+          <button type="button" id="m3-sekme-teslim" class="sekme aktif" role="tab" aria-selected="true">
+            <span class="sekme-ikon">📚</span>
+            <span class="sekme-metin">Ödev Teslimleri &amp; Masaüstüne Dağıtım</span>
+          </button>
+          <button type="button" id="m3-sekme-kartlar" class="sekme" role="tab" aria-selected="false">
+            <span class="sekme-ikon">🪪</span>
+            <span class="sekme-metin">Sınıf Listeleri &amp; Öğrenci Kod Kartları</span>
+          </button>
+        </div>
+        <div class="klasor-kutu">
+
+        <!-- PANEL 1: Ödev Teslimleri & Dağıtım -->
+        <div id="m3-panel-teslim">
+          <div class="secim-yeri" data-islem="sinif"></div>
+
+          <!-- Özelleştirilebilir Altın Sarısı Masaüstü Hedef Klasörü Kutusu -->
+          <div class="klasor-onizleme-kutu alt-bosluk">
+            <span class="klasor-ikon-buyuk">📁⭐</span>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #92400E; font-size: 0.95rem;">Öğrenci Masaüstü Hedef Klasörü:</strong>
+                  <div style="display: inline-flex; align-items: center; background: #FFFBEB; border: 1.5px solid #F59E0B; border-radius: 6px; padding: 2px 6px;">
+                    <span style="font-family: monospace; font-size: 0.85rem; color: #78350F;">/home/ogrenci/Masaüstü/</span>
+                    <input id="m3s1-hedef-klasor" type="text" value="Odevler" placeholder="Odevler" maxlength="30"
+                           style="border: none; background: #FFFFFF; font-weight: 700; color: #92400E; font-size: 0.88rem; padding: 2px 8px; border-radius: 4px; outline: none; width: 130px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);"
+                           title="Klasör adını dilediğiniz gibi değiştirebilirsiniz (Örn: Odevler, dersnotlari, Bilisim1)">
+                    <span style="font-family: monospace; font-size: 0.85rem; color: #78350F;">/</span>
+                  </div>
+                </div>
+                <span class="rozet rozet-bilgi" style="background: #FEF3C7; color: #92400E; font-weight: 600;">✨ Otomatik Oluşturulur</span>
+              </div>
+              <p style="margin: 6px 0 0; font-size: 0.82rem; color: #78350F;">
+                Tüm dağıtılan ödev, doküman ve web kısayolları öğrenci masaüstünde dikkat çekici bu klasörün içine yerleştirilir. Varsayılan olarak <strong>“Odevler”</strong> klasörü kullanılır; dilerseniz kutucuğa tıklayarak <em>dersnotlari</em> vb. olarak değiştirebilirsiniz.
+              </p>
+            </div>
+          </div>
+
+          <!-- Dağıtım Kartı -->
+          <div class="kart dagitim-ana-kart alt-bosluk">
+            <div class="dagitim-ust-baslik">
+              <div>
+                <h2 class="sifir-alt">🚀 Öğrenci Masaüstüne Dosya ve Web Bağlantısı Bırak</h2>
+                <p class="ipucu sifir-alt">Seçili öğrenci bilgisayarlarının <code id="m3s1-yol-ipucu">/home/ogrenci/Masaüstü/Odevler</code> klasörüne ders materyali bırakır veya Chromium tarayıcısında tam ekranda açılan web bağlantısı gönderir.</p>
+              </div>
+              <button id="m3s1-portal-hemen-gonder" type="button" class="birincil kucuk" title="Ödev Teslim Portalı bağlantısını tüm sınıfa gönderir ve ekranlarda açar">🎯 Ödev Portalını Sınıfa Gönder ve Aç</button>
+            </div>
+            <div class="dagitim-izgara">
+              <div class="dagitim-alt-kart">
+                <div class="dagitim-kart-baslik">
+                  <div class="dagitim-ikon-rozet" aria-hidden="true">🌐</div>
+                  <div>
+                    <h3>Web Sayfası &amp; Ödev Portalı Bağlantısı</h3>
+                    <p>Öğrenci tıkladığında doğrudan Chromium tarayıcısında açılan bağlantı dosyası oluşturur ve sayfayı ekranlarda hemen en üstte açar.</p>
+                  </div>
+                </div>
+                <div class="dagitim-hazir-cubuk">
+                  <span class="dagitim-hazir-etiket">Hızlı Doldur:</span>
+                  <button id="m3s1-preset-portal" type="button" class="ikincil kucuk">🎯 Ödev Teslim Portalı</button>
+                  <button id="m3s1-preset-pardus" type="button" class="ikincil kucuk">🐾 Pardus Kılavuzu</button>
+                </div>
+                <div class="dagitim-giris-grubu">
+                  <input id="m3s1-url-baslik" type="text" maxlength="60" placeholder="Bağlantı adı (örn. Ödev Teslim Portalı)" aria-label="Kısayol adı">
+                  <input id="m3s1-url-adres" type="url" maxlength="500" placeholder="http://ogretmen.lab:8090/ veya https://..." aria-label="Web adresi">
+                </div>
+                <label class="onay-kutusu"><input id="m3s1-url-otomatik-ac" type="checkbox" checked>
+                  🚀 Gönderince öğrenci ekranlarında <strong>Chromium</strong> tarayıcısını tam ekranda ve en üstte hemen aç</label>
+                <div class="dagitim-eylem-satir">
+                  <span class="ipucu">Hedef: <code id="m3s1-url-hedef-yol">/home/ogrenci/Masaüstü/Odevler/</code></span>
+                  <button id="m3s1-url-gonder" type="button" class="birincil" data-ui-id="M3-S1-B22">🌐 Web Bağlantısını Gönder</button>
                 </div>
               </div>
-              <label id="m3s1-dosya-kutu" for="m3s1-dosya-sec" class="dosya-birakma-alani">
-                <span class="dosya-birakma-ikon" aria-hidden="true">📥</span>
-                <span class="dosya-birakma-metin">Dağıtılacak dosyayı seçmek için tıklayın veya buraya sürükleyin</span>
-                <span class="dosya-birakma-alt">PDF, ZIP, Python/C++, LibreOffice, görsel vb. (en çok 50 MB)</span>
-              </label>
-              <input id="m3s1-dosya-sec" type="file" class="gizli-giris" aria-label="Dağıtılacak dosya">
-              <div id="m3s1-secili-dosya-bilgi" class="secili-dosya-rozet" hidden>
-                <span id="m3s1-secili-dosya-ad" class="secili-dosya-ad"></span>
-                <button id="m3s1-secili-dosya-temizle" type="button" class="ikincil kucuk" title="Seçili dosyayı kaldır">✕</button>
-              </div>
-              <div class="dagitim-eylem-satir">
-                <span class="ipucu">Hedef: <code>/home/ogrenci/Masaüstü/</code></span>
-                <button id="m3s1-dosya-gonder" type="button" class="birincil" data-ui-id="M3-S1-B23">📤 Masaüstüne Dosya Dağıt</button>
+
+              <div class="dagitim-alt-kart">
+                <div class="dagitim-kart-baslik">
+                  <div class="dagitim-ikon-rozet" aria-hidden="true">📁</div>
+                  <div>
+                    <h3>Masaüstüne Dosya / Materyal Bırak</h3>
+                    <p>Çalışma kağıdı, PDF, örnek kaynak kod, sunum, görsel veya arşiv dosyasını SFTP üzerinden öğrencinin <strong id="m3s1-dosya-klasor-etiket">Odevler</strong> klasörüne kopyalar.</p>
+                  </div>
+                </div>
+                <label id="m3s1-dosya-kutu" for="m3s1-dosya-sec" class="dosya-birakma-alani">
+                  <span class="dosya-birakma-ikon" aria-hidden="true">📥</span>
+                  <span class="dosya-birakma-metin">Dağıtılacak dosyayı seçmek için tıklayın veya buraya sürükleyin</span>
+                  <span class="dosya-birakma-alt">PDF, ZIP, Python/C++, LibreOffice, görsel vb. (en çok 50 MB)</span>
+                </label>
+                <input id="m3s1-dosya-sec" type="file" class="gizli-giris" aria-label="Dağıtılacak dosya">
+                <div id="m3s1-secili-dosya-bilgi" class="secili-dosya-rozet" hidden>
+                  <span id="m3s1-secili-dosya-ad" class="secili-dosya-ad"></span>
+                  <button id="m3s1-secili-dosya-temizle" type="button" class="ikincil kucuk" title="Seçili dosyayı kaldır">✕</button>
+                </div>
+                <div class="dagitim-eylem-satir">
+                  <span class="ipucu">Hedef: <code id="m3s1-dosya-hedef-yol">/home/ogrenci/Masaüstü/Odevler/</code></span>
+                  <button id="m3s1-dosya-gonder" type="button" class="birincil" data-ui-id="M3-S1-B23">📤 Odevler'e Dağıt</button>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Hedef Bilgisayarlar Tablosu (Sınıf Masası ile Senkronize) -->
+          <div class="kart alt-bosluk">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h3 style="margin: 0; font-size: 0.95rem; color: #1E293B;">💻 Laboratuvardaki Bilgisayarlar (Dağıtım Hedefleri)</h3>
+              <span class="ipucu">Sınıf Masası ile ortak seçim kullanılır; işaretlediğiniz bilgisayarlara doğrudan dağıtılır.</span>
+            </div>
+            <div id="m3s1-cihaz-tablo" class="tablo-kap"></div>
+          </div>
+
+          <div id="alt-odev-liste" class="alt-bolum">
+            <div class="arac-cubugu">
+              <button id="btn-yeni-odev" type="button" class="birincil" data-ui-id="M3-S1-B1">Yeni ödev</button>
+              <button id="btn-odev-yenile" type="button" class="ikincil" data-ui-id="M3-S1-B2">Yenile</button>
+            </div>
+            <div id="odev-tablosu" class="tablo-kap"></div>
+          </div>
+          <div id="alt-odev-takip" class="alt-bolum" hidden>
+            <button id="btn-takip-geri" type="button" class="ikincil" data-ui-id="M3-S1-B7">← Ödev listesi</button>
+            <div class="kart ust-bosluk">
+              <h2 id="takip-baslik"></h2>
+              <p id="takip-bilgi" class="ipucu"></p>
+              <p id="takip-tamam" class="tamam-metni" hidden>✓ Sınıfın tamamı teslim etti.</p>
+              <div id="takip-ozet" class="ozet-kartlar"></div>
+              <div id="takip-eylemler" class="arac-cubugu"></div>
+            </div>
+            <div class="arac-cubugu">
+              <button id="btn-zip-tum" type="button" class="birincil" data-ui-id="M3-S1-B4">Tüm teslimleri indir (ZIP)</button>
+              <button id="btn-zip-secili" type="button" class="ikincil" data-ui-id="M3-S1-B5">Seçili teslimleri indir (ZIP)</button>
+              <label class="onay-kutusu satir-ici"><input type="checkbox" id="zip-tum-surum" data-ui-id="M3-S1-B14">
+                Önceki sürümleri de dahil et</label>
+            </div>
+            <div id="takip-tablosu" class="tablo-kap"></div>
+          </div>
         </div>
-        <div id="alt-odev-liste" class="alt-bolum">
-          <div class="arac-cubugu">
-            <button id="btn-yeni-odev" type="button" class="birincil" data-ui-id="M3-S1-B1">Yeni ödev</button>
-            <button id="btn-odev-yenile" type="button" class="ikincil" data-ui-id="M3-S1-B2">Yenile</button>
+
+        <!-- PANEL 2: Sınıf Listeleri ve Kod Kartları -->
+        <div id="m3-panel-kartlar" hidden>
+          <div class="iki-sutun">
+            <div class="kart">
+              <h2>Sınıf listesini içe aktar (CSV)</h2>
+              <p class="ipucu">Sütunlar: <strong>sınıf; öğrenci numarası; ad soyad</strong>. Başlık satırı
+                isteğe bağlıdır. Var olan öğrencinin adı güncellenir, kodu korunur.</p>
+              <div class="arac-cubugu">
+                <label class="dugme ikincil" for="csv-dosya" data-ui-id="M3-S2-B1">CSV dosyası seç</label>
+                <input type="file" id="csv-dosya" accept=".csv,.txt" class="gizli-giris">
+                <span id="csv-ad" class="ipucu"></span>
+                <button id="btn-csv-aktar" type="button" class="birincil" data-ui-id="M3-S2-B2">İçe aktar</button>
+              </div>
+              <p id="csv-sonuc" class="ipucu" role="status"></p>
+            </div>
+            <div class="kart">
+              <h2>Öğrenci portalı</h2>
+              <p id="portal-bilgi" class="ipucu"></p>
+              <form id="portal-ayar-formu" class="satir-form">
+                <label for="portal-ad">Adres adı</label>
+                <input id="portal-ad" type="text" maxlength="63" placeholder="ogretmen.lab">
+                <label for="portal-aglar">Laboratuvar ağları (virgülle)</label>
+                <input id="portal-aglar" type="text" placeholder="örn. 192.168.10.0/24">
+                <button type="submit" class="ikincil" data-ui-id="M3-S2-B14">Portal ayarlarını kaydet</button>
+              </form>
+              <p class="ipucu">Portal yalnız bu ağlardan gelen bağlantıları kabul eder. Bağlantı şifresizdir
+                (HTTP): kodlar ve dosyalar laboratuvar ağında şifrelenmeden taşınır.</p>
+            </div>
           </div>
-          <div id="odev-tablosu" class="tablo-kap"></div>
+          <div class="arac-cubugu">
+            <label for="sinif-sec" class="satir-ici"><strong>Sınıf</strong></label>
+            <select id="sinif-sec" data-ui-id="M3-S2-B3"></select>
+            <a id="sinif-csv-indir" class="dugme ikincil" href="#" download data-ui-id="M3-S2-B4">Listeyi CSV indir</a>
+            <form id="sinif-ekle-formu" class="satir-ici-form">
+              <input id="yeni-sinif" type="text" maxlength="20" placeholder="Yeni sınıf (örn. 9-A)" aria-label="Yeni sınıf adı">
+              <button type="submit" class="ikincil" data-ui-id="M3-S2-B6">Sınıf ekle</button>
+            </form>
+            <button id="btn-sinif-sil" type="button" class="tehlikeli" data-ui-id="M3-S2-B5">Sınıfı sil</button>
+          </div>
+          <div class="arac-cubugu">
+            <form id="ogrenci-ekle-formu" class="satir-ici-form">
+              <input id="yeni-numara" type="text" maxlength="12" placeholder="Numara" aria-label="Öğrenci numarası">
+              <input id="yeni-ad" type="text" maxlength="80" placeholder="Ad soyad" aria-label="Ad soyad">
+              <button type="submit" class="ikincil" data-ui-id="M3-S2-B7">Öğrenci ekle</button>
+            </form>
+            <span class="ayrac"></span>
+            <button id="btn-kod-eksik" type="button" class="birincil" data-ui-id="M3-S2-B8">Kodu olmayanlara kod üret</button>
+            <button id="btn-kod-secili" type="button" class="ikincil" data-ui-id="M3-S2-B9">Seçililere yeni kod üret</button>
+          </div>
+          <div id="ogrenci-tablosu" class="tablo-kap"></div>
         </div>
-        <div id="alt-odev-takip" class="alt-bolum" hidden>
-          <button id="btn-takip-geri" type="button" class="ikincil" data-ui-id="M3-S1-B7">← Ödev listesi</button>
-          <div class="kart ust-bosluk">
-            <h2 id="takip-baslik"></h2>
-            <p id="takip-bilgi" class="ipucu"></p>
-            <p id="takip-tamam" class="tamam-metni" hidden>✓ Sınıfın tamamı teslim etti.</p>
-            <div id="takip-ozet" class="ozet-kartlar"></div>
-            <div id="takip-eylemler" class="arac-cubugu"></div>
-          </div>
-          <div class="arac-cubugu">
-            <button id="btn-zip-tum" type="button" class="birincil" data-ui-id="M3-S1-B4">Tüm teslimleri indir (ZIP)</button>
-            <button id="btn-zip-secili" type="button" class="ikincil" data-ui-id="M3-S1-B5">Seçili teslimleri indir (ZIP)</button>
-            <label class="onay-kutusu satir-ici"><input type="checkbox" id="zip-tum-surum" data-ui-id="M3-S1-B14">
-              Önceki sürümleri de dahil et</label>
-          </div>
-          <div id="takip-tablosu" class="tablo-kap"></div>
         </div>
       </section>
 
-      <!-- ================================================= M3-S2 Sınıflar ve Kodlar -->
+      <!-- ================================================= M3-S2 Sınıflar ve Kodlar (Yönlendirme / Geriye Uyumluluk) -->
       <section id="sayfa-M3-S2" class="sayfa" data-ui-id="M3-S2" hidden>
-        <header class="sayfa-baslik">
-          <span class="kod-cip">M3 · S2</span>
-          <h1>Sınıflar ve Kodlar</h1>
-          <p class="sayfa-aciklama">Kodlar yalnız üretildiği anda gösterilir ve yazdırılabilir. Kaybolan
-            kod geri getirilemez; yeni kod üretin (eskisi hemen geçersiz olur).</p>
-        </header>
-        <div class="iki-sutun">
-          <div class="kart">
-            <h2>Sınıf listesini içe aktar (CSV)</h2>
-            <p class="ipucu">Sütunlar: <strong>sınıf; öğrenci numarası; ad soyad</strong>. Başlık satırı
-              isteğe bağlıdır. Var olan öğrencinin adı güncellenir, kodu korunur.</p>
-            <div class="arac-cubugu">
-              <label class="dugme ikincil" for="csv-dosya" data-ui-id="M3-S2-B1">CSV dosyası seç</label>
-              <input type="file" id="csv-dosya" accept=".csv,.txt" class="gizli-giris">
-              <span id="csv-ad" class="ipucu"></span>
-              <button id="btn-csv-aktar" type="button" class="birincil" data-ui-id="M3-S2-B2">İçe aktar</button>
-            </div>
-            <p id="csv-sonuc" class="ipucu" role="status"></p>
-          </div>
-          <div class="kart">
-            <h2>Öğrenci portalı</h2>
-            <p id="portal-bilgi" class="ipucu"></p>
-            <form id="portal-ayar-formu" class="satir-form">
-              <label for="portal-ad">Adres adı</label>
-              <input id="portal-ad" type="text" maxlength="63" placeholder="ogretmen.lab">
-              <label for="portal-aglar">Laboratuvar ağları (virgülle)</label>
-              <input id="portal-aglar" type="text" placeholder="örn. 192.168.10.0/24">
-              <button type="submit" class="ikincil" data-ui-id="M3-S2-B14">Portal ayarlarını kaydet</button>
-            </form>
-            <p class="ipucu">Portal yalnız bu ağlardan gelen bağlantıları kabul eder. Bağlantı şifresizdir
-              (HTTP): kodlar ve dosyalar laboratuvar ağında şifrelenmeden taşınır.</p>
-          </div>
+        <div class="kart" style="text-align: center; padding: 40px 20px;">
+          <h2 style="margin-bottom: 8px;">🪪 Sınıf Listeleri ve Kod Kartları</h2>
+          <p class="ipucu" style="margin-bottom: 16px;">Bu bölüm "Ödev &amp; Dosya Dağıt" sayfası altındaki sekmede yer almaktadır.</p>
+          <button type="button" class="birincil" data-git="M3-S1" data-tikla="#m3-sekme-kartlar">
+            📚 Ödev &amp; Dosya Dağıt Ekranına Git
+          </button>
         </div>
-        <div class="arac-cubugu">
-          <label for="sinif-sec" class="satir-ici"><strong>Sınıf</strong></label>
-          <select id="sinif-sec" data-ui-id="M3-S2-B3"></select>
-          <a id="sinif-csv-indir" class="dugme ikincil" href="#" download data-ui-id="M3-S2-B4">Listeyi CSV indir</a>
-          <button id="btn-sinif-sil" type="button" class="tehlikeli" data-ui-id="M3-S2-B5">Sınıfı sil</button>
-          <form id="sinif-ekle-formu" class="satir-ici-form">
-            <input id="yeni-sinif" type="text" maxlength="20" placeholder="Yeni sınıf (örn. 9-A)" aria-label="Yeni sınıf adı">
-            <button type="submit" class="ikincil" data-ui-id="M3-S2-B6">Sınıf ekle</button>
-          </form>
-        </div>
-        <div class="arac-cubugu">
-          <form id="ogrenci-ekle-formu" class="satir-ici-form">
-            <input id="yeni-numara" type="text" maxlength="12" placeholder="Numara" aria-label="Öğrenci numarası">
-            <input id="yeni-ad" type="text" maxlength="80" placeholder="Ad soyad" aria-label="Ad soyad">
-            <button type="submit" class="ikincil" data-ui-id="M3-S2-B7">Öğrenci ekle</button>
-          </form>
-          <span class="ayrac"></span>
-          <button id="btn-kod-eksik" type="button" class="birincil" data-ui-id="M3-S2-B8">Kodu olmayanlara kod üret</button>
-          <button id="btn-kod-secili" type="button" class="ikincil" data-ui-id="M3-S2-B9">Seçililere yeni kod üret</button>
-        </div>
-        <div id="ogrenci-tablosu" class="tablo-kap"></div>
       </section>
 
       <!-- ================================================= M4-S1 İşlem Geçmişi -->
       <section id="sayfa-M4-S1" class="sayfa" data-ui-id="M4-S1" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M4 · S1</span>
           <h1>İşlem Geçmişi</h1>
           <p class="sayfa-aciklama">Her iş, işlemi başlatan öğretmeni, başladığı andaki kesin hedef listesini ve
             bilgisayar bazında sonuçları saklar. Parolalar hiçbir kayda yazılmaz.</p>
@@ -973,7 +1376,6 @@
       <!-- ================================================= M5-S1 Sistem ve Saklama Ayarları -->
       <section id="sayfa-M5-S1" class="sayfa" data-ui-id="M5-S1" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M5 · S1</span>
           <h1>🛠️ Sistem, Yedekleme ve Başka Bilgisayara Taşıma</h1>
           <p class="sayfa-aciklama">Yönetim uygulamasını tüm yapılandırması, SSH anahtarları, öğrenci veritabanı ve
             <code>.deb</code> kurulum paketiyle birlikte yedekleyin; sıfırdan Pardus kurulu yeni bir bilgisayara tek
@@ -1038,36 +1440,21 @@ sudo bash yedekten-kur.sh</pre>
           <div id="m5s1-yedek-tablo" class="tablo-kap"></div>
         </div>
 
-        <div class="iki-sutun ust-bosluk">
-          <div class="kart">
-            <h2>Öğrenci Bilgisayarlarında Yedek ve Karantina Saklama Sınırı</h2>
-            <form id="m5s1-saklama-formu" class="satir-form">
-              <label for="m5s1-saklama">Her öğrenci bilgisayarında tutulacak profil yedeği / karantina sayısı</label>
-              <input id="m5s1-saklama" type="number" min="1" max="30" required>
-              <button type="submit" class="birincil" data-ui-id="M5-S1-B1">Kaydet</button>
-            </form>
-            <p class="ipucu">Profil yedekleri ve temizlik karantinası öğrenci bilgisayarında tutulur; en eski yedekler belirlenen sınırı aşınca kendiliğinden silinir.</p>
-            <p id="m5s1-surum" class="ipucu"></p>
-          </div>
-          <div class="kart" hidden>
-            <h2>Referans kodları</h2>
-            <div class="arac-cubugu">
-              <button id="m5s1-kodlar" type="button" class="ikincil" data-ui-id="M5-S1-B2">Referans kodlarını göster/gizle</button>
-              <button id="m5s1-indir" type="button" class="ikincil" data-ui-id="M5-S1-B4">Referans haritasını indir</button>
-            </div>
-          </div>
+        <div class="kart ust-bosluk">
+          <h2>Öğrenci Bilgisayarlarında Yedek ve Karantina Saklama Sınırı</h2>
+          <form id="m5s1-saklama-formu" class="satir-form">
+            <label for="m5s1-saklama">Her öğrenci bilgisayarında tutulacak profil yedeği / karantina sayısı</label>
+            <input id="m5s1-saklama" type="number" min="1" max="30" required>
+            <button type="submit" class="birincil" data-ui-id="M5-S1-B1">Kaydet</button>
+          </form>
+          <p class="ipucu">Profil yedekleri ve temizlik karantinası öğrenci bilgisayarında tutulur; en eski yedekler belirlenen sınırı aşınca kendiliğinden silinir.</p>
+          <p id="m5s1-surum" class="ipucu"></p>
         </div>
-        <div class="arac-cubugu" hidden>
-          <input id="m5s1-ara" type="search" placeholder="Ara"
-                 data-ui-id="M5-S1-B3" aria-label="Rehberde ara">
-        </div>
-        <div id="m5s1-rehber" class="tablo-kap" hidden></div>
       </section>
 
       <!-- ================================================= M5-S2 Okul ve Öğretmenler -->
       <section id="sayfa-M5-S2" class="sayfa" data-ui-id="M5-S2" hidden>
         <header class="sayfa-baslik">
-          <span class="kod-cip">M5 · S2</span>
           <h1>🏫 Okul Kimliği ve Öğretmen Hesapları</h1>
           <p class="sayfa-aciklama">Okul adını ve logosunu özelleştirin; laboratuvarı kullanan öğretmenler için
             <strong>🛡️ Admin Öğretmen</strong> veya <strong>👨‍🏫 Standart Öğretmen</strong> hesapları tanımlayın.</p>
@@ -1191,7 +1578,7 @@ sudo bash yedekten-kur.sh</pre>
     <label class="onay-kutusu"><input id="cf-korunan" type="checkbox">
       Korunan cihaz (EBA/ETAP): hiçbir işleme dahil edilmez</label>
     <p id="cf-hesap-uyari" class="uyari-kutusu" hidden>Yönetim hesabı değişirse anahtar yeni hesapta
-      kurulu olmayacağından bilgisayar M1-S2'den yeniden hazırlanmalıdır.</p>
+      kurulu olmayacağından bilgisayar SSH ve Kurulum Hazırlığı ekranından yeniden hazırlanmalıdır.</p>
     <p class="ipucu">Bilgisayar yönetime hazırsa hostname (bilgisayar adı) değişikliği doğrudan uzak bilgisayara da uygulanır.</p>
     <div class="pencere-butonlar">
       <button value="iptal" class="ikincil" formnovalidate data-ui-id="M1-S1-B10">Vazgeç</button>
@@ -1500,9 +1887,9 @@ sudo bash yedekten-kur.sh</pre>
     <fieldset id="ogf-yetkiler-alan" class="ust-bosluk">
       <legend>Standart öğretmen için ek menü yetkileri</legend>
       <label class="onay-kutusu"><input id="ogf-yetki-paket" type="checkbox" value="paket_gorunum">
-        Paket Kurulumu (M2-S2) ve Görünüm Ayarları (M2-S3)</label>
+        Paket Kurulumu ve Görünüm Ayarları</label>
       <label class="onay-kutusu"><input id="ogf-yetki-komut" type="checkbox" value="komut_gonder">
-        SSH Komut Gönder (M2-S6)</label>
+        SSH Komut Gönder &amp; Komut Mağazası</label>
     </fieldset>
     <p id="ogf-hata" class="hata" role="alert" hidden></p>
     <div class="pencere-butonlar">
@@ -1514,6 +1901,7 @@ sudo bash yedekten-kur.sh</pre>
 
 <!-- Yazdırılacak kod kartları (yalnız yazdırmada görünür) -->
 <div id="yazdir-alani" aria-hidden="true"></div>
+
 
 <script src="/statik/referans.js"></script>
 <script src="/statik/ortak.js"></script>

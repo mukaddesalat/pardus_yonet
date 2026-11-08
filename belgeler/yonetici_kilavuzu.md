@@ -1,14 +1,14 @@
 # Lab Kaptanı (Pardus Sınıf Yönetimi) — Yönetici Kılavuzu
 
 Sistem yöneticileri için kurulum, mimari, veri konumları, güvenlik modeli ve kurtarma.
-Sürüm 0.8.2.
+Sürüm 0.9.0.
 
 ## Kurulum
 
 Öğretmen bilgisayarında (Pardus 23 EDU) tek komut yeterlidir:
 
 ```bash
-sudo dpkg -i pardus-sinif-yonetimi_0.8.2_amd64.deb
+sudo dpkg -i pardus-sinif-yonetimi_0.9.0_amd64.deb
 ```
 
 Paket kendi Python çalışma ortamını ve tüm kütüphaneleri içerir; kurulum
@@ -41,7 +41,7 @@ Arayüzün örnek verili, sunucusuz önizlemesi pakette de vardır:
   yapılır. İşlemler hedefteki Python 3 ile çalışan sabit izin listeli uzak
   betiklerdir (`uygulama/uzak/`: durum, hazırlık, hesap, görünüm, paket, temizlik,
   yedek); serbest komut girişi yoktur (karar 12).
-- **Ansible:** Laboratuvar Ansible ile de yönetilebilir. **M1-S1-B5** parolasız
+- **Ansible:** Laboratuvar Ansible ile de yönetilebilir. Sınıf Masası ekranındaki **"Ansible Envanteri İndir"** düğmesi parolasız
   Ansible envanteri indirir: yalnız hazır (anahtar + parolasız sudo) bilgisayarlar,
   laboratuvara göre gruplu, korunan (EBA/ETAP) cihazlar hariç;
   `ansible_user` her bilgisayardaki tekilleştirilmiş yönetim hesabıdır,
@@ -73,17 +73,19 @@ bilgisayarında kalır; yedek listesi her seferinde canlı okunur. Ödev teslim 
 işlemlerine hiçbir zaman dahil edilmez; öğretmen bilgisayarının kendi adresleri
 envantere eklenemez.
 
-## Envanter (M1-S1)
+## Sınıf Masası (Envanter)
+
+![Sınıf Masası Kontrol Paneli](gorseller/01_sinif_masasi.png)
 
 Bilgisayar kayıtlarının tek yönetim noktasıdır. Başka menülerde ayrı liste yoktur.
 
-- **Ekleme ve içe aktarma bağlantı kurmaz:** elle ekleme (B1) ve dosyadan içe aktarma
-  (B2: Ansible INI envanteri veya `ad;ip;hesap;laboratuvar` CSV) yalnız kayıt
+- **Ekleme ve içe aktarma bağlantı kurmaz:** **"Bilgisayar Ekle"** ve **"Dosyadan İçe Aktar"**
+  (Ansible INI envanteri veya `ad;ip;hesap;laboratuvar` CSV) pencereleri yalnız kayıt
   oluşturur; hesap değiştirmez, paket kurmaz. İçe aktarma önce önizlenir.
 - Her satırda ayrı ayrı: ad/IP/Pardus sürümü, masaüstü ve giriş yöneticisi,
   yönetim hesabı, SSH anahtarı, parolasız sudo, `ogrenci` hesabı, öğrenci oturumu,
   yönetim hesabının giriş ekranında gizli olup olmadığı, son kontrol ve **gereken işlem**.
-- **Durumu kontrol et** (B3) salt okunurdur; parolasız sudo varsa root olarak, yoksa
+- **"Durumu Kontrol Et"** düğmesi salt okunurdur; parolasız sudo varsa root olarak, yoksa
   bağlantı hesabının yetkisiyle kısmi okur (ölçülemeyen alanlar “?” kalır).
 - **Korunan cihaz (EBA/ETAP):** düzenle penceresinden işaretlenir; durum kontrolünde
   `/etc/os-release` veya kurulu paketlerde ETAP izi bulunursa kendiliğinden
@@ -92,7 +94,7 @@ Bilgisayar kayıtlarının tek yönetim noktasıdır. Başka menülerde ayrı li
 - **Hostname ve IP Odaklı Cihaz Özeti:** Ekran kutucuğundaki monitör simgesine veya ada
   tıklandığında açılan özet pencerede SSH portu yerine doğrudan **Hostname** ve **IP adresi**
   gösterilir.
-- **Canlı Hostname Değiştirme (B7):** Düzenleme penceresinden bilgisayarın adı (hostname)
+- **Canlı Hostname Değiştirme:** Bilgisayar düzenleme penceresinden bilgisayarın adı (hostname)
   değiştirilebilir; Lab Kaptanı parolasız sudo yetkisiyle `hostnamectl set-hostname <yeni_ad>`
   komutunu çalıştırarak uzak bilgisayar adını anında günceller.
 - Yönetim hesabı değiştirilirse anahtar yeni hesapta olmadığından bilgisayar
@@ -102,22 +104,22 @@ Bilgisayar kayıtlarının tek yönetim noktasıdır. Başka menülerde ayrı li
 
 ### Ekran görünümü ve durum renkleri
 
-M1-S1 varsayılan olarak bilgisayarları Veyon'daki gibi **ekran kutucukları** olarak gösterir
-(**B18 Ekranlar** / **B19 Tablo**). Ekranın rengi ve ortasındaki simge tek bir öncelikli
-durumu anlatır; üstteki renk açıklaması (**B20**) tıklanınca yalnız o durumdakileri süzer:
+Sınıf Masası varsayılan olarak bilgisayarları Veyon'daki gibi **ekran kutucukları** olarak gösterir
+(**Ekranlar** / **Tablo** görünüm geçiş düğmeleriyle). Ekranın rengi ve ortasındaki simge tek bir öncelikli
+durumu anlatır; üstteki renk açıklaması rozetlerine tıklanınca yalnız o durumdakileri süzer:
 
 | Ekran | Durum | Ne yapılır |
 | --- | --- | --- |
 | Mor, kalkan | Korunan (EBA/ETAP) | Hiçbir işleme girmez |
 | Karanlık, güç simgesi | Kapalı / erişilemiyor | Bilgisayarı açın; ağ kablosunu denetleyin |
-| Gri, soru | Henüz tanınmadı | M1-S2 adım 1 |
-| Mavi, kimlik kartı | Kimlik onayı bekliyor | M1-S2 adım 1 |
-| Turuncu, anahtar | SSH anahtarı yok | M1-S2 adım 2 |
-| Turuncu, kilit | Yönetim yetkisi yok | M1-S2 adım 2 |
-| Turuncu, kişi ✕ | Öğrenci hesabı yok | M1-S2 adım 2 |
-| Koyu sarı, kişiler | İki yönetici hesabı | M1-S2 adım 3 |
+| Gri, soru | Henüz tanınmadı | Bilgisayarları Hazırla (Adım 1) |
+| Mavi, kimlik kartı | Kimlik onayı bekliyor | Bilgisayarları Hazırla (Adım 1) |
+| Turuncu, anahtar | SSH anahtarı yok | Bilgisayarları Hazırla (Adım 2) |
+| Turuncu, kilit | Yönetim yetkisi yok | Bilgisayarları Hazırla (Adım 2) |
+| Turuncu, kişi ✕ | Öğrenci hesabı yok | Bilgisayarları Hazırla (Adım 2) |
+| Koyu sarı, kişiler | İki yönetici hesabı | Bilgisayarları Hazırla (Adım 3) |
 | Yeşil, kişi | Hazır — öğrenci çalışıyor | Oturum açık; temizlik/sıfırlama öncesi dikkat |
-| Soluk yeşil, soru | Hazır — durum okunmadı | M1-S1-B3 Durumu kontrol et |
+| Soluk yeşil, soru | Hazır — durum okunmadı | "Durumu Kontrol Et" düğmesi |
 | Yeşil, onay | Hazır | — |
 
 Kutucuğun altındaki rozetler: Veyon sürümü, uyku durumu (ay simgesi) ve zamanlı kapatma
@@ -125,28 +127,39 @@ plan sayısı (saat simgesi). Kutucuğa tıklamak bilgisayarı seçer; korunan c
 
 ### Toplu seçim
 
-Seçim sayfalar arasında korunur. Her işlem sayfasındaki seçim çubuğu (M0-S2):
+Seçim sayfalar arasında korunur. Her işlem sayfasındaki seçim çubuğu:
 “Görünen uygun bilgisayarları seç” (yalnız tablonun görünen sayfası), “Laboratuvardaki
 tüm uygun bilgisayarları seç” (sayfalama ve aramadan bağımsız), “Seçimi temizle”.
 Tablo başlığındaki kutu yalnız görünen satırları seçer. Özet satırı:
 “32 bilgisayar seçili — 2 erişilemiyor — 1 korunan cihaz kapsam dışında”;
 filtre dışında kalan seçililer ayrıca yazılır, filtre değiştirmek seçimi değiştirmez.
-Her işte onay penceresi (M0-S3) sunucudan kesin hedef listesini ve kapsam dışı
+Her işte açılan onay penceresi sunucudan kesin hedef listesini ve kapsam dışı
 kalanları nedenleriyle gösterir; iş başladığında hedef listesi iş kaydına yazılır,
 sonradan değişen seçim çalışan işi etkilemez.
 
-## Bilgisayarları hazırla (M1-S2) — SSH anahtarı ve parolasız sudo
+## Kurulum Sihirbazı — Adım 1: Ağda Bilgisayar Bul
+
+Laboratuvardaki öğrenci bilgisayarlarını tek tek elle girmek yerine, yerel alt ağdaki (CIDR) açık SSH portları taranarak envantere saniyeler içinde dahil edilir.
+
+![Kurulum Adım 1: Ağda Bilgisayar Bul](gorseller/16_kurulum_agda_bul.png)
+
+- **Alt Ağ Taraması:** Otomatik algılanan yerel ağ (örn. `192.168.1.0/24`) taranır; yanıt veren IP'ler, yanıt süreleri ve tespit edilen SSH portları listelenir.
+- **Toplu Envantere Ekleme:** Bulunan makinelerden seçilenler, otomatik adlandırma şablonuyla (örn. `LAB-01`, `LAB-02`) tek tıkla Sınıf Masası envanterine kaydedilir.
+
+## Bilgisayarları Hazırla — SSH anahtarı ve parolasız sudo
+
+![Kurulum Adım 2: SSH ve Sudo Hazırlığı](gorseller/17_kurulum_ssh_sudo.png)
 
 Arayüzde sade üç adım olarak görünür: **1 Bilgisayarı tanıt** (kimlik oku/onayla), **2 Yönetime bağla**
 (parola bir kez), **3 Fazla yönetici hesabını temizle**. Teknik ayrıntılar her adımın “Teknik ayrıntı”
-bölümündedir; işlevler ve kodlar (B1–B9) değişmedi.
+bölümündedir.
 
 Hazırlık bilgisayar başına **bir kez** yapılır; sonrasında günlük işlerde (temizlik,
 yedek, paket, görünüm, güç…) SSH veya sudo parolası sorulmaz.
 
-1. **Sunucu kimliği** okunur (B1, parola gönderilmez) ve öğretmen parmak izini
-   onaylar (B2). Onaysız bilgisayara hiçbir kimlik bilgisi gitmez.
-2. **Hazırlığı başlat** (B3): öğretmen `pardus` ve/veya `hp` hesabının öğrenci
+1. **Sunucu kimliği** okunur (**"Sunucu kimliğini oku"**, parola gönderilmez) ve öğretmen parmak izini
+   onaylar (**"Kimliği onayla"**). Onaysız bilgisayara hiçbir kimlik bilgisi gitmez.
+2. **Hazırlığı başlat**: öğretmen `pardus` ve/veya `hp` hesabının öğrenci
    bilgisayarındaki parolasını bir kez girer. Parola yalnız işin belleğinde durur;
    veritabanına, iş kaydına ve loglara yazılmaz. Hesap+bilgisayar başına en çok 3
    yanlış deneme yapılır (kalıcı bütçe). Sudo yapabilen hesap seçilir (önce pardus).
@@ -163,7 +176,7 @@ yedek, paket, görünüm, güç…) SSH veya sudo parolası sorulmaz.
    `whoami` ve `sudo -n true` başarılı olmadan bilgisayar “hazır” sayılmaz.
 
 Günlük işlerde uzak komutlar `sudo -n` ile çalışır. Parolasız sudo yoksa iş açık
-hata verir (“Parolasız sudo hazır değil — M1-S2”); parola döngüsü yoktur.
+hata verir (“Parolasız sudo hazır değil — Bilgisayarları Hazırla”); parola döngüsü yoktur.
 Uygulamanın giriş parolası ile öğrenci bilgisayarlarının sudo parolası ayrı şeylerdir.
 
 > **UYARI — root eşdeğeri yetki:** Bu uygulama ve genel Ansible yönetimi uzak
@@ -185,7 +198,7 @@ sudo adduser pardus && sudo usermod -aG sudo pardus
 sudo apt install openssh-server && sudo systemctl enable --now ssh
 ```
 
-Ardından M1-S2'de sunucu kimliğini okuyup onaylayın ve hazırlığı başlatın.
+Ardından **Bilgisayarları Hazırla** sayfasında sunucu kimliğini okuyup onaylayın ve hazırlığı başlatın.
 
 ### hp / pardus tekilleştirme
 
@@ -193,9 +206,9 @@ Her bilgisayarda `hp` veya `pardus`'tan yalnız biri kalır (karar 21). Yalnız 
 varsa ona dokunulmaz; ikisi varsa öğretmen korunacak olanı seçer (öneri: pardus).
 `ogrenci`, `root` ve sistem hesapları kapsam dışıdır.
 
-1. **Önizle** (B4): her iki hesabın ev dizini boyutu, yetkili anahtar sayısı, sudo
+1. **Önizle**: her iki hesabın ev dizini boyutu, yetkili anahtar sayısı, sudo
    yetkisi, cron işi ve açık oturumları gösterilir.
-2. **Uygula** (B5): korunacak hesaba anahtar ve parolasız sudo kurulur, SSH izni
+2. **Uygula**: korunacak hesaba anahtar ve parolasız sudo kurulur, SSH izni
    denetlenir; **yeni oturumda yalnız anahtarla** bağlanıp `sudo -n true`
    doğrulanmadan diğer hesap silinmez. Envanter (ve Ansible envanteri) korunacak
    hesaba geçer.
@@ -206,7 +219,9 @@ varsa ona dokunulmaz; ikisi varsa öğretmen korunacak olanı seçer (öneri: pa
    hesabın oturumundan yapılır; kendi oturumundan hesap silinmez. Silinecek hesapta
    (uygulamanınki dışında) açık oturum varsa o bilgisayar atlanır.
 
-## Profil temizliği (M2-S1)
+## Profil Temizliği ve Sıfırlama
+
+![Ders Sonu ve Tarayıcı Temizliği](gorseller/04_bakim_ders_sonu.png)
 
 Üç kapsam vardır:
 
@@ -218,8 +233,8 @@ varsa ona dokunulmaz; ikisi varsa öğretmen korunacak olanı seçer (öneri: pa
 
 Sıfırlamadan sonra `/etc/skel` içeriği öğrencinin sahipliğinde yeniden konur.
 Yedek başarısız veya doğrulanamazsa o bilgisayarda silme başlamaz. Öğrenci oturumu
-açıksa sıfırlama başlamaz; öğretmen satırdaki **B4** ile tek bilgisayarın veya
-**B5** ile seçili bilgisayarların tümünün oturumunu (onayla) kapatabilir ya da
+açıksa sıfırlama başlamaz; öğretmen satırdaki **"Oturumu Kapat"** simgesi ile tek bilgisayarın veya
+seçim çubuğundaki **"Seçililerin Oturumunu Kapat"** düğmesi ile seçili bilgisayarların tümünün oturumunu (onayla) kapatabilir ya da
 sıfırlama onayında “oturumu kapatıp devam et”i seçer. Oturum/süreçler ve kullanıcı
 bağlamaları sonlanmadan silme yapılmaz.
 
@@ -242,7 +257,7 @@ PC'nin boş alanı. Hesap kuralları:
 
 ### Yedekten dönüş
 
-**M2-S1-B10** seçilen bilgisayardaki profil yedeklerini ve temizlik karantinasını
+Profil temizliği sayfasındaki **"Yedekten Geri Yükle"** düğmesi seçilen bilgisayardaki profil yedeklerini ve temizlik karantinasını
 canlı listeler; öğretmen birini seçip tamamına geri döner.
 
 - Profil yedeğinde önce `.sha256` doğrulanır; doğrulanamayan yedek geri yüklenmez.
@@ -251,12 +266,12 @@ canlı listeler; öğretmen birini seçip tamamına geri döner.
   adını alır. Hiçbir dosya silinmez.
 - Yazma, root süreci arşivi açtıktan sonra öğrencinin kendi yetkisine düşürülmüş bir
   alt süreçte yapılır; sembolik bağlantılar, mutlak yollar ve `..` atlanır.
-- Saklama sınırı (varsayılan 5, **M5-S1**) profil yedekleri ve karantina için ayrı
+- Saklama sınırı (varsayılan 5, **Kurulum, Okul & Öğretmen** ayarları) profil yedekleri ve karantina için ayrı
   uygulanır; yerel yedek o bilgisayarın disk arızasına karşı koruma sağlamaz.
 
-## Yerel .deb Dağıtımı ve Pardus Yazılım Merkezi (M2-S2)
+## Yerel .deb Dağıtımı ve Pardus Yazılım Merkezi
 
-M2-S2 menüsü iki ana yetenek sunar: öğretmenin yüklediği yerel `.deb` paketlerinin dağıtımı ve
+Bu menü iki ana yetenek sunar: öğretmenin yüklediği yerel `.deb` paketlerinin dağıtımı ve
 hedef bilgisayarların tanımlı APT depolarından uygulama arama/kurma/kaldırma.
 
 ### 1. Yerel .deb Dağıtımı
@@ -268,7 +283,7 @@ yüklenir, API dosya yolu kabul etmez, portal servisi yönetim verisine erişeme
 1. **Yükleme:** dosya uzantıya bakılmadan doğrulanır: `ar` imzası, `debian-binary`
    = 2.0, `control.tar.*` ve `data.tar.*` üyeleri, paket adı/sürüm/mimari biçimi
    (zstd gibi desteklenmeyen sıkıştırmada `dpkg-deb`). SHA-256 hesaplanır.
-2. **Plan** (B2, hiçbir şey kurulmaz): paket her hedefe yönetim hesabının özel geçici
+2. **Plan** (hiçbir şey kurulmaz): paket her hedefe yönetim hesabının özel geçici
    klasörüne aktarılır, root'a ait önbelleğe kopyalanırken SHA-256 yeniden doğrulanır.
    Denetimler: Pardus mı, mimari uyumu, `/var/cache/apt/archives` ve `/usr` boş alanı,
    dpkg/apt kilitleri, kurulu sürüm (`dpkg --compare-versions`), `apt-get -s`
@@ -277,7 +292,7 @@ yüklenir, API dosya yolu kabul etmez, portal servisi yönetim verisine erişeme
 3. **Engeller:** paket kaldırma, sürüm düşürme, çözülemeyen bağımlılık, erişilemeyen
    depodan inmesi gereken bağımlılık, kilitli paket yöneticisi, yetersiz alan. Aynı
    sürüm kuruluysa yeniden kurulmaz (“atlanacak”).
-4. **Kur** (B3): yalnız onaylanan planda “kurulacak/güncellenecek” çıkan
+4. **Kur**: yalnız onaylanan planda “kurulacak/güncellenecek” çıkan
    bilgisayarlar; denetimler kurulumdan hemen önce yinelenir.
    `apt-get install -y --no-remove -o Dpkg::Options::=--force-confold` kullanılır
    (`--allow-downgrades` verilmez); kurulu sürüm `dpkg-query` ile doğrulanır.
@@ -290,34 +305,49 @@ Paketin kurulum betikleri root yetkisiyle çalışır: yalnız güvenilen paketl
 Yöneticiler veya yetkili öğretmenler, öğrenci bilgisayarlarına doğrudan tanımlı APT
 depolarından (Pardus / Debian resmi depoları) paket kurabilir veya kaldırabilir:
 
-![Yazılım Merkezi ve Depo Uygulamaları](gorseller/10_yazilim_merkezi.png)
+![Yazılım Kurulumu ve Paket Merkezi](gorseller/12_yazilim_kurulumu.png)
 
-- **Katalog ve Depoda Arama (B8):** Sistemde popüler eğitim, kodlama, robotik, ofis ve tasarım
+- **Katalog ve Depoda Arama:** Sistemde popüler eğitim, kodlama, robotik, ofis ve tasarım
   uygulamaları (Thonny, Arduino, Blender, Inkscape, GIMP, Krita, LibreOffice vb.) kategorize
   kartlar halinde listelenir. Arama çubuğu ile hedef bilgisayardaki APT önbelleğinde (`apt-cache search`)
   canlı sorgu yapılır.
-- **Toplu Depo Kurulumu (B9):** Sepete eklenen paketler seçili tek veya çoklu bilgisayara
+- **Toplu Depo Kurulumu:** Sepete eklenen paketler seçili tek veya çoklu bilgisayara
   `apt-get install -y --no-remove` komutuyla arka planda kurulur ve doğrulanır.
-- **Kurulu Uygulamalar ve Güvenli Kaldırma (B10 / B11):** Hedefte kurulu uygulamalar
+- **Kurulu Uygulamalar ve Güvenli Kaldırma:** Hedefte kurulu uygulamalar
   listelenir. Kritik masaüstü ve sistem bileşenleri (`gdm3`, `gnome-shell`, `network-manager`,
   `openssh-server`, `sudo`, `pardus-software`, `pardus-welcome`, `veyon`) **korumalı** olarak
   işaretlenir ve kazara kaldırılması engellenir. Kullanıcının kurduğu diğer paketler
   seçilerek güvenle kaldırılabilir (`apt-get remove -y`).
 
-## Veyon kurulum ve yapılandırma (M1-S4)
+## Komut Mağazası & Araçlar
+
+Resmi GitHub deposundan çekilen hazır araçları, topluluk betiklerini ve serbest uçbirim komutlarını barındırır.
+
+* **Mağaza Reposu:** [https://github.com/mukaddesalat/pardus_yonet_magaza](https://github.com/mukaddesalat/pardus_yonet_magaza)
+* **Kılavuz:** Ayrıntılı geliştirici kılavuzu için [belgeler/magaza_kilavuzu.md](magaza_kilavuzu.md) belgesini inceleyin.
+
+![Komut Mağazası Kataloğu](gorseller/07_magaza_katalog.png)
+
+- **Katalog ve Güncelleme:** GitHub'daki `katalog.json` dosyasını HTTP GET ile çeker; internet olmasa dahi yerel önbellekteki araçları çalıştırabilir.
+- **Serbest Uçbirim:** Hedef bilgisayarlara anlık serbest SSH komutu çalıştırma imkânı sunar.
+- **Hosts Dağıtımı:** Öğrenci bilgisayarlarının `/etc/hosts` dosyasına tek tıkla öğretmen IP'sini (`ogretmen.lab`) tanımlar.
+
+## Veyon Kurulum ve Yapılandırma
+
+![Veyon Kurulumu ve Doğrulama](gorseller/18_kurulum_veyon.png)
 
 Öğretmen Veyon Configurator kullanmadan Veyon'u öğrenci bilgisayarlarına kurar ve
 anahtar dosyasıyla yapılandırır. Sayfanın dört bölümü vardır: **Veyon paketi**,
-**Public key**, **Bilgisayarlar** ve **İşlem sonuçları**. Bu alan M2-S2 genel paket
-listesinden ayrıdır: M2-S2'ye Veyon paketi yüklenmez (yüklenirse M1-S4'e yönlendiren
+**Public key**, **Bilgisayarlar** ve **İşlem sonuçları**. Bu alan genel paket
+listesinden ayrıdır: Paket Dağıtım sayfasına Veyon paketi yüklenmez (yüklenirse Veyon Kurulum sayfasına yönlendiren
 hata verir) ve iki sayfanın paket seçimi birbirini etkilemez.
 
-- **Paket kaynağı:** yalnız öğretmenin **M1-S4-B1** ile yüklediği `.deb`. Paket deposundan
+- **Paket kaynağı:** yalnız öğretmenin **"Veyon .deb Paketi Yükle"** düğmesiyle yüklediği `.deb`. Paket deposundan
   Veyon kurulmaz (eksik bağımlılıklar her zamanki gibi apt ile çözülür). Paket control
   dosyasından doğrulanır: `Package: veyon` olmalı ve `veyon-service` sağlamalıdır; dosya
   adında “veyon” geçmesi yetmez. Debian'ın parçalı `veyon-service` vb. paketleri tek
   başına kabul edilmez. Yükleme kurulum başlatmaz; birden çok paket varsa uygulanacak
-  olan **M1-S4-B2** ile açıkça seçilir. Paketler öğretmen PC'de saklanır.
+  olan açıkça seçilir. Paketler öğretmen PC'de saklanır.
 - **Sürüm kuralı:** kurulu sürüm hedefin kendisinden (`dpkg-query`, dağıtım revizyonu
   dahil, ör. `4.7.5+repack1-1`) okunur ve dpkg kurallarıyla karşılaştırılır. Aynı sürüm
   yeniden kurulmaz; yüklenen paket daha yeniyse güncellenir; hedefte daha yeni sürüm
@@ -325,23 +355,23 @@ hata verir) ve iki sayfanın paket seçimi birbirini etkilemez.
   gelen parçalı Debian paketleri (`veyon-service`, `veyon-master`, `veyon-plugins`,
   `veyon-configurator`, `libveyon-core`) önizlemede açıkça gösterilerek tek pakete
   geçer; Veyon ailesi dışındaki her kaldırma planı engeller.
-- **Public key (M1-S4-B4):** yalnız RSA public key (PEM `BEGIN PUBLIC KEY` / `BEGIN RSA
+- **Public key yükleme:** yalnız RSA public key (PEM `BEGIN PUBLIC KEY` / `BEGIN RSA
   PUBLIC KEY`) kabul edilir. Private key, SSH anahtarı (`ssh-ed25519 …`) ve geçersiz
   dosyalar içerikten reddedilir; private key hiçbir zaman saklanmaz, aktarılmaz,
-  günlüğe yazılmaz. Anahtar adı (**M1-S4-B5**) öğretmen PC'deki private key'in adıyla
+  günlüğe yazılmaz. Anahtar adı öğretmen PC'deki private key'in adıyla
   aynı olmalıdır (Veyon yalnız harf/rakam kabul eder). Aynı adla farklı anahtar
-  yüklenirse eskisi yedeklenir ve açık onay istenir (**M1-S4-B19**). Arayüzdeki
+  yüklenirse eskisi yedeklenir ve açık onay istenir. Arayüzdeki
   “Veyon çift kimliği”, `veyon-cli authkeys list details` çıktısındaki PAIR ID ile
   aynıdır.
-- **Öğretmen PC denetimi (M1-S4-B7):** salt okunur. `/etc/veyon/keys/private/<ad>/key`
+- **Öğretmen PC denetimi:** salt okunur. `/etc/veyon/keys/private/<ad>/key`
   dosyasının yalnız varlığı ve izinleri (stat) denetlenir, içeriği okunmaz; aynı adlı
   yerel public key ile eşleşme, öğretmen PC'deki kimlik doğrulama yöntemi ve Veyon
   Master'ı çalıştıran hesabın anahtarı okuyup okuyamadığı gösterilir. Uygulama yeni
   anahtar üretmez. Gereken düzeltmeler komut olarak verilir, ör.
   `sudo veyon-cli authkeys setaccessgroup teacher/private <öğretmen-hesabı>` ve
   `sudo veyon-cli config set Authentication/Method 1`.
-- **Akış:** bilgisayarları seç → **B8 Hazırlığı kontrol et** (salt okunur) veya doğrudan
-  **B9 Kur/güncelle**, **B10 Yapılandır**, **B11 Kur ve yapılandır**. Her biri önce
+- **Akış:** bilgisayarları seç → **"Hazırlığı Kontrol Et"** (salt okunur) veya doğrudan
+  **"Kur / Güncelle"**, **"Yapılandır"**, **"Kur ve Yapılandır"**. Her biri önce
   önizleme işi çalıştırır (paket aktarılıp SHA-256 doğrulanır; Pardus sürümü, mimari,
   boş alan, dpkg kilidi ve bağımlılıklar denetlenir; ayar farkı çıkarılır) ve
   hedefleri, mevcut sürümü, kurulacak sürümü ve uygulanacak ayarları gösterir. Onaydan
@@ -357,10 +387,10 @@ hata verir) ve iki sayfanın paket seçimi birbirini etkilemez.
   * **VNC Sunucusu:** Dahili VNC sunucusu (`VncServer/Plugin = {39d7a07f-9467-4927-b68c-4b33880d22d8}`).
   * **Görüntü Kalitesi:** Yüksek kalite (`BuiltinVncServer/Quality = 0`, `VncServer/ImageQuality = 2`).
   * **Port:** 11100.
-- **Uzman Ayarları Paneli (M1-S4-B21 / B22):** İleri düzey sistem yöneticileri için
+- **Uzman Ayarları Paneli:** İleri düzey sistem yöneticileri için
   katlanabilir bir panel olarak tasarlanmıştır. Varsayılan olarak kapalıdır; tıklandığında
   yukarıdaki parametreler placeholder ve seçili değerleriyle incelenebilir veya
-  özelleştirilebilir. **B22** tek tıkla varsayılanlara sıfırlar.
+  özelleştirilebilir. **"Varsayılana Sıfırla"** düğmesi tek tıkla değerleri varsayılana döndürür.
 
 ![Veyon Uzman Ayarları](gorseller/11_veyon_uzman.png)
 
@@ -370,42 +400,55 @@ hata verir) ve iki sayfanın paket seçimi birbirini etkilemez.
   `veyon-cli config set Authentication/Method 1` (anahtar dosyası) ve
   `systemctl enable` + `restart veyon` yapılır; her adım geri okunarak doğrulanır.
   Ağ portu (11100) korunur.
-- **B12 Bağlantıyı doğrula:** kurulum, servis, yöntem, anahtar eşleşmesi ve sunucunun
+- **"Bağlantıyı Doğrula" düğmesi:** kurulum, servis, yöntem, anahtar eşleşmesi ve sunucunun
   11100 portunu dinlemesi hedefte; ardından öğretmen PC'den 11100'e bağlanılıp Veyon
   sunucusunun RFB karşılaması okunur. Anahtarla gerçek oturum yalnız Veyon Master'da
   denenebilir (private key uygulamada yoktur). Masaüstü oturumu açık değilse Veyon
   sunucusu çalışmaz; bu durum ayrıca belirtilir.
 
 > [!TIP]
-> **Öğrencilerin Veyon servisini kapatması durumunda:** Öğrenciler masaüstünde Veyon servisini durdurursa veya bağlantı koparsa, **Komut Gönder (M2-S6)** menüsünden yerleşik **"Veyon Servisini Kontrol Et ve Başlat (Ayağa Kaldır)"** komutunu veya hızlı yükle düğmesini kullanarak tek tıkla servisi kontrol edebilir, unmask/enable yapıp anında yeniden ayağa kaldırabilirsiniz.
-- **B13 Sürümleri yenile:** yalnız envanterdeki kayıtları sorgular, ağ taraması yapmaz;
-  parolasız sudo gerektirmez. Aynı bilgi **M1-S1 Durumu kontrol et** ile de güncellenir;
-  M1-S1 “Veyon sürümü” sütunu ve M1-S4 aynı envanter verisini gösterir. Erişilemeyen
+> **Öğrencilerin Veyon servisini kapatması durumunda:** Öğrenciler masaüstünde Veyon servisini durdurursa veya bağlantı koparsa, **Komut Gönder** menüsünden yerleşik **"Veyon Servisini Kontrol Et ve Başlat (Ayağa Kaldır)"** komutunu veya hızlı yükle düğmesini kullanarak tek tıkla servisi kontrol edebilir, unmask/enable yapıp anında yeniden ayağa kaldırabilirsiniz.
+- **"Sürümleri Yenile" düğmesi:** yalnız envanterdeki kayıtları sorgular, ağ taraması yapmaz;
+  parolasız sudo gerektirmez. Aynı bilgi Sınıf Masası'ndaki **"Durumu Kontrol Et"** ile de güncellenir;
+  Sınıf Masası “Veyon sürümü” sütunu ve Veyon sayfası aynı envanter verisini gösterir. Erişilemeyen
   bilgisayar “Kurulu değil” görünmez: son bilinen sürüm, okunma zamanı ve “eski bilgi”
   notu gösterilir. Durumlar: kurulu (tam sürüm), kurulu değil, henüz kontrol edilmedi,
-  erişilemiyor, sürüm okunamadı, kurulum hatalı veya yarım. Filtre (**M1-S4-B15**,
-  **M1-S1-B17**): kurulu değil / seçili paketten eski / aynı / daha yeni / bilinmiyor.
+  erişilemiyor, sürüm okunamadı, kurulum hatalı veya yarım. Filtre seçenekleri:
+  kurulu değil / seçili paketten eski / aynı / daha yeni / bilinmiyor.
   “Aynı” yalnız seçili paketle aynı demektir; “en güncel” etiketi kullanılmaz.
-- **B14 Önceki ayarları geri yükle:** son yedeği geri koyar (Veyon.conf, public
+- **"Önceki Ayarları Geri Yükle" düğmesi:** son yedeği geri koyar (Veyon.conf, public
   anahtarlar, servis açık/kapalı). Veyon paketi kaldırılmaz, sürüm değişmez.
 
 Lab bulgusu (Pardus 23.5): EDU imajında Debian'ın Veyon 4.7.5 paketleri kurulu ama
 servis kapalı gelir; bu sürümde öğrenci oturumundaki sunucu başlayıp hemen kapanabiliyor.
 Öğrencilere ve öğretmen PC'ye aynı (güncel) Veyon sürümünü kurmanız önerilir.
 
-## Görünüm ve giriş (M2-S3)
+## Kurulum Sihirbazı — Adım 4: Bağlantı Sağlığını Doğrula (Final Sağlık Testi)
+
+Kurulum adımları tamamlanan tüm bilgisayarların yönetim altyapısına hazır olduğunu doğrulamak için uçtan uca canlı sağlık denetimi yapılır.
+
+![Kurulum Adım 4: Bağlantı Sağlığını Doğrula](gorseller/19_kurulum_saglik_testi.png)
+
+- **Test Aşamaları:**
+  1. **Ping & SSH:** Temel ağ ve 22 portu erişilebilirliği.
+  2. **Anahtar Kimlik Doğrulama:** Ed25519 özel anahtarıyla parolasız giriş testi.
+  3. **Parolasız Sudo:** `sudo -n true` ile tam root yetkisi teyidi.
+  4. **Veyon Portu:** 11100 portunun açık ve dinlemede olduğu kontrolü.
+- **Canlı Durum Sütunu:** Her bilgisayar yeşil onay veya hata nedeni rozetiyle raporlanır. Hata veren bir makine olursa üzerine tıklanarak ilgili kurulum adımına doğrudan yönlendirilir.
+
+## Görünüm ve Giriş Yönetimi
 
 Hedef, Pardus Karşılayıcı'daki **Windows 10 benzeri** düzendir (karar 23). Ayar
 anahtarları uydurulmaz; her bilgisayarın kendisinden okunur:
 
-![Duvar Kâğıdı Galerisi ve Düzen](gorseller/09_duvar_kagidi_galeri.png)
+![Masaüstü Görünümü ve Duvar Kâğıdı](gorseller/13_masaustu_gorunumu.png)
 
-- **Duvar Kâğıdı Galerisi (M2-S3-B2 / B3):** Öğretmen bilgisayarında
+- **Duvar Kâğıdı Galerisi:** Öğretmen bilgisayarında
   `/var/lib/pardus-sinif-yonetimi/duvar_kagidi/galeri/` dizininde çoklu görsel saklanır
   ve `galeri.json` ile indekslenir. Sistemde harici kütüphane bağımlılığı olmadan saf Python
   ile üretilen 3 adet kurumsal şablon (`hazir_pardus_gece`, `hazir_anadolu_turkuaz`, `hazir_bilisim_mor`)
   hazır gelir. Yüklenen fotoğraflar kırpılmadan ve bozulmadan korunur.
-- **Köşede Bilgisayar Numarası Etiketi (M2-S3-B11):** Duvar kâğıdı öğrenci bilgisayarlarına
+- **Köşede Bilgisayar Numarası Etiketi:** Duvar kâğıdı öğrenci bilgisayarlarına
   aktarılırken, hedef bilgisayarın kendi `hostname` (veya etiket) bilgisindeki rakamlar
   (örn. `ogrenci01` → **`01`**, `LAB-PC-12` → **`12`**) tespit edilir. Uzak istemcide
   yerleşik `GdkPixbuf` ve `cairo` (veya PIL fallback) kullanılarak seçilen köşeye
@@ -442,16 +485,18 @@ anahtarları uydurulmaz; her bilgisayarın kendisinden okunur:
 - “İşlem yönü: kaldır” ile uygulanan dconf dosyaları kaldırılır, otomatik giriş
   kapatılır ve gizleme geri alınır.
 
-## Güç ve uyku (M2-S4)
+## Güç ve Uyku Yönetimi
+
+![Güç ve Uyku Ayarları](gorseller/05_bakim_guc_uyku.png)
 
 **Şimdi** bölümü seçili bilgisayarları yeniden başlatır veya kapatır (komut gönderildi ile
 kapandı/yeniden açıldı ayrı raporlanır).
 
 **Uyku ve ekran kapanmasını önleme** ayarı, bilgisayarların boşta kalınca uykuya geçip yönetim için
 erişilemez olmasını veya ekranlarının kararmasını önler. Bilgisayar boşta **uykuya geçmez, kendiliğinden kapanmaz
-ve öğretmen istemediği sürece ekranları kararmaz** (süre **M2-S4-B3**: varsayılan **0 dk — Hiç Kapanmasın**,
-isteğe bağlı 5/10/15/30/60 dk). **B4 Önizle** salt okunurdur; **B5 Uyku ve ekran kapanmasını kapat** uygular;
-**B6 Varsayılana dön** yalnız bu uygulamanın yaptıklarını geri alır.
+ve öğretmen istemediği sürece ekranları kararmaz** (süre seçimi: varsayılan **0 dk — Hiç Kapanmasın**,
+isteğe bağlı 5/10/15/30/60 dk). **"Önizle"** düğmesi salt okunurdur; **"Uyku ve Ekran Kapanmasını Kapat"** uygular;
+**"Varsayılana Dön"** yalnız bu uygulamanın yaptıklarını geri alır.
 
 | Ne yapılır | Nerede |
 | --- | --- |
@@ -463,15 +508,17 @@ isteğe bağlı 5/10/15/30/60 dk). **B4 Önizle** salt okunurdur; **B5 Uyku ve e
 | Boşta eylem, uyku/hazırda bekleme tuşu ve kapak yok sayılır | `/etc/systemd/logind.conf.d/pardus-sinif-guc.conf` (`systemd-logind` HUP sinyaliyle oturumlar kesilmeden hemen devreye alınır) |
 
 Her ayar uygulandıktan sonra geri okunarak doğrulanır (maske durumu ve derlenmiş dconf
-değeri). Durum M1-S1 kutucuklarında “uyku yok / uyku açık” rozetiyle de görünür.
+değeri). Durum Sınıf Masası kutucuklarında “uyku yok / uyku açık” rozetiyle de görünür.
 
-## Zamanlı kapatma (M2-S5)
+## Zamanlı Kapatma Planı
+
+![Zamanlı Kapatma Planı](gorseller/06_bakim_zamanli_kapatma.png)
 
 Linux `at` (bir kez) ve `cron` (her hafta) benzeri kapanma planları. Plan türü
-**B1 Bir kez** (tarih + saat) veya **B2 Her hafta** (günler + saat); **B6 Uyarı süresi**
+**"Bir Kez"** (tarih + saat) veya **"Her Hafta"** (günler + saat); **"Uyarı Süresi"**
 0–15 dk. Saat gelince açık masaüstü oturumlarına bildirim (`gdbus` ile GNOME bildirim
 servisine; Pardus'ta `notify-send` kurulu gelmediği için o yalnız yedek yoldur) ve
-uçbirimlere duvar mesajı gider, uyarı süresi sonunda bilgisayar kapanır. **B12 Bekleyen kapatmayı iptal et**
+uçbirimlere duvar mesajı gider, uyarı süresi sonunda bilgisayar kapanır. **"Bekleyen Kapatmayı İptal Et"** düğmesi
 uyarı süresindeki kapatmayı durdurur (plan silinmez).
 
 - Plan öğrenci PC'de systemd zamanlayıcısıdır: `/etc/systemd/system/pardus-sinif-kapat-<id>.timer`
@@ -485,16 +532,18 @@ uyarı süresindeki kapatmayı durdurur (plan silinmez).
   İptal edilince öğrencilere “Zamanlı kapatma iptal edildi” bildirimi gider.
 - “Bir kez” planı çalışınca kendini siler. Takvim ifadesi hedefte `systemd-analyze calendar`
   ile denetlenir; geçmiş zaman reddedilir.
-- **B9 Planları oku** bilgisayarlardaki planları ve sonraki kapanma zamanını okur; plan
-  listesindeki **B10 Kaldır** planı bulunduğu bilgisayarlardan, **B11** seçililerdeki
+- **"Planları Oku" düğmesi** bilgisayarlardaki planları ve sonraki kapanma zamanını okur; plan
+  listesindeki **"Kaldır"** planı bulunduğu bilgisayarlardan, **"Seçililerdeki Tüm Planları Kaldır"** seçililerdeki
   tüm planları kaldırır.
 - Uyku ayarı zamanlı kapatmayı engellemez. Kapanan bilgisayar yeniden açılana kadar
-  uygulamadan erişilemez (M1-S1'de “Kapalı / erişilemiyor”).
+  uygulamadan erişilemez (Sınıf Masası'nda “Kapalı / erişilemiyor”).
 
 Elle denetim: `systemctl list-timers --all 'pardus-sinif-kapat*'`; bekleyen kapatmayı elle
 iptal: `sudo systemctl stop pardus-sinif-kapatma-bekliyor.timer`.
 
-## Ödev Teslim portalı
+## Ödev Teslim Portalı
+
+![Ödev ve Dosya Dağıtımı](gorseller/02_odev_dagitim.png)
 
 Öğrencilerin tarayıcıdan ödev yüklediği portal aynı paketle kurulur ve ayrı bir
 servistir (`pardus-sinif-odev.service`).
@@ -510,7 +559,7 @@ servistir (`pardus-sinif-odev.service`).
   (`/etc/pardus-sinif-yonetimi/ortam` → `PSY_ODEV_PORT`). Portal yalnız
   `CAP_NET_BIND_SERVICE` yetkisiyle çalışır.
 - **Ağ kısıtı:** portal yalnız `PSY_ODEV_AGLAR` (kurulumda varsayılan rotanın alt
-  ağı) veya M3-S2'deki portal ayarlarında girilen ağlardan gelen bağlantıyı kabul
+  ağı) veya Portal Ayarları bölümünde girilen ağlardan gelen bağlantıyı kabul
   eder; ufw etkinse kurulum aynı kuralı ekler. Host başlığı yalnız tanımlı ad
   (`ogretmen.lab`) veya IP olabilir.
 - **HTTP:** proje sahibi kararıyla portal şifresiz HTTP kullanır; giriş kodları ve
@@ -523,14 +572,14 @@ servistir (`pardus-sinif-odev.service`).
 - **Yükleme:** dosyalar önce `gecici/<teslim>/` altına akış halinde yazılır; boyut,
   SHA-256 ve içerik imzası denetlenir; tamamlama tek adımda `teslimler/<ödev>/<teslim>/`
   altına taşır. Servis yeniden başlarsa yarım aktarımlar teslim sayılmaz.
-- **İndirme (M3-S1):** tek dosya, tek teslim (B6), seçili öğrenciler (B5) veya tüm
-  sınıf (B4) ZIP olarak; dosyalar tarayıcıda açılmaz, her zaman indirilir.
+- **İndirme:** Ödevler sayfasında tek dosya, seçili öğrencilerin teslimleri veya tüm
+  sınıf ZIP arşivi olarak; dosyalar tarayıcıda açılmaz, her zaman indirilir.
 
-### Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma (M5-S1)
+### Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma
 
-Öğretmen bilgisayarını yenilerken, formatlarken veya düzenli yedek alırken **Kurulum, Okul & Öğretmen (M5-S1)** ekranındaki **Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma** bölümünü veya komut satırını kullanabilirsiniz.
+Öğretmen bilgisayarını yenilerken, formatlarken veya düzenli yedek alırken **Kurulum, Okul & Öğretmen** ekranındaki **Yönetim Uygulaması Yedekleme ve Başka Bilgisayara Taşıma** bölümünü veya komut satırını kullanabilirsiniz.
 
-![Sistem Yedekleme ve Taşıma](gorseller/12_sistem_yedekleme.png)
+![Sistem Yedekleme ve Taşıma](gorseller/20_sistem_yedekleme.png)
 
 Üretilen `.tar.gz` yedek paketi kendi kendine yeten (self-contained) taşınabilir bir arşivdir ve şunları içerir:
 - **Envanter ve Yapılandırma (`envanter.db`):** Bilgisayar listesi, IP/MAC/hostname kayıtları, öğretmen hesapları, okul kimliği, zamanlı kapatma planları ve kayıtlı SSH komutları (SQLite Online Backup API ile atomik olarak alınır).
@@ -556,11 +605,11 @@ Betik sırasıyla:
 3. Envanter ve ödev veritabanlarını, SSH anahtarlarını (`0600` izinle), Veyon dosyalarını, duvar kâğıdı galerisini ve `/etc/pardus-sinif-yonetimi/ortam` ayarlarını doğru kullanıcı sahiplikleriyle (`pardus-sinif:pardus-sinif` ve `pardus-odev:pardus-odev`) geri yükler.
 4. Servisleri başlatır.
 
-#### Yöntem 2: Web Yönetim Panelinden (M5-S1) Yedekleme ve Geri Yükleme
+#### Yöntem 2: Web Yönetim Panelinden Yedekleme ve Geri Yükleme
 
-- **Yedek Oluştur ve İndir (M5-S1-B8):** Admin öğretmen dilediği zaman tek tıkla tam yedek oluşturup `.tar.gz` olarak bilgisayarına indirebilir veya sunucudaki `sistem_yedekleri/` dizininde saklayabilir.
-- **Yedekten Geri Yükle (M5-S1-B9):** Bilgisayardan bir `.tar.gz` yedek dosyası seçildiğinde önce tüm dosyaların SHA-256 bütünlüğü ve arşiv içeriği doğrulanarak önizlenir; onaylandığında mevcut sistemin otomatik güvenlik yedeği (`geri-yukleme-oncesi_...`) alındıktan sonra kesintisiz geri yükleme yapılır.
-- **Kayıtlı Yedekler (M5-S1-B10):** Sunucuda tutulan geçmiş yedekler listelenir; istenirse indirilebilir, doğrudan geri yüklenebilir veya silinebilir.
+- **Yedek Oluştur ve İndir:** Admin öğretmen dilediği zaman tek tıkla tam yedek oluşturup `.tar.gz` olarak bilgisayarına indirebilir veya sunucudaki `sistem_yedekleri/` dizininde saklayabilir.
+- **Yedekten Geri Yükle:** Bilgisayardan bir `.tar.gz` yedek dosyası seçildiğinde önce tüm dosyaların SHA-256 bütünlüğü ve arşiv içeriği doğrulanarak önizlenir; onaylandığında mevcut sistemin otomatik güvenlik yedeği (`geri-yukleme-oncesi_...`) alındıktan sonra kesintisiz geri yükleme yapılır.
+- **Kayıtlı Yedekler:** Sunucuda tutulan geçmiş yedekler listelenir; istenirse indirilebilir, doğrudan geri yüklenebilir veya silinebilir.
 
 #### Yöntem 3: Komut Satırı (CLI) Kısayolları
 
@@ -594,6 +643,19 @@ sudo systemctl start pardus-sinif-odev pardus-sinif-yonetimi
 `apt purge` ödev verisini ve `pardus-odev` kullanıcısını **silmez**; kalıcı silmek
 için ayrıca `sudo rm -rf /var/lib/pardus-sinif-odev && sudo userdel pardus-odev`.
 
+## Okul Kimliği ve Yetkili Öğretmen Hesapları
+
+Lab Kaptanı, bir laboratuvarı birden fazla öğretmenin veya zümrenin güvenle paylaşabilmesi için rol bazlı kullanıcı ve okul kimliği yönetimi sunar.
+
+![Okul Kimliği ve Öğretmen Hesapları](gorseller/15_okul_ve_ogretmenler.png)
+
+- **Okul Kimliği ve Laboratuvar Tanımı:** Okul adı, il, ilçe ve laboratuvar adı yapılandırılır; ödev portalı karşılama ekranında, yazdırılan teslim fişlerinde ve arşiv raporlarında bu kurumsal kimlik kullanılır.
+- **Öğretmen Rolleri:**
+  - **Admin Öğretmen:** Tüm ayarları, şifreleri, sistem yedeklemeyi, Veyon yapılandırmasını ve mağaza ayarlarını yönetebilir.
+  - **Öğretmen (Ders Öğretmeni):** Günlük ders akışı araçlarını (Sınıf Masası, ekran kilitleme, duyuru gönderme, dosya ve ödev dağıtımı, ders sonu temizliği) kullanabilir; tehlikeli sistem ayarları ve admin yetkileri gizlenir.
+- **Güvenli Parola Değişimi:** Öğretmenler kendi oturum parolalarını bağımsız olarak değiştirebilir. Admin öğretmen diğer öğretmenlerin rollerini ve durumlarını yönetebilir.
+
+
 ## Güvenlik modeli
 
 - Uygulamanın özel anahtarı **parolasızdır** (karar 3) ve yönetim hesaplarında
@@ -608,23 +670,23 @@ için ayrıca `sudo rm -rf /var/lib/pardus-sinif-odev && sudo userdel pardus-ode
   host anahtarı birden çok IP'de görülürse “klon kimlik” uyarısı verilir; makinelerde
   `rm /etc/ssh/ssh_host_*key* && ssh-keygen -A && systemctl restart ssh` önerilir.
 - Parola denemeleri cihaz+hesap başına bütçelidir (varsayılan 3) ve kalıcıdır.
-- Ağda Bul (M1-S3) yalnız SSH portunu ve sunucu kimliğini toplar; parola listesi
+- Ağda Bul modülü yalnız SSH portunu ve sunucu kimliğini toplar; parola listesi
   denemez, bulunanları kendiliğinden envantere eklemez.
 
 ### Anahtar iptali ve geri alma
 
-- Bilgisayarı M1-S1-B4 ile “anahtarı kaldır” seçeneğiyle çıkarın ya da her öğrenci
+- Bilgisayarı Sınıf Masası'nda "Envanterden Çıkar" penceresindeki “anahtarı kaldır” seçeneğiyle çıkarın ya da her öğrenci
   PC'de yönetim hesabının `~/.ssh/authorized_keys` dosyasından `pardus-sinif-yonetimi`
   yorumlu satırı silin.
 - Parolasız sudo'yu geri almak (öğrenci PC'de, yönetici olarak):
   `sudo rm /etc/sudoers.d/pardus-sinif-yonetimi && sudo visudo -c`
 - sshd izni: `sudo rm /etc/ssh/sshd_config.d/pardus-sinif-yonetimi.conf && sudo systemctl reload ssh`
-- Görünüm/giriş: M2-S3'te “İşlem yönü: kaldır”; ya da `sudo rm /etc/dconf/db/local.d/9[123]-pardus-sinif-* /etc/dconf/db/local.d/locks/pardus-sinif-* && sudo dconf update`,
+- Görünüm/giriş: Görünüm ve Giriş sayfasında “İşlem yönü: kaldır”; ya da `sudo rm /etc/dconf/db/local.d/9[123]-pardus-sinif-* /etc/dconf/db/local.d/locks/pardus-sinif-* && sudo dconf update`,
   `sudo cp /var/lib/pardus-sinif-yonetimi/ayar-yedekleri/daemon.conf.ilk /etc/gdm3/daemon.conf`.
 - Silinen yönetim hesabını geri getirmek: `hesap-yedekleri/<hesap>-<tarih>.json`
   içindeki passwd/group satırlarıyla hesabı yeniden oluşturup arşivi `/home` altına açın.
 - Yeni uygulama anahtarı için `/var/lib/pardus-sinif-yonetimi/anahtar/` içeriğini
-  silip servisi yeniden başlatın; bilgisayarları M1-S2'den yeniden hazırlayın.
+  silip servisi yeniden başlatın; bilgisayarları Bilgisayarları Hazırla sayfasından yeniden hazırlayın.
 
 ## Güncelleme ve kaldırma
 
@@ -632,7 +694,7 @@ için ayrıca `sudo rm -rf /var/lib/pardus-sinif-odev && sudo userdel pardus-ode
   ayarlar korunur. Veritabanı şeması açılışta kendiliğinden güncellenir (0.4.0: korunan
   cihaz, giriş yöneticisi, yönetim hesapları, oturum, gizleme, otomatik giriş, görünüm,
   erişim sütunları; `bulunan` ve `paket` tabloları). 0.3.x ile hazırlanan ve sudo'su
-  parola isteyen bilgisayarlar M1-S2'den bir kez yeniden hazırlanmalıdır.
+  parola isteyen bilgisayarlar Bilgisayarları Hazırla sayfasından bir kez yeniden hazırlanmalıdır.
 - **Kaldırma:** `sudo apt remove pardus-sinif-yonetimi` — uygulama kaldırılır,
   envanter/anahtar/ayarlar **korunur**.
 - **Tam silme:** `sudo apt purge pardus-sinif-yonetimi` — veriler, port ayarı ve
