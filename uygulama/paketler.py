@@ -131,7 +131,8 @@ def _aktar(istemci, paket: dict) -> None:
 def _parametre(paket: dict, kip: str) -> dict:
     return {"kip": kip, "sha256": paket["sha256"], "paket": paket["paket"],
             "surum": paket["surum"], "mimari": paket["mimari"],
-            "kurulu_kb": paket["kurulu_kb"] or 0, "boyut": paket["boyut"]}
+            "kurulu_kb": paket["kurulu_kb"] or 0, "boyut": paket["boyut"],
+            "yeniden_kur": True}
 
 
 async def plan_isi(is_id: str, sha: str, cihaz_idler: list[str], iptal: asyncio.Event) -> None:

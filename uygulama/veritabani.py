@@ -551,6 +551,38 @@ def okul_kaydet(okul_adi: str, alt_baslik: str | None = None,
     return okul_bilgisi()
 
 
+# ---- laboratuvar yönetim hesapları ve öncelik sırası ----
+
+def yonetim_hesaplari_al() -> list[dict]:
+    ham = ayar_oku("yonetim_hesaplari")
+    if ham:
+        try:
+            liste = json.loads(ham)
+            if isinstance(liste, list) and len(liste) > 0:
+                return sorted(liste, key=lambda x: int(x.get("oncelik", 99)))
+        except Exception:
+            pass
+    # Varsayılan: sadece "pardus" hazır gelir (kullanıcı talebi)
+    return [{"kullanici": "pardus", "parola": "", "oncelik": 1}]
+
+
+def yonetim_hesaplari_kaydet(hesaplar: list[dict]) -> list[dict]:
+    temiz = []
+    for i, h in enumerate(hesaplar, start=1):
+        kullanici = (h.get("kullanici") or "").strip().lower()
+        if not kullanici:
+            continue
+        parola = h.get("parola") if h.get("parola") is not None else ""
+        temiz.append({"kullanici": kullanici, "parola": str(parola), "oncelik": int(h.get("oncelik", i))})
+    if not temiz:
+        temiz = [{"kullanici": "pardus", "parola": "", "oncelik": 1}]
+    temiz.sort(key=lambda x: x.get("oncelik", 99))
+    for idx, item in enumerate(temiz, start=1):
+        item["oncelik"] = idx
+    ayar_yaz("yonetim_hesaplari", json.dumps(temiz, ensure_ascii=False))
+    return temiz
+
+
 # ---- öğretmen hesapları ve yetkiler ----
 
 GECERLI_YETKILER = ("paket_gorunum", "komut_gonder")

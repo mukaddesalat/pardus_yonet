@@ -131,6 +131,8 @@ const m1s4 = {
   async ac() {
     const wz = $("#sayfa-M1-S4 .wizard-kap");
     if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(3));
+    const nav = $("#sayfa-M1-S4 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(3));
     await this.yukle();
     this.tablo.ciz();
     Secim.bildir();
@@ -167,7 +169,7 @@ const m1s4 = {
       return;
     }
     const tablo = el("table", {}, el("thead", {}, el("tr", {},
-      ...["Uygula", "Dosya", "Paket", "Tam sürüm", "Mimari", "Boyut", "Yüklendi", "Doğrulama", ""].map((b) => el("th", { metin: b })))));
+      ...["Uygula", "Paket & Dosya", "Sürüm", "Boyut", "Doğrulama", ""].map((b) => el("th", { metin: b })))));
     const g = el("tbody");
     for (const p of liste) {
       const kimlik = kimlikSlug(p.surum) || p.sha256.slice(0, 6).toUpperCase();
@@ -176,14 +178,13 @@ const m1s4 = {
         el("td", { class: "sec" }, el("input", { type: "radio", name: "m1s4-paket", checked: secili,
           "data-ui-id": `M1-S4-B2-${kimlik}`, "aria-label": `${p.surum} kurulacak paket olsun`,
           onchange: () => this.paketSec(p.sha256) })),
-        el("td", { class: "kirp", metin: p.dosya_adi, title: p.dosya_adi }),
-        el("td", { class: "mono", metin: p.paket }),
+        el("td", {},
+          el("strong", { metin: p.dosya_adi, title: p.dosya_adi, style: "display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" }),
+          el("span", { class: "alt mono", metin: `${p.paket} · ${p.mimari} · ${tarih(p.zaman)}` })
+        ),
         el("td", { class: "mono", metin: p.surum }),
-        el("td", { metin: p.mimari }),
         el("td", { metin: boyut(p.boyut) }),
-        el("td", { metin: tarih(p.zaman) }),
-        el("td", {}, rozet("Veyon paketi doğrulandı", "iyi"),
-          el("span", { class: "alt", metin: `metadata: Package ${p.paket}; sağladıkları: ${(p.kontrol.Provides || "—").slice(0, 60)}` })),
+        el("td", {}, rozet("Doğrulandı", "iyi")),
         el("td", {}, dugme("Sil", `M1-S4-B3-${kimlik}`, () => this.paketSil(p), "ikincil kucuk"))));
     }
     tablo.append(g);
@@ -530,7 +531,9 @@ const m1Saglik = {
   ac() {
     Secim.bildir();
     const wizardKap = $("#sayfa-M1-SAGLIK .wizard-kap");
-    if (wizardKap && typeof wizardCubuguCiz === "function") wizardKap.replaceChildren(wizardCubuguCiz(4));
+    if (wizardKap && typeof wizardCubuguCiz === "function") wizardKap.replaceChildren(wizardCubuguCiz(5));
+    const nav = $("#sayfa-M1-SAGLIK .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(5));
     this.ciz();
   },
   async testBaslat() {

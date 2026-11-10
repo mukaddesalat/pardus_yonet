@@ -614,6 +614,14 @@ function sayfaGoster(kod) {
   const sayfaEtiketi = ((sekmeEtiketi && sekmeEtiketi[1]) || (sayfa && sayfa.ad) || "Lab Kaptanı").replace(/^[^\p{L}\p{N}]+/u, "");
   $("#ust-baslik").textContent = (grup && grup.sayfalar.length > 1) ? `${grup.baslik} › ${sayfaEtiketi}` : sayfaEtiketi;
   document.title = `${(sayfa && sayfa.ad) || "Sınıf Masası"} — ${(Uyg.okul && Uyg.okul.ad) || "Lab Kaptanı"}`;
+
+  // Sayfa içi üst sekmelerin (M2-S1, M2-S4, M2-S5 vb.) aktif durumunu senkronize et
+  for (const sekme of $$(".sekmeler .sekme[data-git]")) {
+    const aktifMi = sekme.dataset.git === kod;
+    sekme.classList.toggle("aktif", aktifMi);
+    sekme.setAttribute("aria-selected", aktifMi ? "true" : "false");
+  }
+
   window.scrollTo(0, 0);
   if (SAYFALAR[kod].ac) SAYFALAR[kod].ac();
 }
@@ -664,13 +672,14 @@ const Kurulum = {
 Kurulum.yukle();
 function kurulumKapsami(c) { return !Kurulum.aktif() || Kurulum.yeniler.has(c.id); }
 
-/** Kurulum sihirbazı adımları üst çubuğunu üretir (M1-S3, M1-S2, M1-S4, M1-SAGLIK) */
+/** Kurulum sihirbazı adımları üst çubuğunu üretir (M1-S3, M1-S2, M1-S4, M2-S3, M1-SAGLIK) */
 function wizardCubuguCiz(adim) {
   const adimlar = [
     { no: 1, kod: "M1-S3", baslik: "1. Ağda Bul", alt: "Ağ taraması ve envanter" },
     { no: 2, kod: "M1-S2", baslik: "2. SSH & Sudo", alt: "Yönetici yetkisi" },
     { no: 3, kod: "M1-S4", baslik: "3. Veyon", alt: "Ekran izleme servisi" },
-    { no: 4, kod: "M1-SAGLIK", baslik: "4. Sağlık Testi", alt: "Ping, SSH, Veyon doğrula" },
+    { no: 4, kod: "M2-S3", baslik: "4. Masaüstü Görünümü", alt: "Panel, duvar kâğıdı & kilit" },
+    { no: 5, kod: "M1-SAGLIK", baslik: "5. Sağlık Testi", alt: "Ping, SSH, Veyon doğrula" },
   ];
   const cubuk = el("div", { class: "wizard-cubuk alt-bosluk" });
   adimlar.forEach((a, i) => {
@@ -691,6 +700,43 @@ function wizardCubuguCiz(adim) {
     cubuk.append(adimEl);
   });
   return cubuk;
+}
+
+/** Sihirbaz akışı alt navigasyon çubuğunu üretir: en solda geri, en sağda ileri; baştayken sadece ileri, sondayken sadece geri */
+function wizardNavigasyonCiz(adim) {
+  const harita = [
+    { no: 1, kod: "M1-S3", baslik: "Ağda Bul" },
+    { no: 2, kod: "M1-S2", baslik: "SSH & Sudo" },
+    { no: 3, kod: "M1-S4", baslik: "Veyon Kurulumu" },
+    { no: 4, kod: "M2-S3", baslik: "Masaüstü Görünümü" },
+    { no: 5, kod: "M1-SAGLIK", baslik: "Sağlık Testi" },
+  ];
+  const nav = el("div", { class: "wizard-nav-cubuk" });
+  const onceki = harita.find((h) => h.no === adim - 1);
+  const sonraki = harita.find((h) => h.no === adim + 1);
+
+  if (onceki) {
+    nav.append(el("button", {
+      type: "button",
+      class: "dugme ikincil wizard-geri",
+      "data-git": onceki.kod,
+      title: `${onceki.baslik} adımına dön`,
+    }, `← Geri: ${onceki.baslik}`));
+  } else {
+    // Baştayken sol taraf boş kalsın (flex space-between hizalaması korunsun)
+    nav.append(el("div", { class: "wizard-nav-bosluk" }));
+  }
+
+  if (sonraki) {
+    nav.append(el("button", {
+      type: "button",
+      class: "dugme birincil wizard-ileri",
+      "data-git": sonraki.kod,
+      title: `${sonraki.baslik} adımına ilerle`,
+    }, `İleri: ${sonraki.baslik} →`));
+  }
+
+  return nav;
 }
 
 /* ================================================================ veri ve seçim deposu */
@@ -1048,6 +1094,7 @@ const IS_ADLARI = {
   veyon_geri_al: "Veyon ayarlarını geri yükleme",
   uyku_onizleme: "Güç ayarı önizlemesi", uyku_ayari: "Uyku modunu kapatma", uyku_varsayilan: "Varsayılan güç ayarına dönüş",
   kapatma_oku: "Kapatma planlarını okuma", kapatma_ekle: "Zamanlı kapatma planı ekleme",
+  parola_degistir: "Yönetici parolası güncelleme",
   kapatma_sil: "Zamanlı kapatma planı kaldırma", kapatma_iptal: "Bekleyen kapatmayı iptal",
   sinif_ekran_kilitle: "Öğrenci ekranlarını kilitleme", sinif_ekran_ac: "Ekran kilitlerini açma",
   sinif_duyuru: "Sınıf duyurusu gönderme", sinif_internet_kisitla: "İnternet erişimini kısıtlama",
@@ -1106,9 +1153,14 @@ async function isGuncelle() {
 
 /** İşi başlatan API çağrısını yapar, paneli açar ve bitişi bekler. */
 async function isBaslat(yol, govde, bitince) {
+  isBaslat.sonHata = null;
   let yanit;
   try { yanit = await api(yol, govde); }
-  catch (hata) { bildir(hata.message, true); return null; }
+  catch (hata) {
+    isBaslat.sonHata = hata.message;
+    bildir(hata.message, true);
+    return null;
+  }
   return isIzle(yanit.is_id, { bitince });
 }
 

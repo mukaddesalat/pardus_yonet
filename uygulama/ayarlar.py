@@ -19,7 +19,18 @@ DINLEME_PORTU = int(os.environ.get("PSY_PORT", "8080"))
 
 # Hesap modeli (karar 4, 21)
 PROFIL_HESABI = "ogrenci"
-YONETIM_HESAPLARI = ("pardus", "hp")   # tekilleştirme adayları; önerilen: ilki
+YONETIM_HESAPLARI = ("pardus", "hp")   # geriye dönük uyum için sabit tuple
+
+def yonetim_hesap_adlari() -> list[str]:
+    """Veritabanında kayıtlı öncelikli yönetim hesap adlarını sırayla döndürür."""
+    try:
+        from . import veritabani
+        hesaplar = veritabani.yonetim_hesaplari_al()
+        adlar = [h["kullanici"] for h in hesaplar if h.get("kullanici")]
+        return adlar if adlar else ["pardus"]
+    except Exception:
+        return ["pardus"]
+
 VARSAYILAN_HESAP_ADAYLARI = list(YONETIM_HESAPLARI)
 
 # Parolasız sudo (karar 22): yönetim hesabına root eşdeğeri yetki verir

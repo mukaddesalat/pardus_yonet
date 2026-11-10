@@ -36,6 +36,16 @@ SSHD_EK = "/etc/ssh/sshd_config.d/pardus-sinif-yonetimi.conf"
 ORTAM = dict(os.environ, LC_ALL="C", LANG="C")
 
 
+def _gecerli_yonetim_mi(ad, p=None):
+    if not ad or not isinstance(ad, str):
+        return False
+    if ad in ("root", "daemon", "bin", "sys", "sync", "games", "man", "lp", "mail", "news", "uucp", "proxy", "www-data", "backup", "list", "irc", "gnats", "nobody", "systemd-network", "systemd-resolve", "messagebus", "sshd", "ogrenci"):
+        return False
+    if p and p.get("hesaplar"):
+        return ad in p.get("hesaplar")
+    return True
+
+
 def calistir(argv, zaman=60):
     try:
         r = subprocess.run(argv, capture_output=True, text=True, timeout=zaman, env=ORTAM)
@@ -120,8 +130,9 @@ def anahtar_sayisi(ev):
 
 def kapsam(p):
     sonuc = {}
-    for ad in p.get("hesaplar", YONETIM):
-        if ad not in YONETIM:
+    adaylar = p.get("hesaplar") or YONETIM
+    for ad in adaylar:
+        if not _gecerli_yonetim_mi(ad, p):
             continue
         try:
             k = pwd.getpwnam(ad)
@@ -164,8 +175,8 @@ def _satirlar(yol, ad):
 
 def yedekle(p):
     ad = p["hesap"]
-    if ad not in YONETIM:
-        return {"hata": "yalnız pardus/hp hesapları yedeklenir"}
+    if not _gecerli_yonetim_mi(ad, p):
+        return {"hata": "yalnız geçerli yönetim hesapları yedeklenir"}
     try:
         k = pwd.getpwnam(ad)
     except KeyError:
@@ -254,8 +265,8 @@ def _sshd_hesap_cikar(ad):
 
 def sil(p):
     ad, korunan = p["hesap"], p["korunan"]
-    if ad not in YONETIM or korunan not in YONETIM or ad == korunan:
-        return {"hata": "yalnız pardus/hp arasında, farklı iki hesapla çalışır"}
+    if not _gecerli_yonetim_mi(ad, p) or not _gecerli_yonetim_mi(korunan, p) or ad == korunan:
+        return {"hata": "yalnız geçerli iki farklı yönetim hesabı arasında çalışır"}
     try:
         k = pwd.getpwnam(ad)
         kk = pwd.getpwnam(korunan)

@@ -1,0 +1,11 @@
+{
+  "id": "ag-baglanti-testi",
+  "ad": "Ağ ve Ağ Geçidi Bağlantı Testi",
+  "kategori": "ag",
+  "risk": "bilgi",
+  "ozet": "Bilgisayarın yerel ağ geçidi (Gateway) ve MEB DNS erişimini test ederek gecikme sürelerini raporlar.",
+  "yazar": "Bilişim Zümresi",
+  "surum": "1.0.0",
+  "sudo": false,
+  "parametreler": []
+}

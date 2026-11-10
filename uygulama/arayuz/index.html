@@ -6,8 +6,8 @@
 <title>Lab Kaptanı — Pardus Sınıf Yönetimi</title>
 <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E %3Crect x='2' y='2' width='60' height='60' rx='15' fill='%231B5FC1'/%3E %3Crect x='2' y='32' width='60' height='30' rx='15' fill='%23164E9F'/%3E %3Crect x='2' y='32' width='60' height='14' fill='%23164E9F'/%3E %3Crect x='11' y='13' width='42' height='29' rx='4.5' fill='%23FFFFFF'/%3E %3Crect x='14.5' y='16.5' width='35' height='22' rx='2.5' fill='%230F3566'/%3E %3Cpath d='M27 42h10l2.2 6.5H24.8z' fill='%23FFFFFF'/%3E %3Crect x='20' y='47.5' width='24' height='3.6' rx='1.8' fill='%23FFFFFF'/%3E %3Cg transform='translate(32 27.5)' fill='none' stroke='%23F6C445' stroke-width='2' stroke-linecap='round'%3E %3Ccircle r='5.6'/%3E %3Cpath d='M0-9.2v3.6M0 5.6v3.6M-9.2 0h3.6M5.6 0h3.6M-6.5-6.5l2.5 2.5M4 4l2.5 2.5M-6.5 6.5l2.5-2.5M4-4l2.5-2.5'/%3E %3Ccircle r='1.7' fill='%23F6C445' stroke='none'/%3E %3C/g%3E %3C/svg%3E">
-<link rel="stylesheet" href="/statik/belirtecler.css">
-<link rel="stylesheet" href="/statik/stil.css">
+<link rel="stylesheet" href="/statik/belirtecler.css?v=0.9.0">
+<link rel="stylesheet" href="/statik/stil.css?v=0.9.0">
 </head>
 <body>
 <!--ONIZLEME-SERIT-->
@@ -48,6 +48,11 @@
       <input id="kurulum-parola" type="password" autocomplete="new-password">
       <label for="kurulum-parola2">Parolayı tekrar yazın</label>
       <input id="kurulum-parola2" type="password" autocomplete="new-password">
+      <hr style="border:0;border-top:1px solid #E2E8F0;margin:12px 0;">
+      <label for="kurulum-yonetim-kullanici">Öğrenci PC Yetkili Yönetici Hesabı (Sudo)</label>
+      <input id="kurulum-yonetim-kullanici" type="text" maxlength="32" value="pardus" placeholder="örn. pardus veya hp">
+      <label for="kurulum-yonetim-parola">Öğrenci PC Yetkili Parolası</label>
+      <input id="kurulum-yonetim-parola" type="password" autocomplete="new-password" placeholder="Öğrenci bilgisayarlarındaki sudo parolası">
       <button type="submit" class="birincil">Kurulumu tamamla</button>
     </form>
     <form id="giris-formu" hidden>
@@ -226,6 +231,7 @@
             sorulmaz. Bilgisayarları seçin ve adımları sırayla izleyin. Hazır olanlar kendiliğinden atlanır.</p>
         </header>
         <div class="wizard-kap" data-adim="2"></div>
+        <div class="wizard-nav-kap" data-nav-adim="2"></div>
         <div class="secim-yeri" data-islem="hazirlik"></div>
         <ol class="adim-kartlari">
           <li class="kart adim-karti">
@@ -282,6 +288,7 @@
             göndermez ve envantere kayıt eklemez; eklemek ve hazırlamak ayrı, onaylı adımlardır.</p>
         </header>
         <div class="wizard-kap" data-adim="1"></div>
+        <div class="wizard-nav-kap" data-nav-adim="1"></div>
         <div class="kart">
           <form id="m1s3-form" class="satir-form">
             <label for="m1s3-aralik">Adres aralığı</label>
@@ -312,9 +319,7 @@
             erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
         </header>
         <div class="wizard-kap" data-adim="3"></div>
-            seçin, önizleyip onaylayın. Veyon yalnız sizin yüklediğiniz .deb dosyasından kurulur. SSH anahtarı bakım
-            erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
-        </header>
+        <div class="wizard-nav-kap" data-nav-adim="3"></div>
         <div class="adimlar" aria-label="Kullanım sırası">
           <span class="adim"><b>1</b> Veyon paketini yükle</span>
           <span class="adim"><b>2</b> Public key yükle</span>
@@ -434,11 +439,12 @@
       <!-- ================================================= M1-SAGLIK Kurulum Sağlık Testi -->
       <section id="sayfa-M1-SAGLIK" class="sayfa" data-ui-id="M1-SAGLIK" hidden>
         <header class="sayfa-baslik">
-          <h1>🩺 Adım 4: Bağlantı Sağlığını Doğrula (Final Testi)</h1>
+          <h1>🩺 Adım 5: Bağlantı Sağlığını Doğrula (Final Testi)</h1>
           <p class="sayfa-aciklama">Kurulumunu tamamladığınız bilgisayarların Ping (ağ erişimi), SSH anahtar doğrulaması, parolasız Sudo yetkisi ve Veyon ekran yönetim servisinin çalıştığını tek tıkla toplu olarak denetleyin.</p>
         </header>
 
-        <div class="wizard-kap" data-adim="4"></div>
+        <div class="wizard-kap" data-adim="5"></div>
+        <div class="wizard-nav-kap" data-nav-adim="5"></div>
         <div class="secim-yeri" data-islem="durum"></div>
 
         <div class="kart alt-bosluk">
@@ -449,7 +455,6 @@
         </div>
 
         <div id="saglik-sonuc-tablo" class="tablo-kap"></div>
-
       </section>
 
       <!-- ================================================= M2-S1 Profil Temizliği & Tarayıcı -->
@@ -476,13 +481,13 @@
         </div>
         <div class="klasor-kutu">
 
-        <!-- M2-S1 İçi Separatör: Bilgisayar Temizliği vs Tarayıcı Yönetimi -->
-        <div class="kapsam-secimi" role="tablist" aria-label="Temizlik türü">
-          <button type="button" id="m2s1-sekme-bilgisayar" class="kapsam aktif" role="tab" aria-selected="true">
+        <!-- M2-S1 İçi Separatör: Bilgisayar Temizliği vs Chromium Tarayıcı Temizliği -->
+        <div class="alt-sekmeler" role="tablist" aria-label="Temizlik ve Bakım Türü">
+          <button type="button" id="m2s1-sekme-bilgisayar" class="alt-sekme aktif" role="tab" aria-selected="true">
             <span class="sekme-ikon">💻</span>Bilgisayar ve Masaüstü Temizliği
           </button>
-          <button type="button" id="m2s1-sekme-tarayici" class="kapsam" role="tab" aria-selected="false">
-            <span class="sekme-ikon">🌐</span>Chromium Tarayıcı Yönetimi ve Güvenli Temizlik
+          <button type="button" id="m2s1-sekme-tarayici" class="alt-sekme" role="tab" aria-selected="false">
+            <span class="sekme-ikon">🌐</span>Chromium Tarayıcı Temizliği &amp; Yönetimi
           </button>
         </div>
 
@@ -499,10 +504,23 @@
             <legend>Tüm seçili bilgisayarlarda temizlenecek alanlar</legend>
             <div id="m2s1-alan-kutulari" class="onay-izgara"></div>
           </fieldset>
+
+          <!-- Özel Ödev Koruma Kutusu (Kullanıcı İsteği: Farklı, yeşil kalkanlı ve koruma hissiyatı yüksek) -->
+          <div id="m2s1-odev-koruma-kutusu" class="odev-koruma-kutusu">
+            <label class="odev-koruma-etiket">
+              <input id="m2s1-odev-koru" type="checkbox" checked>
+              <span class="odev-koruma-baslik">🛡️ Masaüstündeki Ödev &amp; Ders Klasörünü Koru</span>
+            </label>
+            <p class="odev-koruma-aciklama">
+              Ders sırasında dağıtılan veya toplanan ödevlerin bulunduğu Masaüstü klasörü (<strong id="m2s1-odev-hedef-klasor">Odevler</strong>) temizlik sırasında <strong>asla silinmez</strong>, korunur.
+            </p>
+          </div>
+
           <p id="m2s1-kapsam-uyari" class="uyari-kutusu" role="note"></p>
           <div class="arac-cubugu">
             <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle (Önerilen)</button>
             <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7">Temizliği başlat</button>
+            <span id="m2s1-koruma-ozeti" class="koruma-canli-rozet">🛡️ Koruma: 1 Klasör Güvende (Odevler)</span>
             <span class="ayrac"></span>
             <button id="m2s1-yedek" type="button" class="ikincil" data-ui-id="M2-S1-B9">Yalnız yedek al</button>
             <button id="m2s1-geri" type="button" class="ikincil" data-ui-id="M2-S1-B10">Yedekten dön…</button>
@@ -730,17 +748,38 @@
 
         <h2 class="alt-tablo-baslik">Hedef Bilgisayarlar (Tek veya Çoklu Seçim)</h2>
         <div id="m2s2-tablo" class="tablo-kap"></div>
+
+        <!-- Canlı Kurulum Terminal Çıktısı (stdout / stderr) -->
+        <div id="m2s2-terminal-kap" class="terminal-kutusu" hidden>
+          <div class="terminal-baslik-bar">
+            <div>
+              <span class="terminal-noktalar">
+                <span class="terminal-nokta kirmizi"></span>
+                <span class="terminal-nokta sari"></span>
+                <span class="terminal-nokta yesil"></span>
+              </span>
+              <span>🖥️ Canlı Kurulum Çıktısı (stdout / stderr)</span>
+            </div>
+            <div class="dugme-grubu">
+              <button type="button" id="m2s2-terminal-temizle" class="ikincil kucuk">Temizle</button>
+              <button type="button" id="m2s2-terminal-kapat" class="ikincil kucuk">Kapat</button>
+            </div>
+          </div>
+          <pre id="m2s2-terminal-cikti" class="terminal-cikti"></pre>
+        </div>
         </div>
       </section>
 
       <!-- ================================================= M2-S3 Görünüm ve Giriş -->
       <section id="sayfa-M2-S3" class="sayfa" data-ui-id="M2-S3" hidden>
         <header class="sayfa-baslik">
-          <h1>Görünüm ve Giriş</h1>
+          <h1>🖼️ Adım 4: Görünüm ve Masaüstü Düzeni</h1>
           <p class="sayfa-aciklama">Pardus Karşılayıcı'daki Windows 10 benzeri düzeni hedefler; ayarlar
             her bilgisayarın kendi kurulu şemasına göre denetlenir. Masaüstü ortamı ve açık oturum
             sessizce değiştirilmez; XFCE bilgisayarlar ayrı geçiş planı ister.</p>
         </header>
+        <div class="wizard-kap" data-adim="4"></div>
+        <div class="wizard-nav-kap" data-nav-adim="4"></div>
         <div class="iki-sutun">
           <div class="kart">
             <h2>Uygulanacaklar</h2>
@@ -995,6 +1034,24 @@
             </div>
           </div>
           <div id="m2s6-katalog-izgara" class="magaza-kart-izgara"></div>
+          <!-- 3x3 Matris Sayfalama (Paging) Çubuğu -->
+          <div id="m2s6-katalog-sayfalama" class="sayfalama-cubugu"></div>
+
+          <!-- Canlı Katalog Güncelleme Konsolu (Streaming Terminal) -->
+          <div id="m2s6-guncelleme-konsol-kap" class="terminal-kutusu ust-bosluk" hidden>
+            <div class="terminal-baslik-bar">
+              <span>
+                <span class="terminal-noktalar">
+                  <span class="terminal-nokta kirmizi"></span>
+                  <span class="terminal-nokta sari"></span>
+                  <span class="terminal-nokta yesil"></span>
+                </span>
+                📡 Komut Mağazası Depo Güncelleme Akışı (Git Katalog Senkronizasyonu)
+              </span>
+              <button id="m2s6-guncelleme-konsol-kapat" type="button" class="ikincil kucuk" style="padding: 2px 8px; font-size: 11px;">✕ Kapat</button>
+            </div>
+            <div id="m2s6-guncelleme-konsol-cikti" class="terminal-cikti" style="max-height: 200px;"></div>
+          </div>
         </div>
 
         <!-- Sekme 2: Araçlarım & Sabitlenenler -->
@@ -1022,6 +1079,7 @@
             </div>
             <div class="arac-cubugu ust-bosluk">
               <button id="m2s6-arac-calistir" type="button" class="birincil">⚡ Seçili Bilgisayarlarda Çalıştır</button>
+              <button id="m2s6-arac-klonla-btn" type="button" class="ikincil">✏️ Klonla ve Düzenle</button>
               <button id="m2s6-arac-sabitle" type="button" class="ikincil">📌 Sınıf Masası'na Sabitle</button>
               <button id="m2s6-arac-katalog-don" type="button" class="ikincil">← Kataloğa Dön</button>
             </div>
@@ -1137,8 +1195,10 @@
         <div class="kart ust-bosluk">
           <div class="arac-cubugu">
             <h2 class="sifir-alt">Canlı Komut Çıktı (Log) Tablosu ve Özet</h2>
+            <span id="m2s6-son-komut-rozet" class="rozet rozet-bilgi" style="margin-left: 10px; font-weight: 600;" hidden></span>
             <span class="bosluk"></span>
             <span id="m2s6-ozet-metin" class="komut-ozet-etiket">Henüz komut çalıştırılmadı</span>
+            <button id="btn-m2s6-ciktilari-temizle" type="button" class="ikincil kucuk" style="margin-left: 8px;">🗑️ Çıktıları Temizle</button>
           </div>
           <div id="m2s6-sayaclar" class="ozet-kartlar"></div>
           <div id="m2s6-log-tablo" class="tablo-kap"></div>
@@ -1497,6 +1557,64 @@ sudo bash yedekten-kur.sh</pre>
           </div>
           <div id="m5s2-ogretmen-tablo" class="tablo-kap"></div>
         </div>
+
+        <!-- Bilgisayar Yönetim Hesapları & Öncelik Sıralaması -->
+        <div class="kart ust-bosluk">
+          <div class="arac-cubugu">
+            <h2 class="sifir-alt">🔑 Bilgisayar Yönetim Hesapları &amp; Öncelik Sıralaması</h2>
+            <span class="bosluk"></span>
+            <button id="m5s2-hesap-ekle" type="button" class="ikincil kucuk">➕ Yeni Yönetim Hesabı Ekle</button>
+            <button id="m5s2-hesap-kaydet" type="button" class="birincil kucuk">💾 Değişiklikleri Kaydet</button>
+          </div>
+          <p class="ipucu">
+            Laboratuvardaki öğrenci bilgisayarlarında yönetici (sudo) yetkisine sahip yerel hesapları tanımlayın.
+            Keşif ve hazırlık sırasında yukarıdan aşağıya doğru sırayla denenir (<strong>en üstteki hesap 1. önceliklidir</strong>).
+            Sıralamayı <strong>▲ / ▼</strong> butonlarıyla değiştirebilirsiniz.
+          </p>
+
+          <table class="yonetim-hesap-tablosu">
+            <thead>
+              <tr>
+                <th style="width: 70px;">Öncelik</th>
+                <th>Kullanıcı Adı</th>
+                <th>Varsayılan Parola</th>
+                <th style="width: 140px;">Sıra Değiştir</th>
+                <th style="width: 130px;">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="m5s2-hesap-listesi">
+              <!-- JS dinamik dolduracak -->
+            </tbody>
+          </table>
+
+          <!-- Hızlı Test Kutusu -->
+          <div class="hizli-test-kutu">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <strong>⚡ Hızlı Test:</strong>
+              <span>Örnek Test IP'si:</span>
+              <input id="m5s2-test-ip" type="text" placeholder="örn. 192.168.1.100" style="width: 150px; min-height: 30px;">
+              <select id="m5s2-test-hesap" style="min-height: 30px;"></select>
+              <button id="m5s2-btn-hizli-test" type="button" class="ikincil kucuk">⚡ Hesabı Test Et</button>
+              <span id="m5s2-test-sonuc" class="ipucu" style="font-weight: 600;"></span>
+            </div>
+          </div>
+
+          <!-- Toplu Parola Değiştirme Kutusu -->
+          <div class="parola-degistir-kutu">
+            <h3 style="margin: 0 0 6px; color: #1E40AF;">🛡️ Sınıfta Tek Tıkla Yönetici Parolası Değiştir</h3>
+            <p class="ipucu" style="margin-bottom: 8px;">
+              Öğrencilerin yönetici şifresini öğrenmesi durumunda, seçili bilgisayarlardaki yerel yönetici şifresini tek tıkla değiştirebilirsiniz.
+            </p>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <label for="m5s2-toplu-hesap">Hedef Hesap:</label>
+              <select id="m5s2-toplu-hesap" style="min-height: 30px;"></select>
+              <label for="m5s2-toplu-yeni-parola">Yeni Parola:</label>
+              <input id="m5s2-toplu-yeni-parola" type="password" placeholder="En az 4 karakter" style="width: 160px; min-height: 30px;">
+              <button id="m5s2-btn-parola-degistir" type="button" class="birincil kucuk tehlikeli">🔑 Seçili Bilgisayarlarda Parolayı Değiştir</button>
+            </div>
+            <div id="m5s2-parola-uyari" class="uyari-kutusu" style="margin-top: 10px;" hidden></div>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -1514,8 +1632,6 @@ sudo bash yedekten-kur.sh</pre>
       <ul id="is-paneli-liste" class="is-hedef-listesi"></ul>
     </aside>
   </div>
-
-  <div id="bildirim" class="bildirim" role="status" hidden></div>
 </div>
 
 <!-- ================================================= M0-S3 Onay penceresi -->
@@ -1733,14 +1849,12 @@ sudo bash yedekten-kur.sh</pre>
 <dialog id="parola-penceresi">
   <form id="parola-formu" method="dialog">
     <h2>Yönetime bağla — parola bir kez</h2>
-    <p class="ipucu">Öğrenci bilgisayarlarındaki yönetici hesabının parolasını yazın (pardus, hp ya da ikisi).
-      Parola yalnız bu işlem sırasında kullanılır ve <strong>kaydedilmez</strong>. Bu, uygulamaya giriş
-      parolanız değildir. Her bilgisayar ve hesap için en çok 3 deneme yapılır.</p>
-    <div class="form-izgara">
+    <p class="ipucu">Öğrenci bilgisayarlarındaki yönetici hesabının parolasını yazın.
+      Tanımladığınız öncelik sırasına göre denenir (en üstteki hesap 1. önceliklidir).
+      Her bilgisayar ve hesap için en çok 3 deneme yapılır.</p>
+    <div id="parola-alanlari-kap" class="form-izgara">
       <label for="pp-pardus">pardus parolası</label>
-      <input id="pp-pardus" type="password" autocomplete="off">
-      <label for="pp-hp">hp parolası</label>
-      <input id="pp-hp" type="password" autocomplete="off">
+      <input id="pp-pardus" type="password" autocomplete="off" placeholder="Varsayılan parola">
     </div>
     <label class="onay-kutusu"><input id="pp-ogrenci" type="checkbox" checked data-ui-id="M1-S2-B9">
       ogrenci hesabı yoksa oluştur (sudo verilmez; giriş ekranında parolasız)</label>
@@ -1898,6 +2012,9 @@ sudo bash yedekten-kur.sh</pre>
     </div>
   </form>
 </dialog>
+
+<!-- Küresel toast bildirim kutusu -->
+<div id="bildirim" class="bildirim" role="status" hidden></div>
 
 <!-- Yazdırılacak kod kartları (yalnız yazdırmada görünür) -->
 <div id="yazdir-alani" aria-hidden="true"></div>

@@ -94,9 +94,10 @@ def _yetkili_baglanti(cihaz: dict, parolalar: dict[str, str], notlar: list[str])
                           (" ve verilen parolayla sudo çalışmadı" if parola else
                            "; bu hesabın parolasını girin"))
 
-    # 2) Parola ile: kayıtlı hesap varsa önce o, sonra diğer yönetim hesabı
-    adaylar = [h for h in ([cihaz.get("baglanti_hesabi")] + list(ayarlar.YONETIM_HESAPLARI))
-               if h in ayarlar.YONETIM_HESAPLARI]
+    # 2) Parola ile: öncelikli yönetim hesapları sırayla denenir (en üstteki 1. önceliklidir)
+    yonetim_listesi = ayarlar.yonetim_hesap_adlari()
+    adaylar = [h for h in ([cihaz.get("baglanti_hesabi")] + yonetim_listesi)
+               if h and h in yonetim_listesi]
     for hesap in dict.fromkeys(adaylar):
         parola = parolalar.get(hesap)
         if not parola:
@@ -110,11 +111,11 @@ def _yetkili_baglanti(cihaz: dict, parolalar: dict[str, str], notlar: list[str])
             return istemci, hesap, (None if sudo == "parolasiz" else parola)
         istemci.close()
         notlar.append(f"{hesap}: giriş yapıldı ama sudo yetkisi yok")
-    if not any(parolalar.get(h) for h in ayarlar.YONETIM_HESAPLARI):
-        raise HazirlikHatasi("parola", "Parola girilmedi; pardus veya hp hesabının parolası "
+    if not any(parolalar.get(h) for h in yonetim_listesi):
+        raise HazirlikHatasi("parola", f"Parola girilmedi; {', '.join(yonetim_listesi)} yönetim hesabının parolası "
                                        "bir kez gerekir")
     raise HazirlikHatasi(
-        "yetki", "Yetkili hesap hazırlığı gerekiyor: sudo yapabilen pardus/hp hesabıyla "
+        "yetki", f"Yetkili hesap hazırlığı gerekiyor: sudo yapabilen yönetim hesabıyla ({', '.join(yonetim_listesi)}) "
                  "girilemedi (" + "; ".join(notlar) + "). Bilgisayarda yerel hazırlık "
                  "yapın (yönetici kılavuzu: “Yerel hazırlık”).")
 

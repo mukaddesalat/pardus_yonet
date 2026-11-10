@@ -1,0 +1,11 @@
+{
+  "id": "tarayici-sifirla",
+  "ad": "Tarayıcı Önbellek ve Açık Oturumları Temizle",
+  "kategori": "bakim",
+  "risk": "degisiklik",
+  "ozet": "Chromium ve Firefox profillerini sıfırlamadan önbellek, çerezler ve açık oturumları temizler.",
+  "yazar": "Pardus Lab Ekibi",
+  "surum": "1.0.0",
+  "sudo": true,
+  "parametreler": []
+}

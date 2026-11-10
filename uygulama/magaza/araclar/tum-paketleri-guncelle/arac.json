@@ -1,0 +1,24 @@
+{
+  "id": "tum-paketleri-guncelle",
+  "ad": "Sistemi ve Tüm Paketleri Güncelle (APT Full Upgrade)",
+  "surum": "1.0.0",
+  "ozet": "Pardus ve Debian depolarındaki tüm uygulamaları, kütüphaneleri ve sistem yamalarını tam yükseltir; eski çekirdekleri ve gereksiz paketleri temizler.",
+  "kategori": "paket",
+  "risk": "degisiklik",
+  "yazar": "Lab Kaptanı Resmi",
+  "sudo": true,
+  "parametreler": [
+    {
+      "ad": "autoremove",
+      "baslik": "Gereksiz Bağımlılıkları ve Eski Çekirdekleri Temizle (autoremove --purge)",
+      "tip": "onay",
+      "varsayilan": true
+    },
+    {
+      "ad": "clean",
+      "baslik": "İndirilen Paket Önbelleğini Temizle (apt-get clean)",
+      "tip": "onay",
+      "varsayilan": true
+    }
+  ]
+}

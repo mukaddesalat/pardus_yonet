@@ -1,0 +1,11 @@
+{
+  "id": "bozuk-paket-onar",
+  "ad": "Kilitli ve Bozuk Paketleri Onar",
+  "kategori": "paket",
+  "risk": "degisiklik",
+  "ozet": "Yarım kalmış apt kilitlerini, bozuk bağımlılıkları ve eksik paket kurulumlarını onarır.",
+  "yazar": "Pardus Lab Ekibi",
+  "surum": "1.1.0",
+  "sudo": true,
+  "parametreler": []
+}

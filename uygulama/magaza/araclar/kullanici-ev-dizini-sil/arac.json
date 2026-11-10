@@ -1,0 +1,33 @@
+{
+  "id": "kullanici-ev-dizini-sil",
+  "ad": "Kullanıcı ve Ev Dizinini Sil",
+  "kategori": "kullanici",
+  "risk": "yikici",
+  "ozet": "Sistem ve yönetim hesapları hariç belirtilen kullanıcının açık süreçlerini sonlandırıp ev diziniyle birlikte siler.",
+  "yazar": "Fatma Öğretmen",
+  "surum": "1.0.0",
+  "sudo": true,
+  "parametreler": [
+    {
+      "ad": "kullanici",
+      "etiket": "Silinecek Kullanıcı Adı",
+      "tip": "metin",
+      "varsayilan": "misafir",
+      "zorunlu": true,
+      "yasak": [
+        "root",
+        "pardus",
+        "hp",
+        "ogrenci"
+      ],
+      "aciklama": "Sistem kullanıcıları koruma altındadır ve silinemez"
+    },
+    {
+      "ad": "yedek_al",
+      "etiket": "Silmeden önce ev dizinini arşivle",
+      "tip": "onay",
+      "varsayilan": true,
+      "aciklama": "/var/lib/pardus-sinif-yonetimi/karantina/ altına geçici yedek alır"
+    }
+  ]
+}

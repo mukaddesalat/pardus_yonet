@@ -137,6 +137,8 @@ class KurulumIstek(BaseModel):
     ad_soyad: str = "Mukaddes ALAT"
     brans: str = "Bilişim Teknolojileri"
     okul_adi: str | None = None
+    yonetim_kullanici: str | None = "pardus"
+    yonetim_parola: str | None = None
 
 
 class GirisIstek(BaseModel):
@@ -186,6 +188,8 @@ class TemizlikIstek(CihazListesiIstek):
     istisnalar: dict[str, list[str]] = {}    # cihaz_id -> alanlar; yalnızca bu temizlik için
     oturumlari_kapat: bool = False
     onay: bool = False
+    odev_koru: bool = True
+    haric_klasor: str | None = None
 
 
 class YedekListeIstek(BaseModel):
@@ -227,6 +231,23 @@ class IceAktarIstek(BaseModel):
 
 class CikarIstek(OnayliIstek):
     anahtari_kaldir: bool = False
+
+
+class YonetimHesaplariIstek(BaseModel):
+    hesaplar: list[dict]
+
+
+class TestBaglantiIstek(BaseModel):
+    ip: str
+    kullanici: str = "pardus"
+    parola: str = ""
+    port: int = 22
+
+
+class ParolaDegistirIstek(OnayliIstek):
+    cihazlar: list[str]
+    kullanici: str = "pardus"
+    yeni_parola: str
 
 
 class AyarIstek(BaseModel):
@@ -428,6 +449,12 @@ async def kurulum(istek: KurulumIstek):
         raise HTTPException(403, "Kurulum kodu hatalı")
     if istek.okul_adi and istek.okul_adi.strip():
         veritabani.okul_kaydet(istek.okul_adi.strip())
+    if istek.yonetim_kullanici and istek.yonetim_kullanici.strip():
+        veritabani.yonetim_hesaplari_kaydet([{
+            "kullanici": istek.yonetim_kullanici.strip(),
+            "parola": istek.yonetim_parola or "",
+            "oncelik": 1
+        }])
     ogr = guvenlik.parola_belirle(
         istek.parola, kullanici_adi=istek.kullanici_adi,
         ad_soyad=istek.ad_soyad, brans=istek.brans)
@@ -623,8 +650,9 @@ async def kimlik_onayla(istek: CihazListesiIstek):
 
 @uygulama.post("/api/hazirlik/baslat", dependencies=[korumali])
 async def hazirlik_baslat(istek: HazirlikIstek):
+    yonetim_listesi = ayarlar.yonetim_hesap_adlari()
     parolalar = {h: p for h, p in istek.parolalar.items()
-                 if h in ayarlar.YONETIM_HESAPLARI and p}
+                 if (h in yonetim_listesi or h in ayarlar.YONETIM_HESAPLARI) and p}
     # Parolalar iş parametrelerine YAZILMAZ; yalnızca bellekte taşınır.
     return _is_baslat(
         "hazirlik", {"hesaplar": sorted(parolalar), "ogrenci_olustur": istek.ogrenci_olustur},
@@ -642,11 +670,115 @@ async def tekillestirme_onizle(istek: CihazListesiIstek):
 @uygulama.post("/api/tekillestirme/uygula", dependencies=[korumali])
 async def tekillestirme_uygula(istek: TekillestirmeIstek):
     _onay_gerekli(istek.onay, "Hesap silme için açık onay gereklidir")
-    if any(k not in ayarlar.YONETIM_HESAPLARI for k in istek.korunacaklar.values()):
-        raise HTTPException(422, "Korunacak hesap pardus veya hp olmalı")
+    yonetim_listesi = ayarlar.yonetim_hesap_adlari()
+    if any(k not in yonetim_listesi and k not in ayarlar.YONETIM_HESAPLARI for k in istek.korunacaklar.values()):
+        raise HTTPException(422, f"Korunacak hesap tanımlı yönetim hesaplarından biri olmalı ({', '.join(yonetim_listesi)})")
     return _is_baslat(
         "tekillestirme", {"korunacaklar": istek.korunacaklar}, list(istek.korunacaklar),
         lambda is_id, iptal: tekillestirme.uygula_isi(is_id, istek.korunacaklar, iptal))
+
+
+# ---- Yönetim Hesapları & Toplu Parola Yönetimi ----
+
+@uygulama.get("/api/yonetim/hesaplar", dependencies=[korumali])
+async def yonetim_hesaplari_al():
+    return veritabani.yonetim_hesaplari_al()
+
+
+@uygulama.post("/api/yonetim/hesaplar", dependencies=[korumali])
+async def yonetim_hesaplari_kaydet(istek: YonetimHesaplariIstek):
+    ogr = guvenlik.aktif_ogretmen()
+    if ogr and ogr.get("rol") != "admin":
+        raise HTTPException(403, "Yönetim hesaplarını değiştirme yetkisi yalnızca Admin Öğretmen'e aittir.")
+    return veritabani.yonetim_hesaplari_kaydet(istek.hesaplar)
+
+
+@uygulama.post("/api/yonetim/test_baglanti", dependencies=[korumali])
+async def yonetim_test_baglanti(istek: TestBaglantiIstek):
+    ip = istek.ip.strip()
+    kullanici = istek.kullanici.strip()
+    parola = istek.parola
+    port = istek.port or 22
+    if not ip:
+        raise HTTPException(422, "IP adresi gereklidir")
+
+    def _test():
+        try:
+            kimlik = ssh_araclari.host_kimligi_topla(ip, port)
+        except Exception as e:
+            return {"basarili": False, "ssh": False, "sudo": False, "mesaj": f"Host anahtarı okunamadı / SSH kapalı: {e}"}
+
+        try:
+            istemci = ssh_araclari.parola_ile_baglan(ip, port, kullanici, parola, kimlik["tip"], kimlik["b64"])
+        except Exception as e:
+            return {"basarili": False, "ssh": False, "sudo": False, "mesaj": f"SSH giriş hatası: {e}"}
+
+        try:
+            sudo_durum = ssh_araclari.sudo_dogrula(istemci, parola)
+            parolasiz = sudo_durum == "parolasiz"
+            sudo_ok = sudo_durum in ("parolasiz", "parola_gerekli")
+            istemci.close()
+            if sudo_ok:
+                sudo_not = " (Parolasız Sudo aktif)" if parolasiz else " (Parolalı Sudo başarılı)"
+                return {"basarili": True, "ssh": True, "sudo": True, "parolasiz": parolasiz,
+                        "mesaj": f"'{kullanici}' ile SSH ve Sudo yetkisi doğrulandı{sudo_not}"}
+            else:
+                return {"basarili": False, "ssh": True, "sudo": False,
+                        "mesaj": f"'{kullanici}' ile SSH başarılı ancak Sudo yetkisi yok!"}
+        except Exception as e:
+            try:
+                istemci.close()
+            except Exception:
+                pass
+            return {"basarili": False, "ssh": True, "sudo": False, "mesaj": f"Sudo deneme hatası: {e}"}
+
+    return await asyncio.to_thread(_test)
+
+
+@uygulama.post("/api/yonetim/parola_degistir", dependencies=[korumali])
+async def yonetim_parola_degistir(istek: ParolaDegistirIstek):
+    _onay_gerekli(istek.onay, "Parola değiştirme için onay gereklidir")
+    ogr = guvenlik.aktif_ogretmen()
+    if ogr and ogr.get("rol") != "admin":
+        raise HTTPException(403, "Yönetici parolasını değiştirme yetkisi yalnızca Admin Öğretmen'e aittir.")
+    if len(istek.yeni_parola) < 4:
+        raise HTTPException(422, "Yeni parola en az 4 karakter olmalıdır.")
+
+    def _is_yurut(is_id, iptal):
+        sinir = asyncio.Semaphore(4)
+
+        async def _tek(cid):
+            if iptal.is_set():
+                return
+            cihaz = veritabani.cihaz(cid)
+            if not cihaz:
+                return
+            ip, ad = cihaz["ip"], veritabani.cihaz_adi(cihaz)
+            try:
+                istemci = yonetim.baglan(cihaz)
+            except Exception as e:
+                veritabani.hedef_guncelle(is_id, ip, "basarisiz", "baglanti", f"{ad} — Bağlanılamadı: {e}")
+                return
+            try:
+                girdi = f"{istek.kullanici}:{istek.yeni_parola}\n"
+                rc, stdout, stderr = ssh_araclari.sudo_komut(istemci, ["chpasswd"], girdi=girdi, zaman=15)
+                if rc == 0:
+                    veritabani.hedef_guncelle(is_id, ip, "basarili", "parola", f"{ad} — '{istek.kullanici}' parolası güncellendi")
+                else:
+                    veritabani.hedef_guncelle(is_id, ip, "basarisiz", "parola", f"{ad} — chpasswd hatası: {stderr}")
+            except Exception as e:
+                veritabani.hedef_guncelle(is_id, ip, "basarisiz", "hata", f"{ad} — {e}")
+            finally:
+                istemci.close()
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(*(_tek(c) for c in istek.cihazlar)))
+
+    return _is_baslat(
+        "parola_degistir", {"kullanici": istek.kullanici, "hedef_sayisi": len(istek.cihazlar)},
+        istek.cihazlar,
+        lambda is_id, iptal: asyncio.to_thread(_is_yurut, is_id, iptal)
+    )
 
 
 # ---- M1-S3 Ağda Bul ----
@@ -721,9 +853,10 @@ async def temizlik_onizle(istek: TemizlikIstek):
     if istek.kapsam != "alanlar":
         raise HTTPException(422, "Bilinmeyen kapsam")
     plan = _temizlik_plani(istek)
+    haric = [istek.haric_klasor] if istek.haric_klasor else None
     return _is_baslat(
-        "temizlik_onizleme", {"alanlar": istek.alanlar, "istisna_sayisi": len(istek.istisnalar)},
-        istek.cihazlar, lambda is_id, iptal: temizlik.temizlik_isi(is_id, plan, "onizleme", iptal))
+        "temizlik_onizleme", {"alanlar": istek.alanlar, "istisna_sayisi": len(istek.istisnalar), "odev_koru": istek.odev_koru},
+        istek.cihazlar, lambda is_id, iptal: temizlik.temizlik_isi(is_id, plan, "onizleme", iptal, odev_koru=istek.odev_koru, haric_adlar=haric))
 
 
 @uygulama.post("/api/temizlik/uygula", dependencies=[korumali])
@@ -740,9 +873,10 @@ async def temizlik_uygula(istek: TemizlikIstek):
             lambda is_id, iptal: profil.profil_sifirla_isi(is_id, istek.cihazlar, istek.kapsam,
                                                            istek.oturumlari_kapat, iptal))
     plan = _temizlik_plani(istek)
+    haric = [istek.haric_klasor] if istek.haric_klasor else None
     yanit = _is_baslat(
-        "temizlik", {"alanlar": istek.alanlar, "istisna_sayisi": len(istek.istisnalar)},
-        istek.cihazlar, lambda is_id, iptal: temizlik.temizlik_isi(is_id, plan, "temizle", iptal))
+        "temizlik", {"alanlar": istek.alanlar, "istisna_sayisi": len(istek.istisnalar), "odev_koru": istek.odev_koru},
+        istek.cihazlar, lambda is_id, iptal: temizlik.temizlik_isi(is_id, plan, "temizle", iptal, odev_koru=istek.odev_koru, haric_adlar=haric))
     # Genel seçim bir sonraki temizlik için hatırlanır; istisnalar kaydedilmez.
     temizlik.genel_alanlari_kaydet(istek.alanlar)
     return yanit
@@ -814,45 +948,6 @@ async def paket_yukle(istek: Request):
         raise HTTPException(422, str(hata))
 
 
-@uygulama.delete("/api/paketler/{sha}", dependencies=[korumali])
-async def paket_sil(sha: str):
-    if not paketler.paket_sil(sha):
-        raise HTTPException(404, "Paket bulunamadı")
-    return {"tamam": True}
-
-
-@uygulama.post("/api/paketler/{sha}/plan", dependencies=[korumali])
-async def paket_plan(sha: str, istek: CihazListesiIstek):
-    paket = paketler.paket_bilgisi(sha)
-    if not paket:
-        raise HTTPException(404, "Paket bulunamadı")
-    return _is_baslat(
-        "paket_plan", {"sha256": sha, "paket": paket["paket"], "surum": paket["surum"]},
-        istek.cihazlar, lambda is_id, iptal: paketler.plan_isi(is_id, sha, istek.cihazlar, iptal))
-
-
-@uygulama.post("/api/paketler/{sha}/kur", dependencies=[korumali])
-async def paket_kur(sha: str, istek: PaketIstek):
-    _onay_gerekli(istek.onay, "Kurulum onaylanmalıdır")
-    paket = paketler.paket_bilgisi(sha)
-    if not paket:
-        raise HTTPException(404, "Paket bulunamadı")
-    if istek.plan_is_id:
-        uygun = set(paketler.onaylanabilir_hedefler(istek.plan_is_id, sha))
-        hedefler = [c for c in istek.cihazlar if c in uygun]
-        if not hedefler:
-            raise HTTPException(422, "Onaylanan planda kurulabilir bilgisayar yok")
-    else:
-        uygun_cihazlar, _ = secim.hedefleri_ayir(istek.cihazlar, "paket")
-        hedefler = [c["id"] for c in uygun_cihazlar]
-        if not hedefler:
-            raise HTTPException(422, "Seçimde kuruluma uygun bilgisayar yok")
-    return _is_baslat(
-        "paket_kur", {"sha256": sha, "paket": paket["paket"], "surum": paket["surum"],
-                      "plan_is_id": istek.plan_is_id}, hedefler,
-        lambda is_id, iptal: paketler.kur_isi(is_id, sha, hedefler, iptal))
-
-
 @uygulama.get("/api/paketler/repo/katalog", dependencies=[korumali])
 async def repo_katalog():
     return paketler.repo_katalog()
@@ -904,6 +999,45 @@ async def repo_kaldir(istek: RepoKaldirIstek):
     return _is_baslat(
         "repo_kaldir", {"paketler": temiz_paketler, "artiklari_temizle": istek.artiklari_temizle}, hedefler,
         lambda is_id, iptal: paketler.repo_kaldir_isi(is_id, temiz_paketler, istek.artiklari_temizle, hedefler, iptal))
+
+
+@uygulama.delete("/api/paketler/{sha}", dependencies=[korumali])
+async def paket_sil(sha: str):
+    if not paketler.paket_sil(sha):
+        raise HTTPException(404, "Paket bulunamadı")
+    return {"tamam": True}
+
+
+@uygulama.post("/api/paketler/{sha}/plan", dependencies=[korumali])
+async def paket_plan(sha: str, istek: CihazListesiIstek):
+    paket = paketler.paket_bilgisi(sha)
+    if not paket:
+        raise HTTPException(404, "Paket bulunamadı")
+    return _is_baslat(
+        "paket_plan", {"sha256": sha, "paket": paket["paket"], "surum": paket["surum"]},
+        istek.cihazlar, lambda is_id, iptal: paketler.plan_isi(is_id, sha, istek.cihazlar, iptal))
+
+
+@uygulama.post("/api/paketler/{sha}/kur", dependencies=[korumali])
+async def paket_kur(sha: str, istek: PaketIstek):
+    _onay_gerekli(istek.onay, "Kurulum onaylanmalıdır")
+    paket = paketler.paket_bilgisi(sha)
+    if not paket:
+        raise HTTPException(404, "Paket bulunamadı")
+    if istek.plan_is_id:
+        uygun = set(paketler.onaylanabilir_hedefler(istek.plan_is_id, sha))
+        hedefler = [c for c in istek.cihazlar if c in uygun]
+        if not hedefler:
+            raise HTTPException(422, "Onaylanan planda kurulabilir bilgisayar yok")
+    else:
+        uygun_cihazlar, _ = secim.hedefleri_ayir(istek.cihazlar, "paket")
+        hedefler = [c["id"] for c in uygun_cihazlar]
+        if not hedefler:
+            raise HTTPException(422, "Seçimde kuruluma uygun bilgisayar yok")
+    return _is_baslat(
+        "paket_kur", {"sha256": sha, "paket": paket["paket"], "surum": paket["surum"],
+                      "plan_is_id": istek.plan_is_id}, hedefler,
+        lambda is_id, iptal: paketler.kur_isi(is_id, sha, hedefler, iptal))
 
 
 # ---- M1-S4 Veyon Ayarları ----

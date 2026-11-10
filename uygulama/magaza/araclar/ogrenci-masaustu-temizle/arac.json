@@ -1,0 +1,18 @@
+{
+  "id": "ogrenci-masaustu-temizle",
+  "ad": "Öğrenci Masaüstü ve İndirilenleri Temizle",
+  "kategori": "bakim",
+  "risk": "yikici",
+  "ozet": "Ders bitiminde /home/ogrenci/Masaüstü ve İndirilenler klasöründeki gereksiz dosyaları temizler.",
+  "yazar": "Mehmet Öğretmen",
+  "surum": "1.0.0",
+  "sudo": true,
+  "parametreler": [
+    {
+      "ad": "copu_bosalt",
+      "etiket": "Çöp kutusunu da tamamen temizle",
+      "tip": "onay",
+      "varsayilan": true
+    }
+  ]
+}

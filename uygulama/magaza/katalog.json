@@ -1,15 +1,39 @@
 [
   {
-    "id": "veyon-servis-ac",
-    "ad": "Veyon Servisini Kontrol Et ve Başlat",
-    "kategori": "veyon",
+    "id": "ag-baglanti-testi",
+    "ad": "Ağ ve Ağ Geçidi Bağlantı Testi",
+    "kategori": "ag",
+    "risk": "bilgi",
+    "ozet": "Bilgisayarın yerel ağ geçidi (Gateway) ve MEB DNS erişimini test ederek gecikme sürelerini raporlar.",
+    "yazar": "Bilişim Zümresi",
+    "surum": "1.0.0",
+    "sudo": false,
+    "parametreler": [],
+    "betik": "GW=$(ip route | awk '/default/ {print $3}' | head -n1)\necho \"=== Ağ Geçidi: $GW ===\"\nif [ -n \"$GW\" ]; then\n  ping -c 3 -W 2 \"$GW\" || echo \"Ağ geçidine ulaşılamadı!\"\nfi\necho \"=== DNS Testi (195.175.39.39) ===\"\nping -c 2 -W 2 195.175.39.39 2>/dev/null || echo \"Dış DNS erişimi başarısız!\"\n"
+  },
+  {
+    "id": "bozuk-paket-onar",
+    "ad": "Kilitli ve Bozuk Paketleri Onar",
+    "kategori": "paket",
     "risk": "degisiklik",
-    "ozet": "Öğrenciler Veyon servisini kapattığında servisi unmask/enable yapıp anında yeniden ayağa kaldırır.",
+    "ozet": "Yarım kalmış apt kilitlerini, bozuk bağımlılıkları ve eksik paket kurulumlarını onarır.",
     "yazar": "Pardus Lab Ekibi",
-    "surum": "1.2.0",
+    "surum": "1.1.0",
     "sudo": true,
     "parametreler": [],
-    "betik": "if systemctl is-active --quiet veyon && pgrep -x veyon-service >/dev/null; then\n  echo '::psy:bilgi=Veyon servisi zaten aktif ve çalışıyor.'\n  echo 'OK: Veyon servisi ve arka plan süreçleri çalışıyor (aktif).'\nelse\n  echo '::psy:bilgi=Veyon servisi kapalı; yeniden ayağa kaldırılıyor...'\n  systemctl unmask veyon 2>/dev/null || true\n  systemctl enable veyon 2>/dev/null || true\n  systemctl restart veyon 2>/dev/null || systemctl restart veyon-service 2>/dev/null || true\n  sleep 1\n  if systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service; then\n    echo '::psy:sonuc=ok'\n    echo 'BAŞARILI: Veyon servisi ayağa kaldırıldı ve aktif duruma getirildi.'\n  else\n    echo 'HATA: Veyon servisi başlatılamadı!'\n    systemctl status veyon --no-pager -n 5 2>/dev/null || true\n    exit 1\n  fi\nfi"
+    "betik": "export DEBIAN_FRONTEND=noninteractive\ndpkg --configure -a 2>&1\napt-get -f install -y 2>&1\necho '::psy:sonuc=ok'\necho 'OK: Paket sistemi ve kilitler başarıyla onarıldı.'\n"
+  },
+  {
+    "id": "disk-bellek-raporu",
+    "ad": "Disk ve RAM Sağlık Özeti",
+    "kategori": "sistem",
+    "risk": "bilgi",
+    "ozet": "Öğrenci bilgisayarlarındaki boş disk alanını ve RAM kullanımını hızlıca raporlar (salt okunur).",
+    "yazar": "Bilişim Zümresi",
+    "surum": "1.0.0",
+    "sudo": false,
+    "parametreler": [],
+    "betik": "echo \"=== HOST: $(hostname) ===\"\necho \"--- BELLEK (RAM) ---\"\nfree -h | awk 'NR<=2'\necho \"--- DİSK ALANI ---\"\ndf -h / /home 2>/dev/null | awk 'NR<=3'\n"
   },
   {
     "id": "hosts-kayit-ekle",
@@ -75,30 +99,6 @@
     "betik": ": \"${PSY_P_kullanici:?kullanici parametresi gerekli}\"\nHEDEF=\"$PSY_P_kullanici\"\nif [ \"$HEDEF\" = \"root\" ] || [ \"$HEDEF\" = \"pardus\" ] || [ \"$HEDEF\" = \"hp\" ] || [ \"$HEDEF\" = \"ogrenci\" ]; then\n  echo \"HATA: $HEDEF korumalı sistem hesabıdır, silinemez!\" >&2\n  exit 1\nfi\nif id \"$HEDEF\" &>/dev/null; then\n  if [ \"${PSY_P_yedek_al:-0}\" = \"1\" ] && [ -d \"/home/$HEDEF\" ]; then\n    mkdir -p /var/lib/pardus-sinif-yonetimi/karantina 2>/dev/null || true\n    tar -czf \"/var/lib/pardus-sinif-yonetimi/karantina/silinen_${HEDEF}_$(date +%s).tar.gz\" -C /home \"$HEDEF\" 2>/dev/null || true\n    echo \"::psy:bilgi=Ev dizini karantinaya yedeklendi.\"\n  fi\n  pkill -KILL -u \"$HEDEF\" 2>/dev/null || true\n  userdel -r \"$HEDEF\"\n  echo \"::psy:degisti=/home/$HEDEF\"\n  echo \"OK: $HEDEF kullanıcısı ve ev dizini sistemden silindi.\"\nelse\n  echo \"ATLANDI: $HEDEF adlı kullanıcı sistemde bulunamadı.\"\nfi\n"
   },
   {
-    "id": "disk-bellek-raporu",
-    "ad": "Disk ve RAM Sağlık Özeti",
-    "kategori": "sistem",
-    "risk": "bilgi",
-    "ozet": "Öğrenci bilgisayarlarındaki boş disk alanını ve RAM kullanımını hızlıca raporlar (salt okunur).",
-    "yazar": "Bilişim Zümresi",
-    "surum": "1.0.0",
-    "sudo": false,
-    "parametreler": [],
-    "betik": "echo \"=== HOST: $(hostname) ===\"\necho \"--- BELLEK (RAM) ---\"\nfree -h | awk 'NR<=2'\necho \"--- DİSK ALANI ---\"\ndf -h / /home 2>/dev/null | awk 'NR<=3'\n"
-  },
-  {
-    "id": "bozuk-paket-onar",
-    "ad": "Kilitli ve Bozuk Paketleri Onar",
-    "kategori": "paket",
-    "risk": "degisiklik",
-    "ozet": "Yarım kalmış apt kilitlerini, bozuk bağımlılıkları ve eksik paket kurulumlarını onarır.",
-    "yazar": "Pardus Lab Ekibi",
-    "surum": "1.1.0",
-    "sudo": true,
-    "parametreler": [],
-    "betik": "export DEBIAN_FRONTEND=noninteractive\ndpkg --configure -a 2>&1\napt-get -f install -y 2>&1\necho '::psy:sonuc=ok'\necho 'OK: Paket sistemi ve kilitler başarıyla onarıldı.'\n"
-  },
-  {
     "id": "ogrenci-masaustu-temizle",
     "ad": "Öğrenci Masaüstü ve İndirilenleri Temizle",
     "kategori": "bakim",
@@ -118,6 +118,70 @@
     "betik": "rm -rf /home/ogrenci/İndirilenler/* /home/ogrenci/Downloads/* 2>/dev/null || true\nfind /home/ogrenci/Masaüstü -mindepth 1 ! -name '*.desktop' -delete 2>/dev/null || true\nif [ \"${PSY_P_copu_bosalt:-0}\" = \"1\" ]; then\n  rm -rf /home/ogrenci/.local/share/Trash/* 2>/dev/null || true\nfi\necho '::psy:degisti=/home/ogrenci/Masaüstü'\necho 'OK: Öğrenci masaüstü ve indirilenler temizlendi.'\n"
   },
   {
+    "id": "paket-guncelleme-sayaci",
+    "ad": "Güncellenebilir Paket Sayacı ve Raporu",
+    "kategori": "bakim",
+    "risk": "okuma",
+    "ozet": "Sınıftaki bilgisayarlarda kaç adet güncellenebilir paket ve güvenlik yaması olduğunu bilgisayar başına hesaplayıp temiz bir liste halinde raporlar.",
+    "yazar": "Pardus Lab Topluluğu",
+    "surum": "1.0.0",
+    "sudo": false,
+    "parametreler": [
+      {
+        "ad": "onbellek_guncelle",
+        "etiket": "Önce Depo Listesini Güncelle (apt update)",
+        "tip": "secim",
+        "secenekler": [
+          "hayir",
+          "evet"
+        ],
+        "varsayilan": "hayir",
+        "zorunlu": true,
+        "aciklama": "'evet' seçilirse önce depolardan güncel liste çekilir (sudo gerektirir); 'hayir' seçilirse mevcut yerel önbellek hızlıca taranır."
+      },
+      {
+        "ad": "detay_goster",
+        "etiket": "Rapor Detay Düzeyi",
+        "tip": "secim",
+        "secenekler": [
+          "ayrintili",
+          "ozet"
+        ],
+        "varsayilan": "ayrintili",
+        "zorunlu": true,
+        "aciklama": "'ayrintili' seçildiğinde güncellenecek paket adları ve sürümleri listelenir; 'ozet' seçildiğinde sadece toplam sayılar gösterilir."
+      }
+    ],
+    "betik": "#!/usr/bin/env bash\n# Lab Kaptanı — Güncellenebilir Paket Sayacı ve Raporu\nset -e\n\nONBELLEK=\"${PSY_P_onbellek_guncelle:-hayir}\"\nDETAY=\"${PSY_P_detay_goster:-ayrintili}\"\n\nHOSTNAME_VAL=$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || echo \"Bilinmiyor\")\nIP_VAL=$(hostname -I 2>/dev/null | awk '{print $1}')\n\necho \"==================================================\"\necho \"  PARDUS PAKET GÜNCELLEME SAYACI VE ANALİZİ\"\necho \"  Bilgisayar: $HOSTNAME_VAL ($IP_VAL)\"\necho \"  Tarih: $(date '+%Y-%m-%d %H:%M:%S')\"\necho \"==================================================\"\n\nif [ \"$ONBELLEK\" = \"evet\" ]; then\n    echo -e \"\\n[*] Paket depoları kontrol ediliyor (apt-get update)...\"\n    if [ \"$(id -u)\" -eq 0 ] || sudo -n true 2>/dev/null; then\n        sudo -n apt-get update -qq || echo \"[!] Uyarı: apt-get update kısmi hata verdi, devam ediliyor.\"\n    else\n        echo \"[!] Sudo yetkisi bulunamadı, mevcut önbellek ile devam ediliyor.\"\n    fi\nfi\n\n# Debian/Pardus simülasyon çıktısını al\nSIM_OUT=$(LC_ALL=C apt-get -s dist-upgrade 2>/dev/null || true)\n\n# Yükseltilecek toplam paket sayısı\nUPG_COUNT=$(echo \"$SIM_OUT\" | grep -E \"^[0-9]+ upgraded\" | awk '{print $1}')\n[ -z \"$UPG_COUNT\" ] && UPG_COUNT=0\n\n# Güvenlik güncellemeleri\nSEC_COUNT=$(echo \"$SIM_OUT\" | grep \"^Inst \" | grep -Ei \"(security|debian-security|pardus-security|-updates)\" | wc -l || echo 0)\n\n# Çekirdek (Kernel) güncellemeleri\nKERNEL_UPG=$(echo \"$SIM_OUT\" | grep \"^Inst linux-image\" | wc -l || echo 0)\n\necho \"\"\necho \"::psy:bilgi=Güncelleme analizi tamamlandı: $UPG_COUNT paket güncellenebilir.\"\n\nif [ \"$UPG_COUNT\" -eq 0 ]; then\n    echo \"  Durum                          : [GÜNCEL] Sistem günceldir.\"\n    echo \"  Toplam Güncellenebilir Paket   : 0\"\n    echo \"  Güvenlik Güncellemesi          : 0\"\n    echo \"==================================================\"\n    echo \"::psy:sonuc=guncel\"\n    exit 0\nfi\n\necho \"  Durum                          : [GÜNCELLEME GEREKLİ]\"\necho \"  Toplam Güncellenebilir Paket   : $UPG_COUNT\"\necho \"  Güvenlik Güncellemesi          : $SEC_COUNT\"\nif [ \"$KERNEL_UPG\" -gt 0 ]; then\n    echo \"  Çekirdek (Kernel) Güncellemesi : VAR ($KERNEL_UPG adet yeni çekirdek paketi)\"\nelse\n    echo \"  Çekirdek (Kernel) Güncellemesi : Yok\"\nfi\necho \"==================================================\"\n\nif [ \"$DETAY\" = \"ayrintili\" ]; then\n    echo \"\"\n    echo \"Güncellenecek Paketlerin Listesi:\"\n    echo \"--------------------------------------------------\"\n    echo \"$SIM_OUT\" | grep \"^Inst \" | while read -r line; do\n        PKG=$(echo \"$line\" | awk '{print $2}')\n        NEW_VER=$(echo \"$line\" | sed -n 's/.*(\\(.*\\) .*/\\1/p' | awk '{print $1}')\n        IS_SEC=$(echo \"$line\" | grep -Ei \"(security|debian-security|-updates)\" >/dev/null && echo \"[GÜVENLİK]\" || echo \"\")\n        printf \"  %-32s -> %-20s %s\\n\" \"$PKG\" \"$NEW_VER\" \"$IS_SEC\"\n    done\n    echo \"--------------------------------------------------\"\nfi\n\necho \"\"\necho \"Öneri:\"\nif [ \"$SEC_COUNT\" -gt 0 ]; then\n    echo \"  [DİKKAT] $SEC_COUNT adet güvenlik güncellemesi mevcut! En kısa sürede güncellemeniz önerilir.\"\nfi\necho \"  Toplu güncellemek için: Lab Kaptanı 'Yazılım Merkezi' veya 'Serbest Uçbirim' üzerinden 'sudo apt-get upgrade -y' komutunu verebilirsiniz.\"\necho \"==================================================\"\n\n"
+  },
+  {
+    "id": "sadece-chromium-yap",
+    "ad": "Tekil Tarayıcı: Sadece Chromium Bırak ve Varsayılan Yap",
+    "kategori": "bakim",
+    "risk": "yikici",
+    "ozet": "Bilgisayardaki Firefox, Chrome, Brave vb. harici tüm tarayıcıları kaldırır; Chromium'u kurup sistem ve masaüstü genelinde varsayılan tarayıcı yapar.",
+    "yazar": "Pardus Lab Topluluğu",
+    "surum": "1.0.1",
+    "sudo": true,
+    "parametreler": [
+      {
+        "ad": "artiklari_temizle",
+        "etiket": "Eski tarayıcı profil ve önbellek artıklarını temizle",
+        "tip": "onay",
+        "varsayilan": true,
+        "aciklama": "/home/* altındaki .mozilla, .config/google-chrome vb. artık dizinleri silerek diskte yer açar."
+      },
+      {
+        "ad": "masaustu_kisayol",
+        "etiket": "Masaüstüne Chromium kısayolu ekle",
+        "tip": "onay",
+        "varsayilan": true,
+        "aciklama": "Öğrenci masaüstündeki eski tarayıcı simgelerini kaldırıp Chromium kısayolunu yerleştirir."
+      }
+    ],
+    "betik": "echo \"[*] Açık harici tarayıcı süreçleri sonlandırılıyor...\"\nfor proc in firefox firefox-esr chrome brave opera msedge vivaldi-bin epiphany midori falkon; do\n  pkill -x \"$proc\" 2>/dev/null || true\ndone\n\necho \"[*] Chromium kurulu mu denetleniyor...\"\nif ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/null 2>&1; then\n  echo \"[*] Chromium bulunamadı; Pardus deposundan kuruluyor...\"\n  echo \"::psy:bilgi=Chromium ve Türkçe dil paketi kuruluyor...\"\n  export DEBIAN_FRONTEND=noninteractive\n  apt-get update -qq 2>&1 || true\n  apt-get install -y --no-install-recommends chromium chromium-l10n 2>&1\nfi\n\nCHROMIUM_BIN=$(command -v chromium 2>/dev/null || command -v chromium-browser 2>/dev/null || true)\nif [ -z \"$CHROMIUM_BIN\" ]; then\n  echo \"HATA: Chromium sistemi bulunamadı veya kurulamadı!\" >&2\n  exit 1\nfi\necho \"[+] Chromium hazır: $CHROMIUM_BIN\"\n\necho \"[*] Kurulu harici tarayıcılar taranıyor...\"\nPOTANSIYEL=(\n  \"firefox\" \"firefox-esr\" \"google-chrome-stable\" \"google-chrome-beta\"\n  \"google-chrome-unstable\" \"brave-browser\" \"brave-keyring\" \"microsoft-edge-stable\"\n  \"microsoft-edge-beta\" \"microsoft-edge-dev\" \"opera-stable\" \"opera-beta\"\n  \"opera-developer\" \"vivaldi-stable\" \"epiphany-browser\" \"midori\" \"falkon\" \"konqueror\"\n)\n\nKALDIRILACAK=()\nfor pkg in \"${POTANSIYEL[@]}\"; do\n  if dpkg -s \"$pkg\" 2>/dev/null | grep -q \"Status: install ok installed\"; then\n    KALDIRILACAK+=(\"$pkg\")\n  fi\ndone\n\nwhile IFS= read -r lpkg; do\n  [ -n \"$lpkg\" ] && KALDIRILACAK+=(\"$lpkg\")\ndone < <(dpkg-query -W -f='${Package} ${Status}\\n' 'firefox*' 2>/dev/null | grep \"install ok installed\" | awk '{print $1}')\n\nif [ ${#KALDIRILACAK[@]} -gt 0 ]; then\n  KALDIR_LISTE=$(printf \"%s\\n\" \"${KALDIRILACAK[@]}\" | sort -u | tr '\\n' ' ')\n  echo \"[*] Tespit edilen harici tarayıcılar kaldırılıyor: $KALDIR_LISTE\"\n  echo \"::psy:bilgi=Kaldırılıyor: $KALDIR_LISTE\"\n  export DEBIAN_FRONTEND=noninteractive\n  apt-get purge -y $KALDIR_LISTE 2>&1 || apt-get remove -y $KALDIR_LISTE 2>&1\n  echo \"::psy:degisti=paketler\"\nelse\n  echo \"[+] Kurulu harici APT tarayıcısı bulunamadı.\"\nfi\n\nif command -v flatpak >/dev/null 2>&1; then\n  for flat in org.mozilla.firefox com.google.Chrome com.brave.Browser com.microsoft.Edge com.opera.Opera tv.falkon.Falkon; do\n    if flatpak list --app 2>/dev/null | grep -q \"$flat\"; then\n      echo \"[*] Flatpak tarayıcısı kaldırılıyor: $flat\"\n      flatpak uninstall -y --noninteractive \"$flat\" 2>/dev/null || true\n    fi\n  done\nfi\n\nif command -v snap >/dev/null 2>&1; then\n  for sn in firefox brave edge opera; do\n    if snap list \"$sn\" 2>/dev/null | grep -q \"^$sn \"; then\n      echo \"[*] Snap tarayıcısı kaldırılıyor: $sn\"\n      snap remove \"$sn\" 2>/dev/null || true\n    fi\n  done\nfi\n\necho \"[*] Chromium varsayılan sistem tarayıcısı olarak yapılandırılıyor...\"\nupdate-alternatives --set x-www-browser \"$CHROMIUM_BIN\" 2>/dev/null || true\nupdate-alternatives --set gnome-www-browser \"$CHROMIUM_BIN\" 2>/dev/null || true\n\nDESKTOP_FILE=\"\"\nfor f in /usr/share/applications/chromium.desktop /usr/share/applications/chromium-browser.desktop; do\n  if [ -f \"$f\" ]; then\n    DESKTOP_FILE=$(basename \"$f\")\n    break\n  fi\ndone\n[ -z \"$DESKTOP_FILE\" ] && DESKTOP_FILE=\"chromium.desktop\"\n\nmkdir -p /etc/xdg\nMIME_FILE=\"/etc/xdg/mimeapps.list\"\ntouch \"$MIME_FILE\"\nif ! grep -q \"^\\[Default Applications\\]\" \"$MIME_FILE\" 2>/dev/null; then\n  printf \"[Default Applications]\\n\" >> \"$MIME_FILE\"\nfi\n\nMIME_TIPLERI=(\n  \"text/html\"\n  \"text/xml\"\n  \"application/xhtml+xml\"\n  \"x-scheme-handler/http\"\n  \"x-scheme-handler/https\"\n  \"x-scheme-handler/about\"\n  \"x-scheme-handler/unknown\"\n)\n\nfor m in \"${MIME_TIPLERI[@]}\"; do\n  if grep -q \"^$m=\" \"$MIME_FILE\" 2>/dev/null; then\n    sed -i \"s|^$m=.*|$m=$DESKTOP_FILE;|\" \"$MIME_FILE\"\n  else\n    sed -i \"/^\\[Default Applications\\]/a $m=$DESKTOP_FILE;\" \"$MIME_FILE\"\n  fi\ndone\n\nmkdir -p /etc/skel/.config\ncp -f \"$MIME_FILE\" /etc/skel/.config/mimeapps.list 2>/dev/null || true\n\nfor UDIR in /home/*; do\n  [ -d \"$UDIR\" ] || continue\n  U_NAME=$(basename \"$UDIR\")\n  mkdir -p \"$UDIR/.config\"\n  cp -f \"$MIME_FILE\" \"$UDIR/.config/mimeapps.list\" 2>/dev/null || true\n  chown \"$U_NAME:$U_NAME\" \"$UDIR/.config\" \"$UDIR/.config/mimeapps.list\" 2>/dev/null || true\ndone\n\nif [ \"${PSY_P_artiklari_temizle:-1}\" = \"1\" ]; then\n  echo \"[*] Harici tarayıcı profil artıkları ve önbellekleri temizleniyor...\"\n  for UDIR in /home/*; do\n    [ -d \"$UDIR\" ] || continue\n    rm -rf \"$UDIR/.mozilla\" \"$UDIR/.cache/mozilla\" 2>/dev/null || true\n    rm -rf \"$UDIR/.config/google-chrome\" \"$UDIR/.cache/google-chrome\" 2>/dev/null || true\n    rm -rf \"$UDIR/.config/BraveSoftware\" \"$UDIR/.cache/BraveSoftware\" 2>/dev/null || true\n    rm -rf \"$UDIR/.config/microsoft-edge\" \"$UDIR/.cache/microsoft-edge\" 2>/dev/null || true\n    rm -rf \"$UDIR/.config/opera\" \"$UDIR/.cache/opera\" 2>/dev/null || true\n    rm -rf \"$UDIR/.config/vivaldi\" \"$UDIR/.cache/vivaldi\" 2>/dev/null || true\n  done\n  echo \"::psy:degisti=tarayici_profilleri\"\nfi\n\nfor UDIR in /home/*; do\n  [ -d \"$UDIR\" ] || continue\n  for ddir in \"$UDIR/Masaüstü\" \"$UDIR/Desktop\"; do\n    if [ -d \"$ddir\" ]; then\n      rm -f \"$ddir\"/*firefox*.desktop \"$ddir\"/*chrome*.desktop \"$ddir\"/*brave*.desktop \\\n            \"$ddir\"/*edge*.desktop \"$ddir\"/*opera*.desktop \"$ddir\"/*vivaldi*.desktop 2>/dev/null || true\n    fi\n  done\ndone\n\nif [ \"${PSY_P_masaustu_kisayol:-1}\" = \"1\" ]; then\n  echo \"[*] Masaüstüne Chromium kısayolu yerleştiriliyor...\"\n  SRC_DESKTOP=\"/usr/share/applications/$DESKTOP_FILE\"\n  if [ -f \"$SRC_DESKTOP\" ]; then\n    for UDIR in /home/*; do\n      [ -d \"$UDIR\" ] || continue\n      U_NAME=$(basename \"$UDIR\")\n      for ddir in \"$UDIR/Masaüstü\" \"$UDIR/Desktop\"; do\n        if [ -d \"$ddir\" ]; then\n          cp -f \"$SRC_DESKTOP\" \"$ddir/$DESKTOP_FILE\"\n          chmod 755 \"$ddir/$DESKTOP_FILE\" 2>/dev/null || true\n          chown \"$U_NAME:$U_NAME\" \"$ddir/$DESKTOP_FILE\" 2>/dev/null || true\n        fi\n      done\n    done\n    echo \"::psy:degisti=/home/ogrenci/Masaüstü\"\n  fi\nfi\n\necho \"::psy:sonuc=ok\"\necho \"BAŞARILI: Harici tarayıcılar temizlendi; Chromium varsayılan yapıldı.\"\n"
+  },
+  {
     "id": "tarayici-sifirla",
     "ad": "Tarayıcı Önbellek ve Açık Oturumları Temizle",
     "kategori": "bakim",
@@ -130,46 +194,40 @@
     "betik": "pkill -f chromium 2>/dev/null || true\npkill -f firefox 2>/dev/null || true\nrm -rf /home/ogrenci/.cache/chromium/Default/* 2>/dev/null || true\nrm -rf /home/ogrenci/.cache/mozilla/firefox/* 2>/dev/null || true\necho '::psy:sonuc=ok'\necho 'OK: Tarayıcı önbelleği ve açık oturumlar güvenle temizlendi.'\n"
   },
   {
-    "id": "ag-baglanti-testi",
-    "ad": "Ağ ve Ağ Geçidi Bağlantı Testi",
-    "kategori": "ag",
-    "risk": "bilgi",
-    "ozet": "Bilgisayarın yerel ağ geçidi (Gateway) ve MEB DNS erişimini test ederek gecikme sürelerini raporlar.",
-    "yazar": "Bilişim Zümresi",
+    "id": "tum-paketleri-guncelle",
+    "ad": "Sistemi ve Tüm Paketleri Güncelle (APT Full Upgrade)",
     "surum": "1.0.0",
-    "sudo": false,
-    "parametreler": [],
-    "betik": "GW=$(ip route | awk '/default/ {print $3}' | head -n1)\necho \"=== Ağ Geçidi: $GW ===\"\nif [ -n \"$GW\" ]; then\n  ping -c 3 -W 2 \"$GW\" || echo \"Ağ geçidine ulaşılamadı!\"\nfi\necho \"=== DNS Testi (195.175.39.39) ===\"\nping -c 2 -W 2 195.175.39.39 2>/dev/null || echo \"Dış DNS erişimi başarısız!\"\n"
-  },
-  {
-    "id": "paket-guncelleme-sayaci",
-    "ad": "Güncellenebilir Paket Sayacı ve Raporu",
-    "kategori": "bakim",
-    "risk": "bilgi",
-    "ozet": "Sınıftaki bilgisayarlarda kaç adet güncellenebilir paket ve güvenlik yaması olduğunu bilgisayar başına hesaplayıp temiz bir liste halinde raporlar.",
-    "yazar": "Pardus Lab Topluluğu",
-    "surum": "1.0.0",
-    "sudo": false,
+    "ozet": "Pardus ve Debian depolarındaki tüm uygulamaları, kütüphaneleri ve sistem yamalarını tam yükseltir; eski çekirdekleri ve gereksiz paketleri temizler.",
+    "kategori": "paket",
+    "risk": "degisiklik",
+    "yazar": "Lab Kaptanı Resmi",
+    "sudo": true,
     "parametreler": [
       {
-        "ad": "onbellek_guncelle",
-        "etiket": "Önce Depo Listesini Güncelle (apt update)",
-        "tip": "secim",
-        "secenekler": ["hayir", "evet"],
-        "varsayilan": "hayir",
-        "zorunlu": true,
-        "aciklama": "'evet' seçilirse önce depolardan güncel liste çekilir; 'hayir' seçilirse mevcut önbellek taranır."
+        "ad": "autoremove",
+        "baslik": "Gereksiz Bağımlılıkları ve Eski Çekirdekleri Temizle (autoremove --purge)",
+        "tip": "onay",
+        "varsayilan": true
       },
       {
-        "ad": "detay_goster",
-        "etiket": "Rapor Detay Düzeyi",
-        "tip": "secim",
-        "secenekler": ["ayrintili", "ozet"],
-        "varsayilan": "ayrintili",
-        "zorunlu": true,
-        "aciklama": "'ayrintili' seçildiğinde güncellenecek paket adları listelenir; 'ozet' seçildiğinde sadece toplam sayılar gösterilir."
+        "ad": "clean",
+        "baslik": "İndirilen Paket Önbelleğini Temizle (apt-get clean)",
+        "tip": "onay",
+        "varsayilan": true
       }
     ],
-    "betik": "ONBELLEK=\"${PSY_P_onbellek_guncelle:-hayir}\"\nDETAY=\"${PSY_P_detay_goster:-ayrintili}\"\nHOSTNAME_VAL=$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || echo \"Bilinmiyor\")\nIP_VAL=$(hostname -I 2>/dev/null | awk '{print $1}')\necho \"==================================================\"\necho \"  PARDUS PAKET GÜNCELLEME SAYACI VE ANALİZİ\"\necho \"  Bilgisayar: $HOSTNAME_VAL ($IP_VAL)\"\necho \"  Tarih: $(date '+%Y-%m-%d %H:%M:%S')\"\necho \"==================================================\"\nif [ \"$ONBELLEK\" = \"evet\" ]; then\n  echo -e \"\\n[*] Depolar taranıyor (apt-get update)...\"\n  sudo -n apt-get update -qq 2>/dev/null || true\nfi\nSIM_OUT=$(LC_ALL=C apt-get -s dist-upgrade 2>/dev/null || true)\nUPG_COUNT=$(echo \"$SIM_OUT\" | grep -E \"^[0-9]+ upgraded\" | awk '{print $1}')\n[ -z \"$UPG_COUNT\" ] && UPG_COUNT=0\nSEC_COUNT=$(echo \"$SIM_OUT\" | grep \"^Inst \" | grep -Ei \"(security|debian-security|pardus-security|-updates)\" | wc -l || echo 0)\nKERNEL_UPG=$(echo \"$SIM_OUT\" | grep \"^Inst linux-image\" | wc -l || echo 0)\necho \"\"\necho \"::psy:bilgi=Güncelleme analizi: $UPG_COUNT paket güncellenebilir.\"\nif [ \"$UPG_COUNT\" -eq 0 ]; then\n  echo \"  Durum                          : [GÜNCEL] Sistem günceldir.\"\n  echo \"  Toplam Güncellenebilir Paket   : 0\"\n  echo \"  Güvenlik Güncellemesi          : 0\"\n  echo \"==================================================\"\n  echo \"::psy:sonuc=guncel\"\n  exit 0\nfi\necho \"  Durum                          : [GÜNCELLEME GEREKLİ]\"\necho \"  Toplam Güncellenebilir Paket   : $UPG_COUNT\"\necho \"  Güvenlik Güncellemesi          : $SEC_COUNT\"\nif [ \"$KERNEL_UPG\" -gt 0 ]; then\n  echo \"  Çekirdek (Kernel) Güncellemesi : VAR ($KERNEL_UPG adet yeni çekirdek)\"\nelse\n  echo \"  Çekirdek (Kernel) Güncellemesi : Yok\"\nfi\necho \"==================================================\"\nif [ \"$DETAY\" = \"ayrintili\" ]; then\n  echo \"\"\n  echo \"Güncellenecek Paketlerin Listesi:\"\n  echo \"--------------------------------------------------\"\n  echo \"$SIM_OUT\" | grep \"^Inst \" | while read -r line; do\n    PKG=$(echo \"$line\" | awk '{print $2}')\n    NEW_VER=$(echo \"$line\" | sed -n 's/.*(\\(.*\\) .*/\\1/p' | awk '{print $1}')\n    IS_SEC=$(echo \"$line\" | grep -Ei \"(security|debian-security|-updates)\" >/dev/null && echo \"[GÜVENLİK]\" || echo \"\")\n    printf \"  %-32s -> %-20s %s\\n\" \"$PKG\" \"$NEW_VER\" \"$IS_SEC\"\n  done\n  echo \"--------------------------------------------------\"\nfi\necho \"\"\necho \"Öneri:\"\nif [ \"$SEC_COUNT\" -gt 0 ]; then\n  echo \"  [DİKKAT] $SEC_COUNT adet güvenlik güncellemesi mevcut!\"\nfi\necho \"  Güncellemek için: Lab Kaptanı 'Yazılım Merkezi' veya 'Serbest Uçbirim' kullanabilirsiniz.\"\necho \"==================================================\"\n"
+    "betik": "#!/usr/bin/env bash\nset -euo pipefail\n\n# Debian / Pardus otomatik güncelleme kilitlerini ve sessiz modu ayarla\nexport DEBIAN_FRONTEND=noninteractive\nexport NEEDRESTART_MODE=a\n\necho \"[*] APT depo paket listeleri güncelleniyor (apt-get update)...\"\napt-get update\n\necho \"[*] Sistem ve tüm paketler en yeni sürüme yükseltiliyor (apt-get full-upgrade)...\"\napt-get -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" full-upgrade\n\nPARAM_AUTOREMOVE=\"${PARAM_AUTOREMOVE:-true}\"\nif [ \"$PARAM_AUTOREMOVE\" = \"true\" ] || [ \"$PARAM_AUTOREMOVE\" = \"1\" ]; then\n  echo \"[*] Artık gerekmeyen eski paketler ve eski çekirdekler temizleniyor (autoremove --purge)...\"\n  apt-get -y autoremove --purge 2>/dev/null || true\nfi\n\nPARAM_CLEAN=\"${PARAM_CLEAN:-true}\"\nif [ \"$PARAM_CLEAN\" = \"true\" ] || [ \"$PARAM_CLEAN\" = \"1\" ]; then\n  echo \"[*] İndirilen .deb paket arşivi temizleniyor (clean)...\"\n  apt-get clean 2>/dev/null || true\nfi\n\necho \"[✓] Tüm sistem ve paket güncellemeleri başarıyla tamamlandı.\"\n"
+  },
+  {
+    "id": "veyon-servis-ac",
+    "ad": "Veyon Servisini Kontrol Et ve Başlat",
+    "kategori": "veyon",
+    "risk": "degisiklik",
+    "ozet": "Öğrenciler Veyon servisini kapattığında servisi unmask/enable yapıp anında yeniden ayağa kaldırır.",
+    "yazar": "Pardus Lab Ekibi",
+    "surum": "1.2.0",
+    "sudo": true,
+    "parametreler": [],
+    "betik": "if systemctl is-active --quiet veyon && pgrep -x veyon-service >/dev/null; then\n  echo '::psy:bilgi=Veyon servisi zaten aktif ve çalışıyor.'\n  echo 'OK: Veyon servisi ve arka plan süreçleri çalışıyor (aktif).'\nelse\n  echo '::psy:bilgi=Veyon servisi kapalı; yeniden ayağa kaldırılıyor...'\n  systemctl unmask veyon 2>/dev/null || true\n  systemctl enable veyon 2>/dev/null || true\n  systemctl restart veyon 2>/dev/null || systemctl restart veyon-service 2>/dev/null || true\n  sleep 1\n  if systemctl is-active --quiet veyon || systemctl is-active --quiet veyon-service; then\n    echo '::psy:sonuc=ok'\n    echo 'BAŞARILI: Veyon servisi ayağa kaldırıldı ve aktif duruma getirildi.'\n  else\n    echo 'HATA: Veyon servisi başlatılamadı!'\n    systemctl status veyon --no-pager -n 5 2>/dev/null || true\n    exit 1\n  fi\nfi"
   }
 ]

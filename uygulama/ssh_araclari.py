@@ -14,6 +14,21 @@ import socket
 
 import paramiko
 
+# OpenSSH 9.0+ / RFC 8731 uyumluluğu için curve25519-sha256 ve modern KEX algoritmalarını ekle
+try:
+    from paramiko import kex_curve25519
+    if hasattr(paramiko.Transport, "_kex_info"):
+        if "curve25519-sha256" not in paramiko.Transport._kex_info:
+            paramiko.Transport._kex_info["curve25519-sha256"] = kex_curve25519.KexCurve25519
+        if hasattr(paramiko.Transport, "_preferred_kex"):
+            mevcut_kex = list(paramiko.Transport._preferred_kex)
+            for kex in ["curve25519-sha256", "curve25519-sha256@libssh.org", "diffie-hellman-group16-sha512", "diffie-hellman-group18-sha512", "diffie-hellman-group14-sha256"]:
+                if kex in paramiko.Transport._kex_info and kex not in mevcut_kex:
+                    mevcut_kex.insert(0, kex)
+            paramiko.Transport._preferred_kex = tuple(mevcut_kex)
+except Exception:
+    pass
+
 from . import ayarlar
 
 

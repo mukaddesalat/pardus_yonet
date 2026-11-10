@@ -1,0 +1,28 @@
+{
+  "id": "hosts-kayit-ekle",
+  "ad": "Yerel Alan Adı (Hosts) Dağıt",
+  "kategori": "ag",
+  "risk": "degisiklik",
+  "ozet": "Öğrenci bilgisayarlarının /etc/hosts dosyasına yerel sunucu IP ve alan adını güvenle ekler veya günceller.",
+  "yazar": "Kemal Öğretmen",
+  "surum": "1.1.0",
+  "sudo": true,
+  "parametreler": [
+    {
+      "ad": "ip",
+      "etiket": "Hedef IP Adresi",
+      "tip": "metin",
+      "varsayilan": "192.168.1.100",
+      "zorunlu": true,
+      "aciklama": "Öğretmen bilgisayarı veya yerel sunucu IP adresi"
+    },
+    {
+      "ad": "alan_adi",
+      "etiket": "Alan Adı (Hostname)",
+      "tip": "metin",
+      "varsayilan": "ogretmen.lab",
+      "zorunlu": true,
+      "aciklama": "Örn. ogretmen.lab veya portal.yerel"
+    }
+  ]
+}

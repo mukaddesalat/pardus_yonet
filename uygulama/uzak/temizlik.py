@@ -242,7 +242,7 @@ def say(yol):
     return adet, bayt
 
 
-def kaynaklari_bul(ev_fd, ev_dev, goreli, tur):
+def kaynaklari_bul(ev_fd, ev_dev, goreli, tur, haric_adlar=None):
     """Taşınacak girdileri (kaynak yolu, karantinadaki göreli yol) olarak verir.
 
     Kaynak yolu /proc/self/fd/<fd>/<ad> biçimindedir: üst klasör sembolik
@@ -250,6 +250,7 @@ def kaynaklari_bul(ev_fd, ev_dev, goreli, tur):
     Dönüş: (girdiler, açık tanıtıcılar, sorun | None)
     """
     parcalar = bilesenler(goreli)
+    haric_kume = {str(h).strip().lower() for h in (haric_adlar or []) if str(h).strip()}
     if tur == "icerik":
         try:
             fd = klasor_ac(ev_fd, parcalar)
@@ -258,8 +259,11 @@ def kaynaklari_bul(ev_fd, ev_dev, goreli, tur):
         if os.fstat(fd).st_dev != ev_dev:
             os.close(fd)
             return [], [], "ayrı dosya sistemi / bağlama noktası"
-        girdiler = [("/proc/self/fd/%d/%s" % (fd, ad), "/".join(parcalar + [ad]))
-                    for ad in sorted(os.listdir(fd))]
+        girdiler = []
+        for ad in sorted(os.listdir(fd)):
+            if ad.lower() in haric_kume:
+                continue
+            girdiler.append(("/proc/self/fd/%d/%s" % (fd, ad), "/".join(parcalar + [ad])))
         return girdiler, [fd], None
 
     try:
@@ -296,6 +300,11 @@ def buda(klasor, desen, saklama):
 def calistir(p):
     hesap, mod = p["hesap"], p["mod"]
     istenen = [a for a in p.get("alanlar", []) if a in XDG_ALANLARI or a in SABIT_ALANLAR]
+    haric_adlar = list(p.get("haric_adlar") or [])
+    if p.get("odev_koru", True):
+        for varsayilan in ["odev", "odevler", "dersnotlari", "ders_notlari", "Odevler", "Odev"]:
+            if varsayilan not in haric_adlar:
+                haric_adlar.append(varsayilan)
     try:
         kayit = pwd.getpwnam(hesap)
     except KeyError:
@@ -322,7 +331,10 @@ def calistir(p):
                 continue
             girdiler, sorunlar = [], []
             for goreli, tur in alan_yollari(alan, ev_fd, xdg):
-                bulunan, fdler, sorun = kaynaklari_bul(ev_fd, ev_dev, goreli, tur)
+                bulunan, fdler, sorun = kaynaklari_bul(
+                    ev_fd, ev_dev, goreli, tur,
+                    haric_adlar=haric_adlar if (alan == "masaustu" and p.get("odev_koru", True)) else None
+                )
                 acik += fdler
                 girdiler += bulunan
                 if sorun and sorun != "yok":

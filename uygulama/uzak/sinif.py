@@ -735,6 +735,49 @@ def _web_acici_html(baslik: str, url: str) -> str:
     )
 
 
+def _odev_klasoru_koruma_isaretle(hedef_dizin: Path, bilgi) -> None:
+    """Klasöre altın sarısı / kalkan rozeti ve koruma uyarı dosyası ekler."""
+    try:
+        # 1. Kalkan & Koruma ikonu (.directory)
+        directory_dosya = hedef_dizin / ".directory"
+        if not directory_dosya.exists():
+            directory_dosya.write_text(
+                "[Desktop Entry]\n"
+                "Icon=folder-saved\n"
+                "Type=Directory\n"
+                "Comment=Bu klasör Lab Kaptanı tarafından korunmaktadır.\n",
+                encoding="utf-8"
+            )
+            if bilgi:
+                _ogrenci_sahip_yap(directory_dosya, bilgi, 0o644)
+    except Exception:
+        pass
+
+    try:
+        # 2. Açıklama metni dosyası
+        not_dosya = hedef_dizin / "BU_KLASOR_KORUNMAKTADIR.txt"
+        if not not_dosya.exists():
+            not_dosya.write_text(
+                "🛡️ BU KLASÖR DERS İÇİN KORUNMAKTADIR 🛡️\n"
+                "==========================================================\n"
+                "Öğretmeniniz tarafından gönderilen ödevler ve ders materyalleri\n"
+                "bu klasörde saklanmaktadır.\n\n"
+                "Ders sonu temizliklerinde bu klasör ve içerisindekiler SİLİNMEZ.\n",
+                encoding="utf-8"
+            )
+            if bilgi:
+                _ogrenci_sahip_yap(not_dosya, bilgi, 0o644)
+    except Exception:
+        pass
+
+    try:
+        # 3. GIO özel ikon metadata (Nautilus / Thunar / PCManFM)
+        subprocess.run(["gio", "set", "-t", "string", str(hedef_dizin), "metadata::custom-icon-name", "folder-saved"],
+                       capture_output=True, timeout=5)
+    except Exception:
+        pass
+
+
 def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
     if isinstance(p, str):
         p = {"baslik": p, "url": url_arg or ""}
@@ -762,6 +805,7 @@ def masaustu_url(p: dict | str, url_arg: str | None = None) -> dict:
     hedef_dizin.mkdir(parents=True, exist_ok=True)
     if bilgi:
         _ogrenci_sahip_yap(hedef_dizin, bilgi, 0o755)
+    _odev_klasoru_koruma_isaretle(hedef_dizin, bilgi)
 
     temel_ad = re.sub(r"\s+", "_", baslik)
 
@@ -835,6 +879,7 @@ def masaustu_dosya(p: dict | str, icerik_b64_arg: str | None = None) -> dict:
     hedef_dizin.mkdir(parents=True, exist_ok=True)
     if bilgi:
         _ogrenci_sahip_yap(hedef_dizin, bilgi, 0o755)
+    _odev_klasoru_koruma_isaretle(hedef_dizin, bilgi)
     hedef = hedef_dizin / temiz_ad
 
     gecici_yol = (p.get("gecici_yol") or "").strip()

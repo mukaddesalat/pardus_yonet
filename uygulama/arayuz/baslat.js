@@ -92,6 +92,8 @@ $("#kurulum-formu").addEventListener("submit", async (o) => {
       kullanici_adi: ($("#kurulum-kullanici") && $("#kurulum-kullanici").value) || "admin",
       ad_soyad: ($("#kurulum-ad") && $("#kurulum-ad").value) || "Sistem Yöneticisi",
       okul_adi: ($("#kurulum-okul") && $("#kurulum-okul").value) || "",
+      yonetim_kullanici: ($("#kurulum-yonetim-kullanici") && $("#kurulum-yonetim-kullanici").value) || "pardus",
+      yonetim_parola: ($("#kurulum-yonetim-parola") && $("#kurulum-yonetim-parola").value) || "",
     });
     Uyg.csrf = y.csrf;
     history.replaceState(null, "", "/");

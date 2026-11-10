@@ -1,0 +1,27 @@
+{
+  "id": "sadece-chromium-yap",
+  "ad": "Tekil Tarayıcı: Sadece Chromium Bırak ve Varsayılan Yap",
+  "kategori": "bakim",
+  "risk": "yikici",
+  "ozet": "Bilgisayardaki Firefox, Chrome, Brave vb. harici tüm tarayıcıları kaldırır; Chromium'u kurup sistem ve masaüstü genelinde varsayılan tarayıcı yapar.",
+  "yazar": "Pardus Lab Topluluğu",
+  "surum": "1.0.1",
+  "sudo": true,
+  "parametreler": [
+    {
+      "ad": "artiklari_temizle",
+      "etiket": "Eski tarayıcı profil ve önbellek artıklarını temizle",
+      "tip": "onay",
+      "varsayilan": true,
+      "aciklama": "/home/* altındaki .mozilla, .config/google-chrome vb. artık dizinleri silerek diskte yer açar."
+    },
+    {
+      "ad": "masaustu_kisayol",
+      "etiket": "Masaüstüne Chromium kısayolu ekle",
+      "tip": "onay",
+      "varsayilan": true,
+      "aciklama": "Öğrenci masaüstündeki eski tarayıcı simgelerini kaldırıp Chromium kısayolunu yerleştirir."
+    }
+  ]
+}
+

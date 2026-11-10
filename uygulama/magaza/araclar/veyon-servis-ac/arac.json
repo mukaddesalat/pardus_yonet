@@ -1,0 +1,11 @@
+{
+  "id": "veyon-servis-ac",
+  "ad": "Veyon Servisini Kontrol Et ve Başlat",
+  "kategori": "veyon",
+  "risk": "degisiklik",
+  "ozet": "Öğrenciler Veyon servisini kapattığında servisi unmask/enable yapıp anında yeniden ayağa kaldırır.",
+  "yazar": "Pardus Lab Ekibi",
+  "surum": "1.2.0",
+  "sudo": true,
+  "parametreler": []
+}

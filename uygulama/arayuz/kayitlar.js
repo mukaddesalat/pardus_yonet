@@ -331,6 +331,7 @@ const HAZIR_ARMALAR = {
 
 const m5s2 = {
   ogretmenler: [],
+  yonetimHesaplari: [],
   logoB64: "",
   kur() {
     $("#m5s2-logo-dosya").addEventListener("change", (o) => this.logoSec(o.target.files[0]));
@@ -344,6 +345,15 @@ const m5s2 = {
       $("#ogf-yetkiler-alan").hidden = $("#ogf-rol").value === "admin";
     });
     $("#ogf-kaydet").addEventListener("click", () => this.ogretmenKaydet());
+
+    const btnHesapEkle = $("#m5s2-hesap-ekle");
+    if (btnHesapEkle) btnHesapEkle.addEventListener("click", () => this.hesapEkle());
+    const btnHesapKaydet = $("#m5s2-hesap-kaydet");
+    if (btnHesapKaydet) btnHesapKaydet.addEventListener("click", () => this.hesaplariKaydet());
+    const btnHizliTest = $("#m5s2-btn-hizli-test");
+    if (btnHizliTest) btnHizliTest.addEventListener("click", () => this.hizliTestYap());
+    const btnParolaDegistir = $("#m5s2-btn-parola-degistir");
+    if (btnParolaDegistir) btnParolaDegistir.addEventListener("click", () => this.topluParolaDegistir());
   },
   hazirArmaSec(tip) {
     const veriUrl = HAZIR_ARMALAR[tip];
@@ -354,7 +364,220 @@ const m5s2 = {
     bildir("Hazır arma seçildi; kaydetmek için “Okul Bilgilerini Kaydet” düğmesine basın.");
   },
   async ac() {
-    await Promise.all([this.okulYukle(), this.ogretmenleriYukle()]);
+    await Promise.all([this.okulYukle(), this.ogretmenleriYukle(), this.yonetimHesaplariniYukle()]);
+  },
+  async yonetimHesaplariniYukle() {
+    try {
+      this.yonetimHesaplari = await api("/api/yonetim/hesaplar");
+    } catch (_) {
+      this.yonetimHesaplari = [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+    }
+    if (!Array.isArray(this.yonetimHesaplari) || !this.yonetimHesaplari.length) {
+      this.yonetimHesaplari = [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+    }
+    this.yonetimHesaplariniCiz();
+  },
+  yonetimHesaplariniCiz() {
+    const tbody = $("#m5s2-hesap-listesi");
+    if (!tbody) return;
+    tbody.replaceChildren();
+
+    const testHesapSel = $("#m5s2-test-hesap");
+    const topluHesapSel = $("#m5s2-toplu-hesap");
+    if (testHesapSel) testHesapSel.replaceChildren();
+    if (topluHesapSel) topluHesapSel.replaceChildren();
+
+    const testIpEl = $("#m5s2-test-ip");
+    if (testIpEl && !testIpEl.value && Veri.cihazlar && Veri.cihazlar.length) {
+      testIpEl.value = Veri.cihazlar[0].ip;
+    }
+
+    this.yonetimHesaplari.forEach((h, idx) => {
+      h.oncelik = idx + 1;
+      const opt1 = el("option", { value: h.kullanici, metin: `${idx + 1}. ${h.kullanici}` });
+      const opt2 = el("option", { value: h.kullanici, metin: `${idx + 1}. ${h.kullanici}` });
+      if (testHesapSel) testHesapSel.append(opt1);
+      if (topluHesapSel) topluHesapSel.append(opt2);
+
+      const tr = el("tr");
+      const tdSira = el("td", {},
+        el("span", { class: `sira-rozet${idx > 0 ? " ikincil-sira" : ""}`, metin: String(idx + 1) })
+      );
+
+      const inpAd = el("input", {
+        type: "text",
+        value: h.kullanici,
+        style: "width: 130px; font-weight: 600;",
+        onchange: (e) => { h.kullanici = e.target.value.trim().toLowerCase(); }
+      });
+      const tdAd = el("td", {}, inpAd);
+
+      const inpParola = el("input", {
+        type: "password",
+        value: h.parola || "",
+        placeholder: "Parola (opsiyonel)",
+        style: "width: 160px;",
+        onchange: (e) => { h.parola = e.target.value; }
+      });
+      const tdParola = el("td", {}, inpParola);
+
+      const btnYukari = el("button", {
+        type: "button",
+        class: "dugme ikincil sira-ok-dugme",
+        disabled: idx === 0,
+        title: "Yukarı taşı (Önceliği artır)",
+        onclick: () => {
+          const gecici = this.yonetimHesaplari[idx - 1];
+          this.yonetimHesaplari[idx - 1] = this.yonetimHesaplari[idx];
+          this.yonetimHesaplari[idx] = gecici;
+          this.yonetimHesaplariniCiz();
+        }
+      }, "▲");
+
+      const btnAsagi = el("button", {
+        type: "button",
+        class: "dugme ikincil sira-ok-dugme",
+        disabled: idx === this.yonetimHesaplari.length - 1,
+        title: "Aşağı taşı (Önceliği azalt)",
+        onclick: () => {
+          const gecici = this.yonetimHesaplari[idx + 1];
+          this.yonetimHesaplari[idx + 1] = this.yonetimHesaplari[idx];
+          this.yonetimHesaplari[idx] = gecici;
+          this.yonetimHesaplariniCiz();
+        }
+      }, "▼");
+
+      const tdSiralama = el("td", {}, el("div", { style: "display: flex; gap: 4px;" }, btnYukari, btnAsagi));
+
+      const btnSil = el("button", {
+        type: "button",
+        class: "dugme ikincil tehlikeli sira-ok-dugme",
+        disabled: this.yonetimHesaplari.length <= 1,
+        title: "Hesabı sil",
+        onclick: () => {
+          this.yonetimHesaplari.splice(idx, 1);
+          this.yonetimHesaplariniCiz();
+        }
+      }, "🗑️ Sil");
+
+      const tdIslem = el("td", {}, btnSil);
+
+      tr.append(tdSira, tdAd, tdParola, tdSiralama, tdIslem);
+      tbody.append(tr);
+    });
+  },
+  hesapEkle() {
+    const ad = prompt("Yeni yönetim hesabı kullanıcı adı (örn: hp, sistem, pardus):", "hp");
+    if (!ad || !ad.trim()) return;
+    const kullanici = ad.trim().toLowerCase();
+    if (this.yonetimHesaplari.some((h) => h.kullanici === kullanici)) {
+      bildir(`'${kullanici}' zaten listede mevcut.`, true);
+      return;
+    }
+    this.yonetimHesaplari.push({
+      kullanici,
+      parola: "",
+      oncelik: this.yonetimHesaplari.length + 1
+    });
+    this.yonetimHesaplariniCiz();
+    bildir(`'${kullanici}' hesabı listeye eklendi. Değişiklikleri kaydetmeyi unutmayın.`);
+  },
+  async hesaplariKaydet() {
+    try {
+      this.yonetimHesaplari = await api("/api/yonetim/hesaplar", { hesaplar: this.yonetimHesaplari });
+      this.yonetimHesaplariniCiz();
+      bildir("Yönetim hesapları ve öncelik sıralaması başarıyla kaydedildi.");
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
+  },
+  async hizliTestYap() {
+    const ip = ($("#m5s2-test-ip").value || "").trim();
+    const kullanici = $("#m5s2-test-hesap").value;
+    const sonucEl = $("#m5s2-test-sonuc");
+    if (!ip) {
+      bildir("Lütfen test edilecek bir IP adresi girin.", true);
+      return;
+    }
+    const hedefHesap = this.yonetimHesaplari.find((h) => h.kullanici === kullanici);
+    const parola = hedefHesap ? (hedefHesap.parola || "") : "";
+    if (sonucEl) {
+      sonucEl.textContent = `⏳ ${ip} adresine (${kullanici}) bağlanılıyor...`;
+      sonucEl.style.color = "#2563EB";
+    }
+    try {
+      const yanit = await api("/api/yonetim/test_baglanti", { ip, kullanici, parola });
+      if (yanit.basarili) {
+        if (sonucEl) {
+          sonucEl.textContent = `✓ ${yanit.mesaj}`;
+          sonucEl.style.color = "#16A34A";
+        }
+        bildir(`Hızlı Test Başarılı: ${yanit.mesaj}`);
+      } else {
+        if (sonucEl) {
+          sonucEl.textContent = `✗ ${yanit.mesaj}`;
+          sonucEl.style.color = "#DC2626";
+        }
+        bildir(`Hızlı Test Başarısız: ${yanit.mesaj}`, true);
+      }
+    } catch (hata) {
+      if (sonucEl) {
+        sonucEl.textContent = `✗ Test hatası: ${hata.message}`;
+        sonucEl.style.color = "#DC2626";
+      }
+      bildir(hata.message, true);
+    }
+  },
+  async topluParolaDegistir() {
+    const hedefler = Secim.liste();
+    if (!hedefler.length) {
+      bildir("Lütfen önce parola değiştirilecek bilgisayarları tablodan (veya Sınıf Masası'ndan) seçin.", true);
+      return;
+    }
+    const kullanici = $("#m5s2-toplu-hesap").value;
+    const yeniParola = ($("#m5s2-toplu-yeni-parola").value || "").trim();
+    if (!yeniParola || yeniParola.length < 4) {
+      bildir("Yeni parola en az 4 karakter olmalıdır.", true);
+      return;
+    }
+    const onay = await onayIste({
+      islem: "parola_degistir",
+      cihazlar: hedefler,
+      baslik: `🔑 Sınıfta Toplu Parola Değiştir: ${kullanici}`,
+      aciklama: `Seçili ${hedefler.length} bilgisayarda yerel '${kullanici}' yönetici hesabı parolası değiştirilecektir.`,
+      uyarilar: [
+        "Bu işlem bilgisayarların yerel şifresini anında günceller.",
+        "Öğrencilerin eski şifreyi bilmesi durumunda erişimleri engellenmiş olur."
+      ],
+      yikici: false,
+      onayMetni: `${hedefler.length} bilgisayarda '${kullanici}' parolasını değiştirmeyi onaylıyorum`,
+      baslatMetni: "Parolaları Değiştir"
+    });
+    if (!onay) return;
+
+    const kayit = await isBaslat("/api/yonetim/parola_degistir", {
+      cihazlar: hedefler,
+      kullanici,
+      yeni_parola: yeniParola,
+      onay: true
+    });
+
+    if (kayit && kayit.durum === "tamamlandi") {
+      bildir(`Tüm seçili bilgisayarlarda '${kullanici}' parolası güncellendi.`);
+      const guncelle = confirm(
+        `Tüm sınıfta '${kullanici}' parolası başarıyla değiştirildi!\n\n` +
+        `Lab Kaptanı'nda kayıtlı olan '${kullanici}' yönetici parolasını da bu yeni şifre ile güncellemek ister misiniz?`
+      );
+      if (guncelle) {
+        const hedef = this.yonetimHesaplari.find((h) => h.kullanici === kullanici);
+        if (hedef) {
+          hedef.parola = yeniParola;
+          await this.hesaplariKaydet();
+          bildir(`Kayıtlı '${kullanici}' parolası da yeni şifre ile güncellendi.`);
+        }
+      }
+      $("#m5s2-toplu-yeni-parola").value = "";
+    }
   },
   async okulYukle() {
     try {

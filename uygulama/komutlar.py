@@ -419,7 +419,7 @@ _RESMI_MAGAZA_KATALOGU = [
         ],
         "betik": (
             "rm -rf /home/ogrenci/İndirilenler/* /home/ogrenci/Downloads/* 2>/dev/null || true\n"
-            "find /home/ogrenci/Masaüstü -mindepth 1 ! -name '*.desktop' -delete 2>/dev/null || true\n"
+            "find /home/ogrenci/Masaüstü -mindepth 1 ! -name '*.desktop' ! -name 'Odevler' ! -name 'odev' ! -name 'odevler' ! -name 'dersnotlari' -delete 2>/dev/null || true\n"
             'if [ "${PSY_P_copu_bosalt:-0}" = "1" ]; then\n'
             "  rm -rf /home/ogrenci/.local/share/Trash/* 2>/dev/null || true\n"
             "fi\n"
@@ -431,19 +431,27 @@ _RESMI_MAGAZA_KATALOGU = [
 
 
 VARSAYILAN_MAGAZA_REPO_URL = "https://raw.githubusercontent.com/mukaddesalat/pardus_yonet_magaza/main/katalog.json"
-_MAGAZA_ONBELLEK_DOSYASI = Path(__file__).resolve().parent / "magaza" / "katalog.json"
+_PAKET_KATALOG_DOSYASI = Path(__file__).resolve().parent / "magaza" / "katalog.json"
+
+
+def _dinamik_onbellek_dosyasi() -> Path:
+    return ayarlar.VERI_DIZINI / "magaza_katalog.json"
 
 
 def resmi_magaza_katalogu() -> list[dict]:
-    """Resmi mağaza kataloğunu döner; çevrimdışı önbellek ve yerleşik katalog içerir."""
-    if _MAGAZA_ONBELLEK_DOSYASI.is_file():
+    """Resmi mağaza kataloğunu döner; dinamik önbellek, çevrimdışı paket kataloğu ve yerleşik katalog içerir."""
+    # 1. Önce dinamik indirilen güncel önbellek dosyasına bak
+    dinamik_dosya = _dinamik_onbellek_dosyasi()
+    if dinamik_dosya.is_file():
         try:
-            with open(_MAGAZA_ONBELLEK_DOSYASI, "r", encoding="utf-8") as f:
+            with open(dinamik_dosya, "r", encoding="utf-8") as f:
                 veriler = json.load(f)
                 if isinstance(veriler, list) and len(veriler) > 0:
                     return veriler
         except Exception:
             pass
+
+    # 2. Veritabanı önbelleğine bak
     try:
         db_onbellek = veritabani.ayar_oku("magaza_katalog_onbellek")
         if db_onbellek:
@@ -452,6 +460,17 @@ def resmi_magaza_katalogu() -> list[dict]:
                 return veriler
     except Exception:
         pass
+
+    # 3. Paketle gelen yerleşik katalog dosyasına bak
+    if _PAKET_KATALOG_DOSYASI.is_file():
+        try:
+            with open(_PAKET_KATALOG_DOSYASI, "r", encoding="utf-8") as f:
+                veriler = json.load(f)
+                if isinstance(veriler, list) and len(veriler) > 0:
+                    return veriler
+        except Exception:
+            pass
+
     return [dict(a) for a in _RESMI_MAGAZA_KATALOGU]
 
 
@@ -460,26 +479,92 @@ async def magaza_katalogu_guncelle() -> dict:
     repo_url = veritabani.ayar_oku("magaza_repo_url") or VARSAYILAN_MAGAZA_REPO_URL
     loop = asyncio.get_running_loop()
 
+    # Mevcut araç sürümlerini haritalandır
+    mevcut_katalog = resmi_magaza_katalogu()
+    mevcut_harita = {a.get("id"): a.get("surum", "1.0.0") for a in mevcut_katalog if a.get("id")}
+
     def _indir():
         req = urllib.request.Request(
             repo_url,
             headers={"User-Agent": "Pardus-Lab-Kaptani/1.0", "Accept": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=6) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             ham = response.read().decode("utf-8")
             return json.loads(ham)
 
     try:
         yeni_katalog = await loop.run_in_executor(None, _indir)
         if isinstance(yeni_katalog, list) and len(yeni_katalog) > 0:
-            _MAGAZA_ONBELLEK_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
-            with open(_MAGAZA_ONBELLEK_DOSYASI, "w", encoding="utf-8") as f:
-                json.dump(yeni_katalog, f, ensure_ascii=False, indent=2)
+            eklenenler = []
+            guncellenenler = []
+            for a in yeni_katalog:
+                aid = a.get("id")
+                yeni_surum = a.get("surum", "1.0.0")
+                if not aid:
+                    continue
+                if aid not in mevcut_harita:
+                    eklenenler.append(a)
+                elif mevcut_harita[aid] != yeni_surum:
+                    guncellenenler.append({
+                        "id": aid,
+                        "ad": a.get("ad", aid),
+                        "eski_surum": mevcut_harita[aid],
+                        "yeni_surum": yeni_surum,
+                    })
+
+            dinamik_dosya = _dinamik_onbellek_dosyasi()
+            try:
+                dinamik_dosya.parent.mkdir(parents=True, exist_ok=True)
+                with open(dinamik_dosya, "w", encoding="utf-8") as f:
+                    json.dump(yeni_katalog, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+            try:
+                if _PAKET_KATALOG_DOSYASI.parent.exists():
+                    with open(_PAKET_KATALOG_DOSYASI, "w", encoding="utf-8") as f:
+                        json.dump(yeni_katalog, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
             veritabani.ayar_yaz("magaza_katalog_onbellek", json.dumps(yeni_katalog, ensure_ascii=False))
-            return {"durum": "tamam", "arac_sayisi": len(yeni_katalog), "kaynak": repo_url}
-        return {"durum": "gecersiz_veri", "mesaj": "Depodaki katalog formatı doğrulanamadı", "arac_sayisi": len(resmi_magaza_katalogu())}
+
+            loglar = [
+                f"🌐 GitHub deposuna bağlanıldı: {repo_url}",
+                f"📦 Katalog manifestosu başarıyla indirildi ({len(yeni_katalog)} araç bulundu).",
+                "🔍 Sürüm ve paket karşılaştırması tamamlandı.",
+            ]
+            for e in eklenenler:
+                loglar.append(f"⚡ [YENİ ARAÇ] '{e.get('ad', e.get('id'))}' (v{e.get('surum', '1.0.0')}) kataloğa eklendi.")
+            for g in guncellenenler:
+                loglar.append(f"🔄 [GÜNCELLENDİ] '{g['ad']}' v{g['eski_surum']} ➔ v{g['yeni_surum']} sürümüne yükseltildi.")
+            if not eklenenler and not guncellenenler:
+                loglar.append(f"✓ Tüm araçlar zaten en güncel sürümde ({len(yeni_katalog)} araç eşitlendi).")
+            loglar.append("💾 Yerel SQLite veritabanı ve dinamik önbellek eşitlendi.")
+            loglar.append(f"✓ Katalog başarıyla senkronize edildi. (Toplam {len(yeni_katalog)} araç hazır)")
+
+            return {
+                "durum": "tamam",
+                "arac_sayisi": len(yeni_katalog),
+                "kaynak": repo_url,
+                "eklenen_sayisi": len(eklenenler),
+                "guncellenen_sayisi": len(guncellenenler),
+                "eklenenler": [e.get("ad", e.get("id")) for e in eklenenler],
+                "guncellenenler": [f"{g['ad']} (v{g['eski_surum']} ➔ v{g['yeni_surum']})" for g in guncellenenler],
+                "loglar": loglar,
+            }
+        return {
+            "durum": "gecersiz_veri",
+            "mesaj": "Depodaki katalog formatı doğrulanamadı",
+            "arac_sayisi": len(resmi_magaza_katalogu()),
+            "loglar": ["❌ Depodaki katalog verisi geçersiz veya boş."],
+        }
     except Exception as hata:
-        return {"durum": "cevrimdisi", "hata": str(hata), "arac_sayisi": len(resmi_magaza_katalogu()), "mesaj": "Uzak depoya erişilemedi; yerel çevrimdışı katalog kullanılıyor."}
+        return {
+            "durum": "cevrimdisi",
+            "hata": str(hata),
+            "arac_sayisi": len(resmi_magaza_katalogu()),
+            "mesaj": "Uzak depoya erişilemedi; yerel çevrimdışı katalog kullanılıyor.",
+            "loglar": [f"⚠️ Uzak depoya erişilemedi ({hata}); yerel çevrimdışı katalog devrede."],
+        }
 
 
 def magaza_araci_getir(arac_id: str) -> dict | None:

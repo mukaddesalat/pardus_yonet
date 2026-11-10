@@ -51,13 +51,14 @@ def _onizle(is_id: str, cihaz: dict) -> None:
                                   f"{ad} — bağlanılamadı: {hata}", veri)
         return
     try:
+        yonetim_adlari = ayarlar.yonetim_hesap_adlari()
         sonuc = ssh_araclari.sudo_betik(istemci, uzak.betik("hesap"),
-                                        {"kip": "kapsam", "hesaplar": list(ayarlar.YONETIM_HESAPLARI)},
+                                        {"kip": "kapsam", "hesaplar": yonetim_adlari},
                                         zaman=180)
         if "hata" in sonuc:
             raise RuntimeError(sonuc["hata"])
         hesaplar = sonuc["hesaplar"]
-        var_olan = [h for h in ayarlar.YONETIM_HESAPLARI if hesaplar.get(h)]
+        var_olan = [h for h in yonetim_adlari if hesaplar.get(h)]
         veritabani.cihaz_guncelle(cihaz["id"], yonetim_hesaplari=var_olan)
         veri["hesaplar"] = hesaplar
         if len(var_olan) < 2:
@@ -65,12 +66,12 @@ def _onizle(is_id: str, cihaz: dict) -> None:
                                       f"{ad} — yalnız {', '.join(var_olan) or 'hiçbiri'} var; "
                                       f"tekilleştirme gerekmez", veri)
             return
-        oneri = VARSAYILAN_KORUNACAK if VARSAYILAN_KORUNACAK in var_olan else var_olan[0]
+        oneri = yonetim_adlari[0] if yonetim_adlari and yonetim_adlari[0] in var_olan else var_olan[0]
         veri["oneri"] = oneri
         uyarilar = [f"{h}: açık oturum" for h in var_olan if hesaplar[h]["oturum"]]
         veritabani.hedef_guncelle(
             is_id, ip, "basarili", "tamam",
-            f"{ad} — iki yönetim hesabı var ({', '.join(var_olan)}); öneri: {oneri} korunsun"
+            f"{ad} — birden fazla yönetim hesabı var ({', '.join(var_olan)}); öneri: {oneri} korunsun"
             + (f" | UYARI: {'; '.join(uyarilar)}" if uyarilar else ""), veri)
     except Exception as hata:
         veritabani.hedef_guncelle(is_id, ip, "basarisiz", "kapsam", f"{ad} — {hata}", veri)
@@ -105,7 +106,10 @@ class _Dur(Exception):
 
 def _uygula(is_id: str, cihaz: dict, korunacak: str, acik_satir: str) -> None:
     ip, ad = cihaz["ip"], veritabani.cihaz_adi(cihaz)
-    silinecek = next(h for h in ayarlar.YONETIM_HESAPLARI if h != korunacak)
+    yonetim_adlari = ayarlar.yonetim_hesap_adlari()
+    var_olan_cihaz = cihaz.get("yonetim_hesaplari") or yonetim_adlari
+    silinecek_adaylari = [h for h in var_olan_cihaz if h != korunacak]
+    silinecek = silinecek_adaylari[0] if silinecek_adaylari else (yonetim_adlari[1] if len(yonetim_adlari) > 1 and yonetim_adlari[0] == korunacak else "hp")
     baglanti = cihaz["baglanti_hesabi"]
     veri = {"cihaz_id": cihaz["id"], "ad": ad, "korunacak": korunacak, "silinecek": silinecek,
             "adimlar": []}
@@ -116,8 +120,8 @@ def _uygula(is_id: str, cihaz: dict, korunacak: str, acik_satir: str) -> None:
 
     istemci = test = None
     try:
-        if korunacak not in ayarlar.YONETIM_HESAPLARI:
-            raise _Dur("secim", "korunacak hesap pardus veya hp olmalı")
+        if korunacak not in yonetim_adlari and korunacak not in ayarlar.YONETIM_HESAPLARI:
+            raise _Dur("secim", f"korunacak hesap tanımlı yönetim hesaplarından biri olmalı ({', '.join(yonetim_adlari)})")
         istemci = yonetim.baglan(cihaz)
         kapsam = ssh_araclari.sudo_betik(istemci, uzak.betik("hesap"),
                                          {"kip": "kapsam", "hesaplar": [korunacak, silinecek]},

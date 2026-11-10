@@ -73,7 +73,8 @@ def _mb(bayt: int) -> str:
 
 
 async def temizlik_isi(is_id: str, plan: dict[str, list[str]], mod: str,
-                       iptal: asyncio.Event) -> None:
+                       iptal: asyncio.Event, odev_koru: bool = True,
+                       haric_adlar: list[str] | None = None) -> None:
     """mod: 'onizleme' (salt okunur ölçüm) veya 'temizle' (karantinaya taşıma)."""
     sinir = asyncio.Semaphore(ayarlar.DOGRULAMA_PARALELLIGI)
     saklama = veritabani.saklama_adedi()
@@ -98,12 +99,13 @@ async def temizlik_isi(is_id: str, plan: dict[str, list[str]], mod: str,
                                       {**veri, "neden": neden})
             return
         async with sinir:
-            await asyncio.to_thread(_calistir, is_id, cihaz, mod, alanlar, saklama)
+            await asyncio.to_thread(_calistir, is_id, cihaz, mod, alanlar, saklama, odev_koru, haric_adlar)
 
     await asyncio.gather(*(_tek(cid, alanlar) for cid, alanlar in plan.items()))
 
 
-def _calistir(is_id: str, cihaz: dict, mod: str, alanlar: list[str], saklama: int) -> None:
+def _calistir(is_id: str, cihaz: dict, mod: str, alanlar: list[str], saklama: int,
+              odev_koru: bool = True, haric_adlar: list[str] | None = None) -> None:
     ip = cihaz["ip"]
     ad = veritabani.cihaz_adi(cihaz)
     asama = "önizleme" if mod == "onizleme" else "temizlik"
@@ -122,10 +124,12 @@ def _calistir(is_id: str, cihaz: dict, mod: str, alanlar: list[str], saklama: in
         oturumlar = ssh_araclari.aktif_oturumlar(istemci)
         veri["oturum_acik"] = ayarlar.PROFIL_HESABI in oturumlar
         try:
-            sonuc = ssh_araclari.sudo_betik(
-                istemci, uzak.betik("temizlik"),
-                {"hesap": ayarlar.PROFIL_HESABI, "mod": mod, "alanlar": alanlar,
-                 "saklama": saklama}, zaman=300)
+            param = {
+                "hesap": ayarlar.PROFIL_HESABI, "mod": mod, "alanlar": alanlar,
+                "saklama": saklama, "odev_koru": odev_koru,
+                "haric_adlar": haric_adlar or ["Odevler", "odev", "odevler", "dersnotlari"]
+            }
+            sonuc = ssh_araclari.sudo_betik(istemci, uzak.betik("temizlik"), param, zaman=300)
         except (RuntimeError, ssh_araclari.SudoHatasi) as hata:
             veritabani.hedef_guncelle(is_id, ip, "basarisiz", asama, f"{ad} — {hata}",
                                       {**veri, "neden": str(hata)})

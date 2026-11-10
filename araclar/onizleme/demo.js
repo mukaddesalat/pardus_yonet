@@ -1199,6 +1199,26 @@
     return { tamam: true };
   });
 
+  /* ---- Yönetim hesapları & Hızlı test ---- */
+  let demoYonetimHesaplari = [
+    { kullanici: "pardus", parola: "", oncelik: 1 }
+  ];
+  yol("GET", "/api/yonetim/hesaplar", () => demoYonetimHesaplari);
+  yol("POST", "/api/yonetim/hesaplar", (g) => {
+    demoYonetimHesaplari = Array.isArray(g.hesaplar) ? g.hesaplar : [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+    return demoYonetimHesaplari;
+  });
+  yol("POST", "/api/yonetim/test_baglanti", (g) => ({
+    basarili: true,
+    ssh: true,
+    sudo: true,
+    parolasiz: true,
+    mesaj: `'${g.kullanici || "pardus"}' ile SSH ve Sudo yetkisi doğrulandı (DEMO)`
+  }));
+  yol("POST", "/api/yonetim/parola_degistir", (g) => isKur("parola_degistir", g.cihazlar, () => ({
+    durum: "basarili", asama: "parola", mesaj: `'${g.kullanici || "pardus"}' parolası güncellendi (DEMO)`
+  })));
+
   /* ---- ödevler ---- */
   yol("GET", "/api/odev/durum", () => ({ adres: "http://ogretmen.lab:8090/", adres_adi: "ogretmen.lab", port: 8090,
     ogretmen_ip: "192.168.10.10", ip_adres: "http://192.168.10.10:8090/", aglar: ["192.168.10.0/24", "192.168.20.0/24"],

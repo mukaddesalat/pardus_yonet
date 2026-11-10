@@ -234,10 +234,14 @@ def plan(p):
     sonuc["kurulu_paket"] = kurulu_paket if kurulu is not None else None
     if kurulu is not None:
         if surum_karsilastir(kurulu, "eq", surum):
-            sonuc["durum"] = "atlanacak"
-            sonuc["neden"] = "aynı sürüm (%s) zaten kurulu; yeniden kurulmaz" % kurulu
-            return sonuc
-        if surum_karsilastir(kurulu, "gt", surum):
+            if p.get("yeniden_kur", True):
+                sonuc["durum"] = "guncellenecek"
+                sonuc["uyarilar"].append("aynı sürüm (%s) kurulu; yeniden kurulup güncellenecek" % kurulu)
+            else:
+                sonuc["durum"] = "atlanacak"
+                sonuc["neden"] = "aynı sürüm (%s) zaten kurulu; yeniden kurulmaz" % kurulu
+                return sonuc
+        elif surum_karsilastir(kurulu, "gt", surum):
             sonuc["engeller"].append("sürüm düşürme: kurulu %s, paket %s — izin verilmez" % (kurulu, surum))
 
     gerekli = int(p.get("boyut", 0)) + int(p.get("kurulu_kb", 0)) * 1024 + 100 * 1048576

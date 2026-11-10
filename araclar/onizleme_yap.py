@@ -51,8 +51,8 @@ def uret() -> str:
     html = (ARAYUZ / "index.html").read_text(encoding="utf-8")
     css = ((ARAYUZ / "belirtecler.css").read_text(encoding="utf-8") + "\n"
            + (ARAYUZ / "stil.css").read_text(encoding="utf-8") + DEMO_CSS)
-    html = re.sub(r'<link rel="stylesheet" href="/statik/belirtecler.css">\s*'
-                  r'<link rel="stylesheet" href="/statik/stil.css">',
+    html = re.sub(r'<link rel="stylesheet" href="/statik/belirtecler\.css(?:\?[^"]*)?">\s*'
+                  r'<link rel="stylesheet" href="/statik/stil\.css(?:\?[^"]*)?">',
                   lambda _: f"<style>\n{css}</style>", html)
     html = html.replace("<title>Lab Kaptanı — Pardus Sınıf Yönetimi</title>",
                         '<title>Arayüz Önizlemesi — Lab Kaptanı (DEMO)</title>\n'

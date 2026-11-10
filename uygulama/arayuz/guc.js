@@ -44,7 +44,7 @@ const m2s4 = {
     $("#m2s4-yeniden").addEventListener("click", () => this.eylem("yeniden_baslat"));
     $("#m2s4-kapat").addEventListener("click", () => this.eylem("kapat"));
     if ($("#m2s4-zamanli-git")) {
-      $("#m2s4-zamanli-git").addEventListener("click", () => sayfaAc("M2-S5"));
+      $("#m2s4-zamanli-git").addEventListener("click", () => git("M2-S5"));
     }
     $("#m2s4-uyku-onizle").addEventListener("click", () => this.uyku("onizle"));
     $("#m2s4-uyku-uygula").addEventListener("click", () => this.uyku("uygula"));

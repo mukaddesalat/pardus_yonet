@@ -42,6 +42,8 @@ const m2s1 = {
     $("#m2s1-oturumlar").addEventListener("click", () => this.oturumKapat(Secim.liste()));
     $("#m2s1-yedek").addEventListener("click", () => this.yedekAl());
     $("#m2s1-geri").addEventListener("click", () => yedekPenceresiAc());
+    const odevKoruKutu = $("#m2s1-odev-koru");
+    if (odevKoruKutu) odevKoruKutu.addEventListener("change", () => this.korumaRozetiGuncelle());
     Secim.dinleyiciler.add(() => this.kartlar());
 
     /* M2-S1 Separatör Sekmeleri: Bilgisayar vs Tarayıcı */
@@ -158,6 +160,9 @@ const m2s1 = {
     this.kapsam = kapsam;
     for (const d of $$("#sayfa-M2-S1 .kapsam")) d.setAttribute("aria-checked", d.dataset.kapsam === kapsam ? "true" : "false");
     $("#m2s1-alanlar").hidden = kapsam !== "alanlar";
+    const odevKutu = $("#m2s1-odev-koruma-kutusu");
+    if (odevKutu) odevKutu.hidden = kapsam !== "alanlar";
+    this.korumaRozetiGuncelle();
     const uyari = $("#m2s1-kapsam-uyari");
     uyari.classList.toggle("kirmizi", kapsam === "tam");
     uyari.textContent = kapsam === "alanlar" ? this.alanUyarisi()
@@ -167,6 +172,24 @@ const m2s1 = {
     $("#m2s1-baslat").firstChild.textContent = kapsam === "alanlar" ? "Temizliği başlat" : "Sıfırlamayı başlat";
     this.tablo.ciz();
     this.kartlar();
+  },
+
+  korumaRozetiGuncelle() {
+    const odevKoruKutu = $("#m2s1-odev-koru");
+    const rozet = $("#m2s1-koruma-ozeti");
+    if (!rozet) return;
+    if (this.kapsam !== "alanlar") {
+      rozet.textContent = this.kapsam === "tam" ? "⚠️ Ev Dizini Tam Sıfırlanıyor" : "⚙️ Ayarlar Sıfırlanıyor";
+      rozet.classList.add("kapali");
+      return;
+    }
+    const koru = odevKoruKutu ? odevKoruKutu.checked : true;
+    rozet.classList.toggle("kapali", !koru);
+    if (koru) {
+      rozet.textContent = "🛡️ Koruma: 1 Klasör Güvende (Odevler)";
+    } else {
+      rozet.textContent = "⚠️ Koruma Kapalı: Tüm Masaüstü Silinecek";
+    }
   },
 
   alanUyarisi() {
@@ -321,7 +344,8 @@ const m2s1 = {
     const cihazlar = Secim.liste();
     if (!cihazlar.length) { bildir("Önce bilgisayar seçin.", true); return; }
     const kapsam = this.kapsam;
-    const govde = { cihazlar, kapsam, alanlar: [...this.genel],
+    const odevKoru = Boolean($("#m2s1-odev-koru") ? $("#m2s1-odev-koru").checked : true);
+    const govde = { cihazlar, kapsam, alanlar: [...this.genel], odev_koru: odevKoru, haric_klasor: "Odevler",
       istisnalar: Object.fromEntries([...this.istisnalar].filter(([id]) => cihazlar.includes(id)).map(([id, k]) => [id, [...k]])) };
     const kayit = await isBaslat("/api/temizlik/onizle", govde);
     if (!kayit) return;
@@ -368,7 +392,9 @@ const m2s1 = {
       baslatMetni: sifirlama ? "Sıfırlamayı başlat" : "Temizliği başlat",
     });
     if (!hedefler) return;
+    const odevKoru = Boolean($("#m2s1-odev-koru") ? $("#m2s1-odev-koru").checked : true);
     const govde = { cihazlar: hedefler, kapsam: this.kapsam, alanlar: [...this.genel], onay: true,
+      odev_koru: odevKoru, haric_klasor: "Odevler",
       oturumlari_kapat: Boolean(sifirlama && kapatKutusu.checked),
       istisnalar: Object.fromEntries([...this.istisnalar].filter(([id]) => hedefler.includes(id)).map(([id, k]) => [id, [...k]])) };
     const kayit = await isBaslat("/api/temizlik/uygula", govde);
@@ -554,6 +580,31 @@ const m2s2 = {
     });
     const btnKuruluKaldir = $("#m2s2-kurulu-kaldir");
     if (btnKuruluKaldir) btnKuruluKaldir.addEventListener("click", () => this.repoKaldir());
+
+    // Canlı Kurulum Terminali olayları
+    const btnTermTemizle = $("#m2s2-terminal-temizle");
+    if (btnTermTemizle) btnTermTemizle.addEventListener("click", () => this.terminalTemizle());
+    const btnTermKapat = $("#m2s2-terminal-kapat");
+    if (btnTermKapat) btnTermKapat.addEventListener("click", () => {
+      const kap = $("#m2s2-terminal-kap");
+      if (kap) kap.hidden = true;
+    });
+  },
+  terminalYaz(metin, tur = "bilgi") {
+    const kap = $("#m2s2-terminal-kap");
+    const pre = $("#m2s2-terminal-cikti");
+    if (!kap || !pre) return;
+    kap.hidden = false;
+    const zaman = new Date().toLocaleTimeString("tr-TR");
+    const satir = document.createElement("div");
+    satir.className = `terminal-satir terminal-satir-${tur}`;
+    satir.textContent = `[${zaman}] ${metin}`;
+    pre.append(satir);
+    pre.scrollTop = pre.scrollHeight;
+  },
+  terminalTemizle() {
+    const pre = $("#m2s2-terminal-cikti");
+    if (pre) pre.textContent = "";
   },
   sekmeAc(ad) {
     this.sekme = ad;
@@ -767,16 +818,39 @@ const m2s2 = {
       baslatMetni: "Depodan Kur",
     });
     if (!hedefler) return;
+    this.terminalTemizle();
+    this.terminalYaz(`🚀 Pardus Depodan Kurulum Başlatılıyor... Paketler: ${paketler.join(", ")}`, "bilgi");
+    this.terminalYaz(`Hedef Bilgisayarlar (${hedefler.length} adet): ${hedefler.map((id) => Veri.kimlikler.get(id) || id).join(", ")}`, "bilgi");
+    if (guncelle) this.terminalYaz("📦 APT depo listesi güncelleniyor (apt-get update)...", "bilgi");
+    this.terminalYaz("⚙️ Paket indirme ve kurulum süreci yürütülüyor (stdout bekleniyor)...", "bilgi");
+
     const kayit = await isBaslat("/api/paketler/repo/kur", {
       cihazlar: hedefler,
       paketler,
       guncelle,
       onay: true,
     });
-    if (!kayit) return;
-    for (const h of kayit.hedefler) {
-      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    if (!kayit) {
+      const sebep = isBaslat.sonHata ? `: ${isBaslat.sonHata}` : " veya iptal edildi.";
+      this.terminalYaz(`❌ Kurulum işlemi başlatılamadı${sebep}`, "hata");
+      return;
     }
+    for (const h of kayit.hedefler || []) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+      const pcAd = (h.veri && (h.veri.ad || h.veri.cihaz_id)) || h.ip;
+      const tur = h.durum === "basarili" ? "basari" : (h.durum === "basarisiz" ? "hata" : "bilgi");
+      this.terminalYaz(`[${pcAd}] ${h.durum.toUpperCase()}: ${h.mesaj || h.durum}`, tur);
+      if (h.veri && h.veri.sonuc) {
+        if (h.veri.sonuc.kayit) {
+          for (const k of h.veri.sonuc.kayit) this.terminalYaz(`  ↳ ${k}`, "bilgi");
+        }
+        if (h.veri.sonuc.kurulanlar) {
+          const kList = Object.entries(h.veri.sonuc.kurulanlar).map(([pk, sr]) => `${pk} (${sr})`).join(", ");
+          this.terminalYaz(`  ✓ Kurulu / Güncel: ${kList}`, "basari");
+        }
+      }
+    }
+    this.terminalYaz("🏁 Kurulum işlemi tamamlandı.", "basari");
     this.tablo.ciz();
   },
   async kuruluListele() {
@@ -973,9 +1047,26 @@ const m2s2 = {
       yikici: true, onayMetni: "Paketin seçili bilgisayarlara kurulmasını onaylıyorum", baslatMetni: "Kur",
       hedefEk: planli ? { baslik: "Plan", hucre: (h) => { const v = this.planlar.get(h.id); return v ? PLAN_ROZETI[v.plan.durum][0] : "—"; } } : null });
     if (!hedefler) return;
+    this.terminalTemizle();
+    this.terminalYaz(`🚀 Yerel .deb Paketi Kurulumu Başlatılıyor... Paket: ${p.paket} ${p.surum} (${p.mimari})`, "bilgi");
+    this.terminalYaz(`Hedef Bilgisayarlar (${hedefler.length} adet): ${hedefler.map((id) => Veri.kimlikler.get(id) || id).join(", ")}`, "bilgi");
+    this.terminalYaz("⚙️ Paket transferi, SHA-256 doğrulama ve apt kurulumu yürütülüyor...", "bilgi");
+
     const kayit = await isBaslat(`/api/paketler/${p.sha256}/kur`, { cihazlar: hedefler, plan_is_id: planli ? this.planIsId : null, onay: true });
-    if (!kayit) return;
-    for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    if (!kayit) {
+      this.terminalYaz("❌ Kurulum işlemi başlatılamadı veya iptal edildi.", "hata");
+      return;
+    }
+    for (const h of kayit.hedefler || []) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+      const pcAd = (h.veri && (h.veri.ad || h.veri.cihaz_id)) || h.ip;
+      const tur = h.durum === "basarili" ? "basari" : (h.durum === "basarisiz" ? "hata" : "bilgi");
+      this.terminalYaz(`[${pcAd}] ${h.durum.toUpperCase()}: ${h.mesaj || h.durum}`, tur);
+      if (h.veri && h.veri.sonuc && h.veri.sonuc.kayit) {
+        for (const k of h.veri.sonuc.kayit) this.terminalYaz(`  ↳ ${k}`, "bilgi");
+      }
+    }
+    this.terminalYaz("🏁 Yerel .deb kurulum işlemi tamamlandı.", "basari");
     this.kartlar();
     this.tablo.ciz();
   },
@@ -1093,6 +1184,13 @@ const m2s3 = {
     $("#m2s3-uygula").addEventListener("click", () => this.calistir("uygula"));
   },
   async ac() {
+    const wz = $("#sayfa-M2-S3 .wizard-kap");
+    if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(4));
+    const nav = $("#sayfa-M2-S3 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(4));
+    if (typeof Kurulum !== "undefined" && Kurulum.aktif() && Kurulum.yeniler.size) {
+      for (const id of Kurulum.yeniler) Secim.kume.add(id);
+    }
     this.tablo.ciz(); Secim.bildir(); erisimTazele(300);
     await this.galeriYukle();
   },
@@ -1357,6 +1455,8 @@ const m2s6 = {
   aktifSekme: "katalog",
   kategoriFiltre: "",
   aramaMetni: "",
+  katalogSayfa: 1,
+  sayfaBoyutu: 9,
   sonuclar: new Map(),
   sonOzet: null,
 
@@ -1386,6 +1486,7 @@ const m2s6 = {
         for (const b of katButonlari) b.classList.remove("aktif");
         btn.classList.add("aktif");
         this.kategoriFiltre = btn.dataset.kategori || "";
+        this.katalogSayfa = 1;
         this.katalogCiz();
       });
     }
@@ -1395,6 +1496,7 @@ const m2s6 = {
     if (araGirdi) {
       araGirdi.addEventListener("input", () => {
         this.aramaMetni = araGirdi.value.trim().toLowerCase();
+        this.katalogSayfa = 1;
         this.katalogCiz();
       });
     }
@@ -1404,6 +1506,10 @@ const m2s6 = {
     if (btnAracCalistir) btnAracCalistir.addEventListener("click", () => this.seciliAraciCalistir());
     const btnAracSabitle = $("#m2s6-arac-sabitle");
     if (btnAracSabitle) btnAracSabitle.addEventListener("click", () => this.seciliAraciSabitleTersine());
+    const btnAracKlonla = $("#m2s6-arac-klonla-btn");
+    if (btnAracKlonla) btnAracKlonla.addEventListener("click", () => {
+      if (this.seciliArac) this.klonlaVeDuzenle(this.seciliArac);
+    });
     const btnKatalogDon = $("#m2s6-arac-katalog-don");
     if (btnKatalogDon) btnKatalogDon.addEventListener("click", () => this.sekmeSec("katalog"));
 
@@ -1420,25 +1526,85 @@ const m2s6 = {
     $("#m2s6-calistir").addEventListener("click", () => this.komutCalistir());
     $("#m2s6-hosts-ekle").addEventListener("click", () => this.hostsDagit());
 
+    // Canlı Çıktıları Temizle Düğmesi
+    const btnCiktiTemizle = $("#btn-m2s6-ciktilari-temizle");
+    if (btnCiktiTemizle) btnCiktiTemizle.addEventListener("click", () => this.ciktilariTemizle());
+
     // Mağaza Repo Güncelleme & Depo Ayarı Eylemleri
     const btnMagazaGuncelle = $("#btn-magaza-guncelle");
     if (btnMagazaGuncelle) {
       btnMagazaGuncelle.addEventListener("click", async () => {
         btnMagazaGuncelle.disabled = true;
         btnMagazaGuncelle.textContent = "⏳ Eşitleniyor...";
-        bildir("github.com/mukaddesalat/pardus_yonet_magaza reposundan güncel katalog sorgulanıyor...");
-        await new Promise((r) => setTimeout(r, 700));
+
+        const konsolKap = $("#m2s6-guncelleme-konsol-kap");
+        const konsolCikti = $("#m2s6-guncelleme-konsol-cikti");
+        if (konsolKap && konsolCikti) {
+          konsolCikti.textContent = "";
+          konsolKap.hidden = false;
+        }
+
+        const akisYaz = (metin, tur = "bilgi") => {
+          if (!konsolCikti) return;
+          const zaman = new Date().toLocaleTimeString("tr-TR");
+          const satir = document.createElement("div");
+          satir.className = `terminal-satir terminal-satir-${tur}`;
+          satir.textContent = `[${zaman}] ${metin}`;
+          konsolCikti.append(satir);
+          konsolCikti.scrollTop = konsolCikti.scrollHeight;
+        };
+
+        akisYaz("🌐 GitHub deposu ile bağlantı kuruluyor (mukaddesalat/pardus_yonet_magaza)...", "bilgi");
+
+        let yanit;
+        try {
+          yanit = await api("/api/magaza/guncelle", null, "POST");
+        } catch (hata) {
+          akisYaz(`❌ Depo bağlantı hatası: ${hata.message}`, "hata");
+          bildir(hata.message, true);
+          btnMagazaGuncelle.disabled = false;
+          btnMagazaGuncelle.textContent = "🔄 Kataloğu Güncelle";
+          return;
+        }
+
+        // Sunucudan gelen logları akan konsolda sırayla canlandır
+        if (yanit && Array.isArray(yanit.loglar)) {
+          for (const satir of yanit.loglar) {
+            await new Promise((r) => setTimeout(r, 160));
+            let tur = "bilgi";
+            if (satir.includes("✓")) tur = "basari";
+            else if (satir.includes("⚡") || satir.includes("🔄")) tur = "uyari";
+            else if (satir.includes("❌")) tur = "hata";
+            akisYaz(satir, tur);
+          }
+        }
+
         await this.katalogYukle();
         btnMagazaGuncelle.disabled = false;
         btnMagazaGuncelle.textContent = "🔄 Kataloğu Güncelle";
         const rozet = $("#m2s6-repo-durum");
         if (rozet) {
-          const sayi = Array.isArray(this.katalog) ? this.katalog.length : 8;
+          const sayi = Array.isArray(this.katalog) ? this.katalog.length : 11;
           rozet.textContent = `🟢 Eşitlendi (${sayi} Araç · Şimdi)`;
           rozet.style.background = "#ECFDF5";
           rozet.style.color = "#047857";
         }
-        bildir(`Katalog başarıyla güncellendi: ${Array.isArray(this.katalog) ? this.katalog.length : 8} araç kullanıma hazır.`);
+
+        const eklenenSayi = (yanit && yanit.eklenen_sayisi) || 0;
+        const guncellenenSayi = (yanit && yanit.guncellenen_sayisi) || 0;
+        let ozetBildirim = `Katalog eşitlendi (Toplam ${(yanit && yanit.arac_sayisi) || 11} araç)`;
+        if (eklenenSayi > 0 || guncellenenSayi > 0) {
+          ozetBildirim += ` · ${eklenenSayi} yeni, ${guncellenenSayi} güncellendi`;
+        }
+        bildir(ozetBildirim);
+      });
+    }
+
+    const btnKonsolKapat = $("#m2s6-guncelleme-konsol-kapat");
+    if (btnKonsolKapat) {
+      btnKonsolKapat.addEventListener("click", () => {
+        const k = $("#m2s6-guncelleme-konsol-kap");
+        if (k) k.hidden = true;
       });
     }
 
@@ -1548,6 +1714,18 @@ const m2s6 = {
     this.sabitlerCiz();
   },
 
+  ciktilariTemizle() {
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) rozetEl.hidden = true;
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = "Konsol temizlendi. Yeni komut bekleniyor.";
+    this.sayaclariCiz();
+    this.tablo.ciz();
+    bildir("Konsol canlı çıktıları temizlendi (İşlem geçmişi korunmaktadır).");
+  },
+
   katalogCiz() {
     const kap = $("#m2s6-katalog-izgara");
     if (!kap) return;
@@ -1563,16 +1741,26 @@ const m2s6 = {
       );
     }
 
-    if (!liste.length) {
+    const toplam = liste.length;
+    const sayfaSayisi = Math.max(1, Math.ceil(toplam / this.sayfaBoyutu));
+    if (this.katalogSayfa > sayfaSayisi) this.katalogSayfa = sayfaSayisi;
+    if (this.katalogSayfa < 1) this.katalogSayfa = 1;
+
+    if (!toplam) {
       kap.replaceChildren(
         el("div", { class: "kart tam-genislik bos-durum" },
           el("p", { class: "ipucu", metin: "Filtrelere uygun araç bulunamadı." })
         )
       );
+      this.sayfalamaCiz(0, 1);
       return;
     }
 
-    const kartlar = liste.map((arac) => {
+    const baslangic = (this.katalogSayfa - 1) * this.sayfaBoyutu;
+    const bitis = Math.min(toplam, baslangic + this.sayfaBoyutu);
+    const sayfaListesi = liste.slice(baslangic, bitis);
+
+    const kartlar = sayfaListesi.map((arac) => {
       const sabitMi = this.sabitler.includes(arac.id);
       const riskBilgi = RISK_ROZETLERI[arac.risk] || [arac.risk || "Bilgi", "notr"];
       const simge = KATEGORI_SIMGE[arac.kategori] || "⚡";
@@ -1589,7 +1777,8 @@ const m2s6 = {
         el("p", { class: "magaza-kart-ozet", metin: arac.ozet || "Sınıf bilgisayarları için yönetim aracı." }),
         el("div", { class: "magaza-kart-etiketler" },
           rozet(arac.kategori ? arac.kategori.toUpperCase() : "GENEL", "notr"),
-          rozet("Pardus 23 · 25", "mavi"),
+          rozet(`v${arac.surum || "1.0.0"}`, "mavi"),
+          rozet("Pardus 23 · 25", "notr"),
           arac.sudo ? rozet("sudo", "orta") : null
         ),
         el("div", { class: "magaza-kart-alt" },
@@ -1598,6 +1787,12 @@ const m2s6 = {
             class: "birincil kucuk",
             onclick: () => this.aracSec(arac),
           }, "⚡ Aracı Çalıştır"),
+          el("button", {
+            type: "button",
+            class: "ikincil kucuk",
+            title: "Orijinal aracı değiştirmeden klonlayıp düzenle",
+            onclick: () => this.klonlaVeDuzenle(arac),
+          }, "✏️ Klonla & Düzenle"),
           el("button", {
             type: "button",
             class: `ikincil kucuk${sabitMi ? " sabit-aktif" : ""}`,
@@ -1609,6 +1804,94 @@ const m2s6 = {
     });
 
     kap.replaceChildren(...kartlar);
+    this.sayfalamaCiz(toplam, sayfaSayisi);
+  },
+
+  sayfalamaCiz(toplam, sayfaSayisi) {
+    const kap = $("#m2s6-katalog-sayfalama");
+    if (!kap) return;
+    if (toplam <= this.sayfaBoyutu) {
+      kap.replaceChildren();
+      kap.hidden = true;
+      return;
+    }
+    kap.hidden = false;
+
+    const baslangic = (this.katalogSayfa - 1) * this.sayfaBoyutu + 1;
+    const bitis = Math.min(toplam, this.katalogSayfa * this.sayfaBoyutu);
+
+    const bilgi = el("div", { class: "sayfalama-bilgi", metin: `${toplam} araçtan ${baslangic}-${bitis} arası gösteriliyor (Sayfa ${this.katalogSayfa} / ${sayfaSayisi})` });
+    const butonlar = el("div", { class: "sayfalama-butonlar" });
+
+    const oncekiBtn = el("button", {
+      type: "button",
+      class: "sayfa-btn",
+      disabled: this.katalogSayfa <= 1,
+      onclick: () => {
+        if (this.katalogSayfa > 1) {
+          this.katalogSayfa--;
+          this.katalogCiz();
+          const grid = $("#m2s6-katalog-izgara");
+          if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }, "« Önceki");
+    butonlar.append(oncekiBtn);
+
+    for (let p = 1; p <= sayfaSayisi; p++) {
+      const sayfaBtn = el("button", {
+        type: "button",
+        class: `sayfa-btn${p === this.katalogSayfa ? " aktif" : ""}`,
+        onclick: () => {
+          if (this.katalogSayfa !== p) {
+            this.katalogSayfa = p;
+            this.katalogCiz();
+            const grid = $("#m2s6-katalog-izgara");
+            if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+      }, String(p));
+      butonlar.append(sayfaBtn);
+    }
+
+    const sonrakiBtn = el("button", {
+      type: "button",
+      class: "sayfa-btn",
+      disabled: this.katalogSayfa >= sayfaSayisi,
+      onclick: () => {
+        if (this.katalogSayfa < sayfaSayisi) {
+          this.katalogSayfa++;
+          this.katalogCiz();
+          const grid = $("#m2s6-katalog-izgara");
+          if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }, "Sonraki »");
+    butonlar.append(sonrakiBtn);
+
+    kap.replaceChildren(bilgi, butonlar);
+  },
+
+  klonlaVeDuzenle(arac) {
+    if (!arac) return;
+    let betikIcerik = arac.betik || "";
+    if (arac.parametreler && arac.parametreler.length > 0) {
+      const paramSatirlari = arac.parametreler
+        .map((p) => `# PSY_P_${p.ad}="${p.varsayilan != null ? p.varsayilan : ""}"  # ${p.etiket || p.ad}`)
+        .join("\n");
+      betikIcerik = `#!/usr/bin/env bash\n# ========================================================\n# [Klon] ${arac.ad}\n# Kaynak: Resmi Mağaza Kataloğu (${arac.id} v${arac.surum || "1.0.0"})\n# Parametreler (Gerektiğinde aşağıdaki değişkenleri düzenleyin):\n${paramSatirlari}\n# ========================================================\n\n${betikIcerik.replace(/^#!\/usr\/bin\/env bash\n?/, "")}`;
+    }
+    $("#m2s6-ad").value = `[Özel] ${arac.ad}`;
+    $("#m2s6-kategori").value = arac.kategori || "Genel";
+    $("#m2s6-komut").value = betikIcerik;
+    $("#m2s6-sudo").checked = Boolean(arac.sudo);
+    this.sekmeSec("serbest");
+    bildir(`“${arac.ad}” klonlandı ve Serbest Uçbirim düzenleyicisine aktarıldı. Orijinal mağaza aracı korunmuştur.`);
+    const editEl = $("#m2s6-komut");
+    if (editEl) {
+      editEl.focus();
+      editEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   },
 
   sabitlerCiz() {
@@ -1786,6 +2069,20 @@ const m2s6 = {
     });
     if (!onay) return;
 
+    // Önceki çıktıyı konsoldan sıfırla ve yeni komut durumunu göster
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) {
+      const zaman = new Date().toLocaleTimeString("tr-TR");
+      rozetEl.textContent = `⚡ Son Komut: ${arac.ad} · ${zaman}`;
+      rozetEl.hidden = false;
+    }
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = `⏳ “${arac.ad}” gönderildi, çıktılar bekleniyor...`;
+    this.sayaclariCiz();
+    this.tablo.ciz();
+
     try {
       const kayit = await isBaslat("/api/magaza/calistir", {
         arac_id: arac.id,
@@ -1894,33 +2191,69 @@ const m2s6 = {
   kutuphaneCiz() {
     const kap = $("#m2s6-kutuphane");
     if (!kap) return;
-    if (!this.komutlar.length) {
-      kap.replaceChildren(el("p", { class: "ipucu", metin: "Kayıtlı komut yok." }));
+
+    const ozelKomutlar = (this.komutlar || []).map((k) => ({
+      ...k,
+      kaynak: "ozel",
+    }));
+
+    const magazaAraclari = (this.katalog || []).map((a) => ({
+      id: a.id,
+      ad: a.ad,
+      komut: (a.betik || a.ozet || "").trim(),
+      kategori: a.kategori || "Genel",
+      sudo: Boolean(a.sudo),
+      kaynak: "magaza",
+      hamArac: a,
+    }));
+
+    const tumListe = [...magazaAraclari, ...ozelKomutlar];
+
+    if (!tumListe.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Kayıtlı özel komut veya mağaza aracı bulunamadı." }));
       return;
     }
+
     const tablo = el("table", {}, el("thead", {}, el("tr", {},
-      ...["Komut", "Kategori", "Sudo", ""].map((b) => el("th", { metin: b })))));
+      ...["Komut / Araç Adı", "Kaynak", "Kategori", "Yetki", "Eylemler"].map((b) => el("th", { metin: b })))));
     const govde = el("tbody");
-    for (const k of this.komutlar) {
-      const slug = kimlikSlug(k.id);
+
+    for (const k of tumListe) {
+      const magazaMi = k.kaynak === "magaza";
+      const slug = kimlikSlug(k.id || k.ad);
       const eylemler = el("div", { class: "dugme-grubu" },
-        dugme("Yükle", `M2-S6-B3-${slug}`, () => {
-          $("#m2s6-ad").value = k.ad;
-          $("#m2s6-kategori").value = k.kategori || "Genel";
-          $("#m2s6-komut").value = k.komut;
-          $("#m2s6-sudo").checked = Boolean(k.sudo);
-          this.sekmeSec("serbest");
-          bildir(`“${k.ad}” düzenleyiciye yüklendi.`);
+        dugme("✏️ Yükle / Düzenle", `M2-S6-B3-${slug}`, () => {
+          if (magazaMi) {
+            this.klonlaVeDuzenle(k.hamArac);
+          } else {
+            $("#m2s6-ad").value = k.ad;
+            $("#m2s6-kategori").value = k.kategori || "Genel";
+            $("#m2s6-komut").value = k.komut;
+            $("#m2s6-sudo").checked = Boolean(k.sudo);
+            this.sekmeSec("serbest");
+            bildir(`“${k.ad}” düzenleyiciye yüklendi. Değişiklik yapıp kaydedebilirsiniz.`);
+            const editEl = $("#m2s6-komut");
+            if (editEl) {
+              editEl.focus();
+              editEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
         }, "ikincil kucuk"),
-        !k.yerlesik ? dugme("Sil", `M2-S6-B4-${slug}`, () => this.komutSil(k), "tehlikeli kucuk") : null
+        !magazaMi && !k.yerlesik ? dugme("Sil", `M2-S6-B4-${slug}`, () => this.komutSil(k), "tehlikeli kucuk") : null
       );
+
       govde.append(el("tr", {},
-        el("td", {}, el("strong", { metin: k.ad }), el("span", { class: "alt mono", metin: k.komut.slice(0, 72) })),
+        el("td", {},
+          el("strong", { metin: k.ad }),
+          el("span", { class: "alt mono", metin: (k.komut || "").slice(0, 80) + ((k.komut || "").length > 80 ? "…" : "") })
+        ),
+        el("td", {}, magazaMi ? rozet("🏪 Mağaza", "mavi") : rozet("✏️ Özel Komut", "iyi")),
         el("td", {}, rozet(k.kategori || "Genel", "notr")),
-        el("td", {}, k.sudo ? rozet("sudo", "mavi") : rozet("kullanıcı", "notr")),
+        el("td", {}, k.sudo ? rozet("sudo", "orta") : rozet("kullanıcı", "notr")),
         el("td", {}, eylemler)
       ));
     }
+
     tablo.append(govde);
     kap.replaceChildren(tablo);
   },
@@ -1963,6 +2296,21 @@ const m2s6 = {
       baslatMetni: "Komutu Gönder",
     });
     if (!hedefler) return;
+
+    // Konsolu temizle ve yeni komutu bildir
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) {
+      const zaman = new Date().toLocaleTimeString("tr-TR");
+      rozetEl.textContent = `⚡ Son Komut: ${ad} · ${zaman}`;
+      rozetEl.hidden = false;
+    }
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = `⏳ “${ad}” gönderildi, çıktılar bekleniyor...`;
+    this.sayaclariCiz();
+    this.tablo.ciz();
+
     const kayit = await isBaslat("/api/komutlar/calistir", { cihazlar: hedefler, ad, komut, sudo });
     if (kayit) this.sonuclariIsle(kayit);
   },
@@ -1978,6 +2326,21 @@ const m2s6 = {
       baslatMetni: "Hosts Kaydını Dağıt",
     });
     if (!hedefler) return;
+
+    // Konsolu temizle ve yeni komutu bildir
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) {
+      const zaman = new Date().toLocaleTimeString("tr-TR");
+      rozetEl.textContent = `⚡ Son Komut: /etc/hosts Dağıtımı (${alan_adi}) · ${zaman}`;
+      rozetEl.hidden = false;
+    }
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = `⏳ Hosts kaydı dağıtılıyor...`;
+    this.sayaclariCiz();
+    this.tablo.ciz();
+
     const kayit = await isBaslat("/api/komutlar/hosts-ekle", { cihazlar: hedefler, ip, alan_adi });
     if (kayit) this.sonuclariIsle(kayit);
   },

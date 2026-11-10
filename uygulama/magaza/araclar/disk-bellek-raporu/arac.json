@@ -1,0 +1,11 @@
+{
+  "id": "disk-bellek-raporu",
+  "ad": "Disk ve RAM Sağlık Özeti",
+  "kategori": "sistem",
+  "risk": "bilgi",
+  "ozet": "Öğrenci bilgisayarlarındaki boş disk alanını ve RAM kullanımını hızlıca raporlar (salt okunur).",
+  "yazar": "Bilişim Zümresi",
+  "surum": "1.0.0",
+  "sudo": false,
+  "parametreler": []
+}

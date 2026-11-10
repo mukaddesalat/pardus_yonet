@@ -101,6 +101,9 @@
   --t-label-md: 600 13px/1.3 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
   --t-label-sm: 600 11px/1.2 "Ubuntu", "Noto Sans", "DejaVu Sans", system-ui, sans-serif;
   --t-code-sm: 400 12px/1.3 "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+  --f-mono: "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+  --sh-2: 0 4px 12px rgba(22, 33, 44, .12);
+  --serit: 34px;
 }
 
 /* Pardus Sınıf Yönetimi — arayüz stili.
@@ -122,7 +125,7 @@ body {
 h1 { font: var(--t-headline-lg); margin: 0; }
 h2 { font: var(--t-headline-md); margin: 0 0 var(--s-sm); }
 h3 { font: var(--t-label-md); margin: var(--s-md) 0 var(--s-xs); }
-code, .mono { font: var(--t-code-sm); }
+code, .mono { font: var(--t-code-sm); overflow-wrap: anywhere; word-break: break-all; }
 a { color: var(--c-primary); }
 
 /* ---------------------------------------------------------------- düğmeler */
@@ -274,9 +277,9 @@ html { scroll-padding-top: 60px; }
 }
 .is-gostergesi { font: var(--t-body-sm); color: var(--c-primary); }
 
-main { padding: var(--s-lg) var(--s-lg) 120px; max-width: var(--s-content-max); width: 100%; }
-.sayfa-baslik { margin-bottom: var(--s-md); }
-.sayfa-baslik h1 { display: inline; margin-left: var(--s-sm); vertical-align: middle; }
+main { padding: 24px var(--s-lg) 120px; max-width: var(--s-content-max); width: 100%; }
+.sayfa-baslik { margin: 4px 0 var(--s-md); position: relative; }
+.sayfa-baslik h1 { display: inline-block; vertical-align: middle; line-height: 1.35; margin: 0; }
 .sayfa-aciklama { color: var(--c-secondary); margin: var(--s-xs) 0 0; max-width: 90ch; }
 
 /* ---------------------------------------------------------------- yerleşim yardımcıları */
@@ -308,18 +311,54 @@ main { padding: var(--s-lg) var(--s-lg) 120px; max-width: var(--s-content-max); 
 .hata { color: var(--c-error); font-weight: 600; }
 .tamam-metni { color: var(--c-success); font-weight: 600; }
 .uyari-kutusu {
-  background: var(--c-warning-bg); color: var(--c-warning);
-  border-radius: var(--r-md); padding: var(--s-sm) var(--s-md);
-  font: var(--t-body-sm); font-weight: 600;
+  background: #FFFBEB;
+  color: #92400E;
+  border-left: 4px solid #F59E0B;
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font: var(--t-body-sm);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .uyari-kutusu:empty { display: none; }
-.uyari-kutusu.kirmizi { background: var(--c-error-bg); color: var(--c-error); }
-.uyari-listesi { margin: var(--s-sm) 0; padding-left: 1.2em; color: var(--c-warning); font: var(--t-body-sm); font-weight: 600; }
+.uyari-kutusu.kirmizi {
+  background: #FEF2F2;
+  color: #991B1B;
+  border-left-color: #EF4444;
+}
+.uyari-listesi {
+  margin: var(--s-sm) 0;
+  padding: 10px 14px 10px 30px;
+  background: #FFFBEB;
+  color: #92400E;
+  border-left: 4px solid #F59E0B;
+  border-radius: var(--r-md);
+  font: var(--t-body-sm);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
 .uyari-listesi:empty { display: none; }
 
-.onay-kutusu { display: flex; align-items: flex-start; gap: 8px; margin: 6px 0; }
-.onay-kutusu input { margin-top: 3px; }
-.onay-kutusu.satir-ici { display: inline-flex; margin: 0; }
+.onay-kutusu {
+  display: block;
+  position: relative;
+  padding-left: 26px;
+  margin: 6px 0;
+  cursor: pointer;
+  line-height: 1.45;
+  font: var(--t-body-md);
+}
+.onay-kutusu input[type="checkbox"],
+.onay-kutusu input[type="radio"] {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.onay-kutusu.satir-ici { display: inline-block; margin: 0 12px 0 0; }
 .onay-izgara { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0 var(--s-md); }
 fieldset { border: 1px solid var(--c-border); border-radius: var(--r-md); padding: var(--s-sm) var(--s-md); margin: var(--s-sm) 0; }
 legend { font: var(--t-label-md); color: var(--c-secondary); padding: 0 var(--s-xs); }
@@ -432,12 +471,29 @@ dialog .arac-cubugu input, dialog .arac-cubugu select { width: auto; }
 @keyframes don { to { transform: rotate(360deg); } }
 
 .bildirim {
-  position: fixed; left: 50%; top: 14px; transform: translateX(-50%); z-index: 30;
-  background: var(--c-on-surface); color: #fff;
-  padding: 10px 16px; border-radius: var(--r-md); max-width: 70vw;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .25); font: var(--t-body-md);
+  position: fixed;
+  left: 50%;
+  top: 72px;
+  transform: translateX(-50%);
+  z-index: 99999 !important;
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 12px 24px;
+  border-radius: var(--r-md);
+  max-width: min(720px, 92vw);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  font: var(--t-body-md);
+  font-weight: 500;
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
-.bildirim.hata-bildirim { background: var(--c-error); }
+.bildirim.hata-bildirim {
+  background: var(--c-error, #B42318);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+body:has(.demo-serit) .bildirim {
+  top: 106px;
+}
 
 /* ---------------------------------------------------------------- giriş */
 .giris-kapsayici { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -576,10 +632,9 @@ ol.adim-kartlari { list-style: none; padding: 0; margin: 0 0 var(--s-md); displa
 .adim-no { width: 28px; height: 28px; border-radius: 50%; background: var(--c-primary); color: var(--c-on-primary);
   display: inline-flex; align-items: center; justify-content: center; font: var(--t-label-md); flex: none; }
 .adim-sayaci { font: var(--t-label-md); color: var(--c-primary); }
-details.teknik { margin-top: var(--s-sm); }
-body:not(.gelismis-mod-aktif) details.teknik { display: none; }
-details.teknik summary { cursor: pointer; color: var(--c-secondary); font: var(--t-body-sm); }
-details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
+details.teknik { margin-top: var(--s-sm); padding: 4px 8px; border-radius: var(--r-sm); background: rgba(0, 0, 0, 0.02); }
+details.teknik summary { cursor: pointer; color: var(--c-primary); font: var(--t-label-sm); font-weight: 700; user-select: none; }
+details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); margin: 6px 0 2px; }
 
 /* M2-S5 zamanlı kapatma */
 .gun-secimi { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -656,24 +711,24 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
 .marka-okul {
   display: block; font-size: 11px; font-weight: 700; color: #FFFFFF;
   line-height: 1.25; margin-bottom: 2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 175px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;
 }
 .marka-ad {
   display: block; font-size: 12.5px; font-weight: 700; color: #93C5FD;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;
 }
 .marka-alt {
   display: block; font-size: 11px; color: #94A3B8; opacity: .85;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;
 }
 .surum {
   display: block; font-size: 10px; color: #94A3B8;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;
 }
 
 /* Üst Çubuk ve Öğretmen Rozetinde Uzun Metin Kısaltmaları */
 .ust-baslik {
-  font: var(--t-label-md); color: var(--c-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px;
+  font: var(--t-label-md); color: var(--c-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px; min-width: 0;
 }
 .ogretmen-cip {
   display: inline-flex; align-items: center; gap: 6px; font: var(--t-body-sm);
@@ -685,9 +740,16 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
   display: inline-block; vertical-align: bottom;
 }
+.giris-okul-banner > div {
+  min-width: 0; flex: 1; overflow: hidden;
+}
 .okul-ust-ad {
   display: block; font: var(--t-label-md); color: var(--c-on-surface);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;
+}
+.okul-ust-alt {
+  display: block; font: var(--t-body-sm); color: var(--c-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;
 }
 .pc-ad {
   font: var(--t-label-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
@@ -1459,9 +1521,77 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
 
 .magaza-kart-izgara {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+}
+@media (max-width: 1080px) {
+  .magaza-kart-izgara { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .magaza-kart-izgara { grid-template-columns: 1fr; }
+}
+
+/* ================================================================ 3x3 Matris Sayfalama (Paging) */
+.sayfalama-cubugu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  margin-top: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sayfalama-bilgi {
+  font: var(--t-body-sm);
+  color: var(--c-secondary);
+  font-weight: 500;
+}
+.sayfalama-butonlar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sayfa-btn {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-on-surface);
+  font: var(--t-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sayfa-btn:hover:not(:disabled) {
+  border-color: var(--c-primary);
+  background: var(--c-surface-alt);
+}
+.sayfa-btn.aktif {
+  background: var(--c-primary);
+  color: #FFFFFF;
+  border-color: var(--c-primary);
+  box-shadow: 0 2px 4px rgba(27, 95, 193, 0.2);
+}
+.sayfa-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.magaza-surum-rozet {
+  display: inline-block;
+  font-size: 10.5px;
+  font-family: var(--f-mono);
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
 }
 
 .magaza-kart {
@@ -1528,12 +1658,21 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
 
 .magaza-kart-alt {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  padding-top: 8px;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 10px;
   border-top: 1px solid #F1F5F9;
+}
+.magaza-kart-alt button,
+.magaza-kart-alt .dugme {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 11.5px;
+  white-space: nowrap;
 }
 
 .sabit-aktif {
@@ -1856,7 +1995,7 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
   border: 1px solid #E2E8F0;
   border-radius: 12px;
   padding: 12px 18px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.03);
   overflow-x: auto;
 }
@@ -1941,7 +2080,7 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
 /* ================================================================ Tek bilgisayar eylem menüsü (⋯) */
 .satir-menu-dugme { min-height: 24px; padding: 0 8px; font-size: 15px; line-height: 1; letter-spacing: 1px; }
 .satir-menu {
-  position: fixed; z-index: 40; min-width: 230px; padding: 6px;
+  position: fixed; z-index: 1000; min-width: 230px; padding: 6px;
   display: flex; flex-direction: column;
   background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg);
   box-shadow: 0 8px 24px rgba(22, 33, 44, .18);
@@ -1956,9 +2095,9 @@ details.teknik p { font: var(--t-body-sm); color: var(--c-secondary); }
 .satir-menu-oge.tehlikeli:hover:not(:disabled) { background: var(--c-error-bg); }
 .satir-menu-ayrac { height: 1px; background: var(--c-border); margin: 4px 6px; }
 
-/* Komut Mağazası'nın teknik sekmeleri yalnız Gelişmiş Görünüm'de */
-body:not(.gelismis-mod-aktif) #m2s6-sekme-katki,
-body:not(.gelismis-mod-aktif) #m2s6-sekme-serbest { display: none; }
+/* Komut Mağazası sekmeleri tüm görünümlerde erişilebilir */
+#m2s6-sekme-katki,
+#m2s6-sekme-serbest { display: inline-flex; }
 
 /* ---- yalnız önizleme ---- */
 .demo-serit {
@@ -1970,6 +2109,246 @@ body:not(.gelismis-mod-aktif) #m2s6-sekme-serbest { display: none; }
 .demo-serit strong { font: var(--t-label-md); margin-right: 6px; }
 body:has(.demo-serit) .ust-cubuk { top: var(--serit, 34px); }
 body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - var(--serit, 34px)); }
+
+/* ================================================================ Alt Separatör Sekmeleri (M2-S1 vb.) */
+.alt-sekmeler {
+  display: inline-flex;
+  gap: 6px;
+  background: #F1F5F9;
+  padding: 5px;
+  border-radius: 12px;
+  margin: var(--s-md) 0 var(--s-md);
+  border: 1px solid #E2E8F0;
+}
+.alt-sekme {
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font: var(--t-label-md);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+.alt-sekme:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.7);
+  color: #0F172A;
+}
+.alt-sekme.aktif {
+  background: #FFFFFF;
+  color: var(--c-primary);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.alt-sekme .sekme-ikon {
+  font-size: 15px;
+}
+
+/* ================================================================ Sihirbaz İleri / Geri Navigasyon Çubuğu */
+.wizard-nav-cubuk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 var(--s-lg);
+  padding: 0 2px;
+  border-top: none;
+  gap: var(--s-md);
+}
+.wizard-nav-bosluk {
+  min-width: 1px;
+}
+.wizard-geri {
+  margin-right: auto;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: var(--r-md);
+}
+.wizard-ileri {
+  margin-left: auto;
+  font-weight: 700;
+  padding: 7px 18px;
+  border-radius: var(--r-md);
+  box-shadow: 0 2px 4px rgba(27, 95, 193, 0.15);
+}
+
+/* ================================================================ Canlı Kurulum Terminali (M2-S2) */
+.terminal-kutusu {
+  margin-top: var(--s-lg);
+  border-radius: var(--r-lg);
+  background: #111827;
+  border: 1px solid #374151;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.terminal-baslik-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1F2937;
+  padding: 8px 14px;
+  border-bottom: 1px solid #374151;
+  color: #E5E7EB;
+  font-size: 12px;
+  font-weight: 600;
+}
+.terminal-noktalar {
+  display: inline-flex;
+  gap: 6px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.terminal-nokta {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.terminal-nokta.kirmizi { background: #EF4444; }
+.terminal-nokta.sari { background: #F59E0B; }
+.terminal-nokta.yesil { background: #10B981; }
+.terminal-cikti {
+  margin: 0;
+  padding: 12px 14px;
+  background: #111827;
+  color: #10B981;
+  font-family: "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 280px;
+  min-height: 100px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4B5563 #111827;
+}
+.terminal-cikti::-webkit-scrollbar {
+  width: 6px;
+}
+.terminal-cikti::-webkit-scrollbar-track {
+  background: #111827;
+}
+.terminal-cikti::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 3px;
+}
+.terminal-satir-hata { color: #F87171; }
+.terminal-satir-uyari { color: #FBBF24; }
+.terminal-satir-bilgi { color: #60A5FA; }
+.terminal-satir-basari { color: #34D399; }
+
+/* ================================================================ Ödev & Masaüstü Koruma Kutusu (M2-S1) */
+.odev-koruma-kutusu {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-left: 5px solid #16A34A;
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  margin: var(--s-sm) 0 var(--s-md);
+  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.08);
+}
+.odev-koruma-etiket {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  padding-left: 0 !important;
+  cursor: pointer;
+}
+.odev-koruma-etiket input[type="checkbox"] {
+  position: static !important;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #16A34A;
+}
+.odev-koruma-baslik {
+  font-weight: 700;
+  color: #15803D;
+  font-size: 14.5px;
+}
+.odev-koruma-aciklama {
+  margin: 6px 0 0 26px;
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.45;
+}
+.koruma-canli-rozet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--r-full);
+  font: var(--t-label-sm);
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #86EFAC;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.koruma-canli-rozet.kapali {
+  background: #FEF3C7;
+  color: #92400E;
+  border-color: #FCD34D;
+}
+
+/* ================================================================ Dinamik Yönetim Hesapları Tablosu & Öncelik Sırası */
+.yonetim-hesap-tablosu {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.yonetim-hesap-tablosu th,
+.yonetim-hesap-tablosu td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  vertical-align: middle;
+}
+.yonetim-hesap-tablosu th {
+  background: #F8FAFC;
+  font: var(--t-label-sm);
+  color: #475569;
+}
+.sira-rozet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 12px;
+}
+.sira-rozet.ikincil-sira {
+  background: #64748B;
+}
+.sira-ok-dugme {
+  min-height: 26px;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 1;
+}
+.hizli-test-kutu {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  margin-top: 14px;
+}
+.parola-degistir-kutu {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-top: 14px;
+}
 
 /* ---- yalnız önizleme ---- */
 .demo-serit {
@@ -2027,6 +2406,11 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
       <input id="kurulum-parola" type="password" autocomplete="new-password">
       <label for="kurulum-parola2">Parolayı tekrar yazın</label>
       <input id="kurulum-parola2" type="password" autocomplete="new-password">
+      <hr style="border:0;border-top:1px solid #E2E8F0;margin:12px 0;">
+      <label for="kurulum-yonetim-kullanici">Öğrenci PC Yetkili Yönetici Hesabı (Sudo)</label>
+      <input id="kurulum-yonetim-kullanici" type="text" maxlength="32" value="pardus" placeholder="örn. pardus veya hp">
+      <label for="kurulum-yonetim-parola">Öğrenci PC Yetkili Parolası</label>
+      <input id="kurulum-yonetim-parola" type="password" autocomplete="new-password" placeholder="Öğrenci bilgisayarlarındaki sudo parolası">
       <button type="submit" class="birincil">Kurulumu tamamla</button>
     </form>
     <form id="giris-formu" hidden>
@@ -2205,6 +2589,7 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
             sorulmaz. Bilgisayarları seçin ve adımları sırayla izleyin. Hazır olanlar kendiliğinden atlanır.</p>
         </header>
         <div class="wizard-kap" data-adim="2"></div>
+        <div class="wizard-nav-kap" data-nav-adim="2"></div>
         <div class="secim-yeri" data-islem="hazirlik"></div>
         <ol class="adim-kartlari">
           <li class="kart adim-karti">
@@ -2261,6 +2646,7 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
             göndermez ve envantere kayıt eklemez; eklemek ve hazırlamak ayrı, onaylı adımlardır.</p>
         </header>
         <div class="wizard-kap" data-adim="1"></div>
+        <div class="wizard-nav-kap" data-nav-adim="1"></div>
         <div class="kart">
           <form id="m1s3-form" class="satir-form">
             <label for="m1s3-aralik">Adres aralığı</label>
@@ -2291,9 +2677,7 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
             erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
         </header>
         <div class="wizard-kap" data-adim="3"></div>
-            seçin, önizleyip onaylayın. Veyon yalnız sizin yüklediğiniz .deb dosyasından kurulur. SSH anahtarı bakım
-            erişimi içindir; Veyon anahtarı ders sırasında ekran yönetimi içindir.</p>
-        </header>
+        <div class="wizard-nav-kap" data-nav-adim="3"></div>
         <div class="adimlar" aria-label="Kullanım sırası">
           <span class="adim"><b>1</b> Veyon paketini yükle</span>
           <span class="adim"><b>2</b> Public key yükle</span>
@@ -2413,11 +2797,12 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
       <!-- ================================================= M1-SAGLIK Kurulum Sağlık Testi -->
       <section id="sayfa-M1-SAGLIK" class="sayfa" data-ui-id="M1-SAGLIK" hidden>
         <header class="sayfa-baslik">
-          <h1>🩺 Adım 4: Bağlantı Sağlığını Doğrula (Final Testi)</h1>
+          <h1>🩺 Adım 5: Bağlantı Sağlığını Doğrula (Final Testi)</h1>
           <p class="sayfa-aciklama">Kurulumunu tamamladığınız bilgisayarların Ping (ağ erişimi), SSH anahtar doğrulaması, parolasız Sudo yetkisi ve Veyon ekran yönetim servisinin çalıştığını tek tıkla toplu olarak denetleyin.</p>
         </header>
 
-        <div class="wizard-kap" data-adim="4"></div>
+        <div class="wizard-kap" data-adim="5"></div>
+        <div class="wizard-nav-kap" data-nav-adim="5"></div>
         <div class="secim-yeri" data-islem="durum"></div>
 
         <div class="kart alt-bosluk">
@@ -2428,7 +2813,6 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
         </div>
 
         <div id="saglik-sonuc-tablo" class="tablo-kap"></div>
-
       </section>
 
       <!-- ================================================= M2-S1 Profil Temizliği & Tarayıcı -->
@@ -2455,13 +2839,13 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
         </div>
         <div class="klasor-kutu">
 
-        <!-- M2-S1 İçi Separatör: Bilgisayar Temizliği vs Tarayıcı Yönetimi -->
-        <div class="kapsam-secimi" role="tablist" aria-label="Temizlik türü">
-          <button type="button" id="m2s1-sekme-bilgisayar" class="kapsam aktif" role="tab" aria-selected="true">
+        <!-- M2-S1 İçi Separatör: Bilgisayar Temizliği vs Chromium Tarayıcı Temizliği -->
+        <div class="alt-sekmeler" role="tablist" aria-label="Temizlik ve Bakım Türü">
+          <button type="button" id="m2s1-sekme-bilgisayar" class="alt-sekme aktif" role="tab" aria-selected="true">
             <span class="sekme-ikon">💻</span>Bilgisayar ve Masaüstü Temizliği
           </button>
-          <button type="button" id="m2s1-sekme-tarayici" class="kapsam" role="tab" aria-selected="false">
-            <span class="sekme-ikon">🌐</span>Chromium Tarayıcı Yönetimi ve Güvenli Temizlik
+          <button type="button" id="m2s1-sekme-tarayici" class="alt-sekme" role="tab" aria-selected="false">
+            <span class="sekme-ikon">🌐</span>Chromium Tarayıcı Temizliği &amp; Yönetimi
           </button>
         </div>
 
@@ -2478,10 +2862,23 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
             <legend>Tüm seçili bilgisayarlarda temizlenecek alanlar</legend>
             <div id="m2s1-alan-kutulari" class="onay-izgara"></div>
           </fieldset>
+
+          <!-- Özel Ödev Koruma Kutusu (Kullanıcı İsteği: Farklı, yeşil kalkanlı ve koruma hissiyatı yüksek) -->
+          <div id="m2s1-odev-koruma-kutusu" class="odev-koruma-kutusu">
+            <label class="odev-koruma-etiket">
+              <input id="m2s1-odev-koru" type="checkbox" checked>
+              <span class="odev-koruma-baslik">🛡️ Masaüstündeki Ödev &amp; Ders Klasörünü Koru</span>
+            </label>
+            <p class="odev-koruma-aciklama">
+              Ders sırasında dağıtılan veya toplanan ödevlerin bulunduğu Masaüstü klasörü (<strong id="m2s1-odev-hedef-klasor">Odevler</strong>) temizlik sırasında <strong>asla silinmez</strong>, korunur.
+            </p>
+          </div>
+
           <p id="m2s1-kapsam-uyari" class="uyari-kutusu" role="note"></p>
           <div class="arac-cubugu">
             <button id="m2s1-onizle" type="button" class="ikincil" data-ui-id="M2-S1-B6">Önizle (Önerilen)</button>
             <button id="m2s1-baslat" type="button" class="birincil" data-ui-id="M2-S1-B7">Temizliği başlat</button>
+            <span id="m2s1-koruma-ozeti" class="koruma-canli-rozet">🛡️ Koruma: 1 Klasör Güvende (Odevler)</span>
             <span class="ayrac"></span>
             <button id="m2s1-yedek" type="button" class="ikincil" data-ui-id="M2-S1-B9">Yalnız yedek al</button>
             <button id="m2s1-geri" type="button" class="ikincil" data-ui-id="M2-S1-B10">Yedekten dön…</button>
@@ -2709,17 +3106,38 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
 
         <h2 class="alt-tablo-baslik">Hedef Bilgisayarlar (Tek veya Çoklu Seçim)</h2>
         <div id="m2s2-tablo" class="tablo-kap"></div>
+
+        <!-- Canlı Kurulum Terminal Çıktısı (stdout / stderr) -->
+        <div id="m2s2-terminal-kap" class="terminal-kutusu" hidden>
+          <div class="terminal-baslik-bar">
+            <div>
+              <span class="terminal-noktalar">
+                <span class="terminal-nokta kirmizi"></span>
+                <span class="terminal-nokta sari"></span>
+                <span class="terminal-nokta yesil"></span>
+              </span>
+              <span>🖥️ Canlı Kurulum Çıktısı (stdout / stderr)</span>
+            </div>
+            <div class="dugme-grubu">
+              <button type="button" id="m2s2-terminal-temizle" class="ikincil kucuk">Temizle</button>
+              <button type="button" id="m2s2-terminal-kapat" class="ikincil kucuk">Kapat</button>
+            </div>
+          </div>
+          <pre id="m2s2-terminal-cikti" class="terminal-cikti"></pre>
+        </div>
         </div>
       </section>
 
       <!-- ================================================= M2-S3 Görünüm ve Giriş -->
       <section id="sayfa-M2-S3" class="sayfa" data-ui-id="M2-S3" hidden>
         <header class="sayfa-baslik">
-          <h1>Görünüm ve Giriş</h1>
+          <h1>🖼️ Adım 4: Görünüm ve Masaüstü Düzeni</h1>
           <p class="sayfa-aciklama">Pardus Karşılayıcı'daki Windows 10 benzeri düzeni hedefler; ayarlar
             her bilgisayarın kendi kurulu şemasına göre denetlenir. Masaüstü ortamı ve açık oturum
             sessizce değiştirilmez; XFCE bilgisayarlar ayrı geçiş planı ister.</p>
         </header>
+        <div class="wizard-kap" data-adim="4"></div>
+        <div class="wizard-nav-kap" data-nav-adim="4"></div>
         <div class="iki-sutun">
           <div class="kart">
             <h2>Uygulanacaklar</h2>
@@ -2974,6 +3392,24 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
             </div>
           </div>
           <div id="m2s6-katalog-izgara" class="magaza-kart-izgara"></div>
+          <!-- 3x3 Matris Sayfalama (Paging) Çubuğu -->
+          <div id="m2s6-katalog-sayfalama" class="sayfalama-cubugu"></div>
+
+          <!-- Canlı Katalog Güncelleme Konsolu (Streaming Terminal) -->
+          <div id="m2s6-guncelleme-konsol-kap" class="terminal-kutusu ust-bosluk" hidden>
+            <div class="terminal-baslik-bar">
+              <span>
+                <span class="terminal-noktalar">
+                  <span class="terminal-nokta kirmizi"></span>
+                  <span class="terminal-nokta sari"></span>
+                  <span class="terminal-nokta yesil"></span>
+                </span>
+                📡 Komut Mağazası Depo Güncelleme Akışı (Git Katalog Senkronizasyonu)
+              </span>
+              <button id="m2s6-guncelleme-konsol-kapat" type="button" class="ikincil kucuk" style="padding: 2px 8px; font-size: 11px;">✕ Kapat</button>
+            </div>
+            <div id="m2s6-guncelleme-konsol-cikti" class="terminal-cikti" style="max-height: 200px;"></div>
+          </div>
         </div>
 
         <!-- Sekme 2: Araçlarım & Sabitlenenler -->
@@ -3001,6 +3437,7 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
             </div>
             <div class="arac-cubugu ust-bosluk">
               <button id="m2s6-arac-calistir" type="button" class="birincil">⚡ Seçili Bilgisayarlarda Çalıştır</button>
+              <button id="m2s6-arac-klonla-btn" type="button" class="ikincil">✏️ Klonla ve Düzenle</button>
               <button id="m2s6-arac-sabitle" type="button" class="ikincil">📌 Sınıf Masası'na Sabitle</button>
               <button id="m2s6-arac-katalog-don" type="button" class="ikincil">← Kataloğa Dön</button>
             </div>
@@ -3116,8 +3553,10 @@ body:has(.demo-serit) .yan-menu { top: var(--serit, 34px); height: calc(100vh - 
         <div class="kart ust-bosluk">
           <div class="arac-cubugu">
             <h2 class="sifir-alt">Canlı Komut Çıktı (Log) Tablosu ve Özet</h2>
+            <span id="m2s6-son-komut-rozet" class="rozet rozet-bilgi" style="margin-left: 10px; font-weight: 600;" hidden></span>
             <span class="bosluk"></span>
             <span id="m2s6-ozet-metin" class="komut-ozet-etiket">Henüz komut çalıştırılmadı</span>
+            <button id="btn-m2s6-ciktilari-temizle" type="button" class="ikincil kucuk" style="margin-left: 8px;">🗑️ Çıktıları Temizle</button>
           </div>
           <div id="m2s6-sayaclar" class="ozet-kartlar"></div>
           <div id="m2s6-log-tablo" class="tablo-kap"></div>
@@ -3476,6 +3915,64 @@ sudo bash yedekten-kur.sh</pre>
           </div>
           <div id="m5s2-ogretmen-tablo" class="tablo-kap"></div>
         </div>
+
+        <!-- Bilgisayar Yönetim Hesapları & Öncelik Sıralaması -->
+        <div class="kart ust-bosluk">
+          <div class="arac-cubugu">
+            <h2 class="sifir-alt">🔑 Bilgisayar Yönetim Hesapları &amp; Öncelik Sıralaması</h2>
+            <span class="bosluk"></span>
+            <button id="m5s2-hesap-ekle" type="button" class="ikincil kucuk">➕ Yeni Yönetim Hesabı Ekle</button>
+            <button id="m5s2-hesap-kaydet" type="button" class="birincil kucuk">💾 Değişiklikleri Kaydet</button>
+          </div>
+          <p class="ipucu">
+            Laboratuvardaki öğrenci bilgisayarlarında yönetici (sudo) yetkisine sahip yerel hesapları tanımlayın.
+            Keşif ve hazırlık sırasında yukarıdan aşağıya doğru sırayla denenir (<strong>en üstteki hesap 1. önceliklidir</strong>).
+            Sıralamayı <strong>▲ / ▼</strong> butonlarıyla değiştirebilirsiniz.
+          </p>
+
+          <table class="yonetim-hesap-tablosu">
+            <thead>
+              <tr>
+                <th style="width: 70px;">Öncelik</th>
+                <th>Kullanıcı Adı</th>
+                <th>Varsayılan Parola</th>
+                <th style="width: 140px;">Sıra Değiştir</th>
+                <th style="width: 130px;">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="m5s2-hesap-listesi">
+              <!-- JS dinamik dolduracak -->
+            </tbody>
+          </table>
+
+          <!-- Hızlı Test Kutusu -->
+          <div class="hizli-test-kutu">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <strong>⚡ Hızlı Test:</strong>
+              <span>Örnek Test IP'si:</span>
+              <input id="m5s2-test-ip" type="text" placeholder="örn. 192.168.1.100" style="width: 150px; min-height: 30px;">
+              <select id="m5s2-test-hesap" style="min-height: 30px;"></select>
+              <button id="m5s2-btn-hizli-test" type="button" class="ikincil kucuk">⚡ Hesabı Test Et</button>
+              <span id="m5s2-test-sonuc" class="ipucu" style="font-weight: 600;"></span>
+            </div>
+          </div>
+
+          <!-- Toplu Parola Değiştirme Kutusu -->
+          <div class="parola-degistir-kutu">
+            <h3 style="margin: 0 0 6px; color: #1E40AF;">🛡️ Sınıfta Tek Tıkla Yönetici Parolası Değiştir</h3>
+            <p class="ipucu" style="margin-bottom: 8px;">
+              Öğrencilerin yönetici şifresini öğrenmesi durumunda, seçili bilgisayarlardaki yerel yönetici şifresini tek tıkla değiştirebilirsiniz.
+            </p>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <label for="m5s2-toplu-hesap">Hedef Hesap:</label>
+              <select id="m5s2-toplu-hesap" style="min-height: 30px;"></select>
+              <label for="m5s2-toplu-yeni-parola">Yeni Parola:</label>
+              <input id="m5s2-toplu-yeni-parola" type="password" placeholder="En az 4 karakter" style="width: 160px; min-height: 30px;">
+              <button id="m5s2-btn-parola-degistir" type="button" class="birincil kucuk tehlikeli">🔑 Seçili Bilgisayarlarda Parolayı Değiştir</button>
+            </div>
+            <div id="m5s2-parola-uyari" class="uyari-kutusu" style="margin-top: 10px;" hidden></div>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -3493,8 +3990,6 @@ sudo bash yedekten-kur.sh</pre>
       <ul id="is-paneli-liste" class="is-hedef-listesi"></ul>
     </aside>
   </div>
-
-  <div id="bildirim" class="bildirim" role="status" hidden></div>
 </div>
 
 <!-- ================================================= M0-S3 Onay penceresi -->
@@ -3712,14 +4207,12 @@ sudo bash yedekten-kur.sh</pre>
 <dialog id="parola-penceresi">
   <form id="parola-formu" method="dialog">
     <h2>Yönetime bağla — parola bir kez</h2>
-    <p class="ipucu">Öğrenci bilgisayarlarındaki yönetici hesabının parolasını yazın (pardus, hp ya da ikisi).
-      Parola yalnız bu işlem sırasında kullanılır ve <strong>kaydedilmez</strong>. Bu, uygulamaya giriş
-      parolanız değildir. Her bilgisayar ve hesap için en çok 3 deneme yapılır.</p>
-    <div class="form-izgara">
+    <p class="ipucu">Öğrenci bilgisayarlarındaki yönetici hesabının parolasını yazın.
+      Tanımladığınız öncelik sırasına göre denenir (en üstteki hesap 1. önceliklidir).
+      Her bilgisayar ve hesap için en çok 3 deneme yapılır.</p>
+    <div id="parola-alanlari-kap" class="form-izgara">
       <label for="pp-pardus">pardus parolası</label>
-      <input id="pp-pardus" type="password" autocomplete="off">
-      <label for="pp-hp">hp parolası</label>
-      <input id="pp-hp" type="password" autocomplete="off">
+      <input id="pp-pardus" type="password" autocomplete="off" placeholder="Varsayılan parola">
     </div>
     <label class="onay-kutusu"><input id="pp-ogrenci" type="checkbox" checked data-ui-id="M1-S2-B9">
       ogrenci hesabı yoksa oluştur (sudo verilmez; giriş ekranında parolasız)</label>
@@ -3877,6 +4370,9 @@ sudo bash yedekten-kur.sh</pre>
     </div>
   </form>
 </dialog>
+
+<!-- Küresel toast bildirim kutusu -->
+<div id="bildirim" class="bildirim" role="status" hidden></div>
 
 <!-- Yazdırılacak kod kartları (yalnız yazdırmada görünür) -->
 <div id="yazdir-alani" aria-hidden="true"></div>
@@ -5382,6 +5878,26 @@ window.PSY_REFERANS = {
     return { tamam: true };
   });
 
+  /* ---- Yönetim hesapları & Hızlı test ---- */
+  let demoYonetimHesaplari = [
+    { kullanici: "pardus", parola: "", oncelik: 1 }
+  ];
+  yol("GET", "/api/yonetim/hesaplar", () => demoYonetimHesaplari);
+  yol("POST", "/api/yonetim/hesaplar", (g) => {
+    demoYonetimHesaplari = Array.isArray(g.hesaplar) ? g.hesaplar : [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+    return demoYonetimHesaplari;
+  });
+  yol("POST", "/api/yonetim/test_baglanti", (g) => ({
+    basarili: true,
+    ssh: true,
+    sudo: true,
+    parolasiz: true,
+    mesaj: `'${g.kullanici || "pardus"}' ile SSH ve Sudo yetkisi doğrulandı (DEMO)`
+  }));
+  yol("POST", "/api/yonetim/parola_degistir", (g) => isKur("parola_degistir", g.cihazlar, () => ({
+    durum: "basarili", asama: "parola", mesaj: `'${g.kullanici || "pardus"}' parolası güncellendi (DEMO)`
+  })));
+
   /* ---- ödevler ---- */
   yol("GET", "/api/odev/durum", () => ({ adres: "http://ogretmen.lab:8090/", adres_adi: "ogretmen.lab", port: 8090,
     ogretmen_ip: "192.168.10.10", ip_adres: "http://192.168.10.10:8090/", aglar: ["192.168.10.0/24", "192.168.20.0/24"],
@@ -6147,6 +6663,14 @@ function sayfaGoster(kod) {
   const sayfaEtiketi = ((sekmeEtiketi && sekmeEtiketi[1]) || (sayfa && sayfa.ad) || "Lab Kaptanı").replace(/^[^\p{L}\p{N}]+/u, "");
   $("#ust-baslik").textContent = (grup && grup.sayfalar.length > 1) ? `${grup.baslik} › ${sayfaEtiketi}` : sayfaEtiketi;
   document.title = `${(sayfa && sayfa.ad) || "Sınıf Masası"} — ${(Uyg.okul && Uyg.okul.ad) || "Lab Kaptanı"}`;
+
+  // Sayfa içi üst sekmelerin (M2-S1, M2-S4, M2-S5 vb.) aktif durumunu senkronize et
+  for (const sekme of $$(".sekmeler .sekme[data-git]")) {
+    const aktifMi = sekme.dataset.git === kod;
+    sekme.classList.toggle("aktif", aktifMi);
+    sekme.setAttribute("aria-selected", aktifMi ? "true" : "false");
+  }
+
   window.scrollTo(0, 0);
   if (SAYFALAR[kod].ac) SAYFALAR[kod].ac();
 }
@@ -6197,13 +6721,14 @@ const Kurulum = {
 Kurulum.yukle();
 function kurulumKapsami(c) { return !Kurulum.aktif() || Kurulum.yeniler.has(c.id); }
 
-/** Kurulum sihirbazı adımları üst çubuğunu üretir (M1-S3, M1-S2, M1-S4, M1-SAGLIK) */
+/** Kurulum sihirbazı adımları üst çubuğunu üretir (M1-S3, M1-S2, M1-S4, M2-S3, M1-SAGLIK) */
 function wizardCubuguCiz(adim) {
   const adimlar = [
     { no: 1, kod: "M1-S3", baslik: "1. Ağda Bul", alt: "Ağ taraması ve envanter" },
     { no: 2, kod: "M1-S2", baslik: "2. SSH & Sudo", alt: "Yönetici yetkisi" },
     { no: 3, kod: "M1-S4", baslik: "3. Veyon", alt: "Ekran izleme servisi" },
-    { no: 4, kod: "M1-SAGLIK", baslik: "4. Sağlık Testi", alt: "Ping, SSH, Veyon doğrula" },
+    { no: 4, kod: "M2-S3", baslik: "4. Masaüstü Görünümü", alt: "Panel, duvar kâğıdı & kilit" },
+    { no: 5, kod: "M1-SAGLIK", baslik: "5. Sağlık Testi", alt: "Ping, SSH, Veyon doğrula" },
   ];
   const cubuk = el("div", { class: "wizard-cubuk alt-bosluk" });
   adimlar.forEach((a, i) => {
@@ -6224,6 +6749,43 @@ function wizardCubuguCiz(adim) {
     cubuk.append(adimEl);
   });
   return cubuk;
+}
+
+/** Sihirbaz akışı alt navigasyon çubuğunu üretir: en solda geri, en sağda ileri; baştayken sadece ileri, sondayken sadece geri */
+function wizardNavigasyonCiz(adim) {
+  const harita = [
+    { no: 1, kod: "M1-S3", baslik: "Ağda Bul" },
+    { no: 2, kod: "M1-S2", baslik: "SSH & Sudo" },
+    { no: 3, kod: "M1-S4", baslik: "Veyon Kurulumu" },
+    { no: 4, kod: "M2-S3", baslik: "Masaüstü Görünümü" },
+    { no: 5, kod: "M1-SAGLIK", baslik: "Sağlık Testi" },
+  ];
+  const nav = el("div", { class: "wizard-nav-cubuk" });
+  const onceki = harita.find((h) => h.no === adim - 1);
+  const sonraki = harita.find((h) => h.no === adim + 1);
+
+  if (onceki) {
+    nav.append(el("button", {
+      type: "button",
+      class: "dugme ikincil wizard-geri",
+      "data-git": onceki.kod,
+      title: `${onceki.baslik} adımına dön`,
+    }, `← Geri: ${onceki.baslik}`));
+  } else {
+    // Baştayken sol taraf boş kalsın (flex space-between hizalaması korunsun)
+    nav.append(el("div", { class: "wizard-nav-bosluk" }));
+  }
+
+  if (sonraki) {
+    nav.append(el("button", {
+      type: "button",
+      class: "dugme birincil wizard-ileri",
+      "data-git": sonraki.kod,
+      title: `${sonraki.baslik} adımına ilerle`,
+    }, `İleri: ${sonraki.baslik} →`));
+  }
+
+  return nav;
 }
 
 /* ================================================================ veri ve seçim deposu */
@@ -6581,6 +7143,7 @@ const IS_ADLARI = {
   veyon_geri_al: "Veyon ayarlarını geri yükleme",
   uyku_onizleme: "Güç ayarı önizlemesi", uyku_ayari: "Uyku modunu kapatma", uyku_varsayilan: "Varsayılan güç ayarına dönüş",
   kapatma_oku: "Kapatma planlarını okuma", kapatma_ekle: "Zamanlı kapatma planı ekleme",
+  parola_degistir: "Yönetici parolası güncelleme",
   kapatma_sil: "Zamanlı kapatma planı kaldırma", kapatma_iptal: "Bekleyen kapatmayı iptal",
   sinif_ekran_kilitle: "Öğrenci ekranlarını kilitleme", sinif_ekran_ac: "Ekran kilitlerini açma",
   sinif_duyuru: "Sınıf duyurusu gönderme", sinif_internet_kisitla: "İnternet erişimini kısıtlama",
@@ -6639,9 +7202,14 @@ async function isGuncelle() {
 
 /** İşi başlatan API çağrısını yapar, paneli açar ve bitişi bekler. */
 async function isBaslat(yol, govde, bitince) {
+  isBaslat.sonHata = null;
   let yanit;
   try { yanit = await api(yol, govde); }
-  catch (hata) { bildir(hata.message, true); return null; }
+  catch (hata) {
+    isBaslat.sonHata = hata.message;
+    bildir(hata.message, true);
+    return null;
+  }
   return isIzle(yanit.is_id, { bitince });
 }
 
@@ -7445,6 +8013,8 @@ const m1s2 = {
   ac() {
     const wz = $("#sayfa-M1-S2 .wizard-kap");
     if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(2));
+    const nav = $("#sayfa-M1-S2 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(2));
     this.sayaclar();
     this.tablo.ciz();
     Secim.bildir();
@@ -7466,12 +8036,43 @@ const m1s2 = {
 async function hazirlikAkisi(cihazIdler) {
   if (!cihazIdler.length) { bildir("Önce bilgisayar seçin.", true); return; }
   const p = $("#parola-penceresi");
-  $("#pp-pardus").value = ""; $("#pp-hp").value = "";
+
+  // Dinamik yönetim hesaplarını yükle ve sıralı render et
+  let hesaplar = [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+  try {
+    const sunucuHesaplar = await api("/api/yonetim/hesaplar");
+    if (Array.isArray(sunucuHesaplar) && sunucuHesaplar.length) hesaplar = sunucuHesaplar;
+  } catch (_) {}
+
+  const kap = $("#parola-alanlari-kap");
+  if (kap) {
+    kap.replaceChildren();
+    hesaplar.forEach((h, idx) => {
+      const label = el("label", { for: `pp-${h.kullanici}` },
+        `${idx + 1}. ${h.kullanici} parolası ${idx === 0 ? "★ (1. Öncelikli)" : ""}`
+      );
+      const input = el("input", {
+        id: `pp-${h.kullanici}`,
+        type: "password",
+        autocomplete: "off",
+        value: h.parola || "",
+        placeholder: h.parola ? "••••••••" : "Parola girin",
+      });
+      kap.append(label, input);
+    });
+  }
+
   p.returnValue = "";
   p.showModal();
   await new Promise((coz) => p.addEventListener("close", coz, { once: true }));
-  const parolalar = { pardus: $("#pp-pardus").value, hp: $("#pp-hp").value };
-  $("#pp-pardus").value = ""; $("#pp-hp").value = "";
+
+  const parolalar = {};
+  hesaplar.forEach((h) => {
+    const elInp = $(`#pp-${h.kullanici}`);
+    if (elInp && elInp.value) parolalar[h.kullanici] = elInp.value;
+    else if (h.parola) parolalar[h.kullanici] = h.parola;
+    if (elInp) elInp.value = "";
+  });
   if (p.returnValue !== "devam") return;
   const hedefler = await onayIste({
     islem: "hazirlik", cihazlar: cihazIdler, baslik: "SSH ve hesap hazırlığı",
@@ -7512,6 +8113,8 @@ const m1s3 = {
   async ac() {
     const wz = $("#sayfa-M1-S3 .wizard-kap");
     if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(1));
+    const nav = $("#sayfa-M1-S3 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(1));
     try {
       this.oneri = await api("/api/kesif/ag");
       $("#m1s3-oneri-metin").textContent = this.oneri.ag
@@ -7708,6 +8311,8 @@ const m1s4 = {
   async ac() {
     const wz = $("#sayfa-M1-S4 .wizard-kap");
     if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(3));
+    const nav = $("#sayfa-M1-S4 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(3));
     await this.yukle();
     this.tablo.ciz();
     Secim.bildir();
@@ -7744,7 +8349,7 @@ const m1s4 = {
       return;
     }
     const tablo = el("table", {}, el("thead", {}, el("tr", {},
-      ...["Uygula", "Dosya", "Paket", "Tam sürüm", "Mimari", "Boyut", "Yüklendi", "Doğrulama", ""].map((b) => el("th", { metin: b })))));
+      ...["Uygula", "Paket & Dosya", "Sürüm", "Boyut", "Doğrulama", ""].map((b) => el("th", { metin: b })))));
     const g = el("tbody");
     for (const p of liste) {
       const kimlik = kimlikSlug(p.surum) || p.sha256.slice(0, 6).toUpperCase();
@@ -7753,14 +8358,13 @@ const m1s4 = {
         el("td", { class: "sec" }, el("input", { type: "radio", name: "m1s4-paket", checked: secili,
           "data-ui-id": `M1-S4-B2-${kimlik}`, "aria-label": `${p.surum} kurulacak paket olsun`,
           onchange: () => this.paketSec(p.sha256) })),
-        el("td", { class: "kirp", metin: p.dosya_adi, title: p.dosya_adi }),
-        el("td", { class: "mono", metin: p.paket }),
+        el("td", {},
+          el("strong", { metin: p.dosya_adi, title: p.dosya_adi, style: "display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" }),
+          el("span", { class: "alt mono", metin: `${p.paket} · ${p.mimari} · ${tarih(p.zaman)}` })
+        ),
         el("td", { class: "mono", metin: p.surum }),
-        el("td", { metin: p.mimari }),
         el("td", { metin: boyut(p.boyut) }),
-        el("td", { metin: tarih(p.zaman) }),
-        el("td", {}, rozet("Veyon paketi doğrulandı", "iyi"),
-          el("span", { class: "alt", metin: `metadata: Package ${p.paket}; sağladıkları: ${(p.kontrol.Provides || "—").slice(0, 60)}` })),
+        el("td", {}, rozet("Doğrulandı", "iyi")),
         el("td", {}, dugme("Sil", `M1-S4-B3-${kimlik}`, () => this.paketSil(p), "ikincil kucuk"))));
     }
     tablo.append(g);
@@ -8107,7 +8711,9 @@ const m1Saglik = {
   ac() {
     Secim.bildir();
     const wizardKap = $("#sayfa-M1-SAGLIK .wizard-kap");
-    if (wizardKap && typeof wizardCubuguCiz === "function") wizardKap.replaceChildren(wizardCubuguCiz(4));
+    if (wizardKap && typeof wizardCubuguCiz === "function") wizardKap.replaceChildren(wizardCubuguCiz(5));
+    const nav = $("#sayfa-M1-SAGLIK .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(5));
     this.ciz();
   },
   async testBaslat() {
@@ -8219,6 +8825,8 @@ const m2s1 = {
     $("#m2s1-oturumlar").addEventListener("click", () => this.oturumKapat(Secim.liste()));
     $("#m2s1-yedek").addEventListener("click", () => this.yedekAl());
     $("#m2s1-geri").addEventListener("click", () => yedekPenceresiAc());
+    const odevKoruKutu = $("#m2s1-odev-koru");
+    if (odevKoruKutu) odevKoruKutu.addEventListener("change", () => this.korumaRozetiGuncelle());
     Secim.dinleyiciler.add(() => this.kartlar());
 
     /* M2-S1 Separatör Sekmeleri: Bilgisayar vs Tarayıcı */
@@ -8335,6 +8943,9 @@ const m2s1 = {
     this.kapsam = kapsam;
     for (const d of $$("#sayfa-M2-S1 .kapsam")) d.setAttribute("aria-checked", d.dataset.kapsam === kapsam ? "true" : "false");
     $("#m2s1-alanlar").hidden = kapsam !== "alanlar";
+    const odevKutu = $("#m2s1-odev-koruma-kutusu");
+    if (odevKutu) odevKutu.hidden = kapsam !== "alanlar";
+    this.korumaRozetiGuncelle();
     const uyari = $("#m2s1-kapsam-uyari");
     uyari.classList.toggle("kirmizi", kapsam === "tam");
     uyari.textContent = kapsam === "alanlar" ? this.alanUyarisi()
@@ -8344,6 +8955,24 @@ const m2s1 = {
     $("#m2s1-baslat").firstChild.textContent = kapsam === "alanlar" ? "Temizliği başlat" : "Sıfırlamayı başlat";
     this.tablo.ciz();
     this.kartlar();
+  },
+
+  korumaRozetiGuncelle() {
+    const odevKoruKutu = $("#m2s1-odev-koru");
+    const rozet = $("#m2s1-koruma-ozeti");
+    if (!rozet) return;
+    if (this.kapsam !== "alanlar") {
+      rozet.textContent = this.kapsam === "tam" ? "⚠️ Ev Dizini Tam Sıfırlanıyor" : "⚙️ Ayarlar Sıfırlanıyor";
+      rozet.classList.add("kapali");
+      return;
+    }
+    const koru = odevKoruKutu ? odevKoruKutu.checked : true;
+    rozet.classList.toggle("kapali", !koru);
+    if (koru) {
+      rozet.textContent = "🛡️ Koruma: 1 Klasör Güvende (Odevler)";
+    } else {
+      rozet.textContent = "⚠️ Koruma Kapalı: Tüm Masaüstü Silinecek";
+    }
   },
 
   alanUyarisi() {
@@ -8498,7 +9127,8 @@ const m2s1 = {
     const cihazlar = Secim.liste();
     if (!cihazlar.length) { bildir("Önce bilgisayar seçin.", true); return; }
     const kapsam = this.kapsam;
-    const govde = { cihazlar, kapsam, alanlar: [...this.genel],
+    const odevKoru = Boolean($("#m2s1-odev-koru") ? $("#m2s1-odev-koru").checked : true);
+    const govde = { cihazlar, kapsam, alanlar: [...this.genel], odev_koru: odevKoru, haric_klasor: "Odevler",
       istisnalar: Object.fromEntries([...this.istisnalar].filter(([id]) => cihazlar.includes(id)).map(([id, k]) => [id, [...k]])) };
     const kayit = await isBaslat("/api/temizlik/onizle", govde);
     if (!kayit) return;
@@ -8545,7 +9175,9 @@ const m2s1 = {
       baslatMetni: sifirlama ? "Sıfırlamayı başlat" : "Temizliği başlat",
     });
     if (!hedefler) return;
+    const odevKoru = Boolean($("#m2s1-odev-koru") ? $("#m2s1-odev-koru").checked : true);
     const govde = { cihazlar: hedefler, kapsam: this.kapsam, alanlar: [...this.genel], onay: true,
+      odev_koru: odevKoru, haric_klasor: "Odevler",
       oturumlari_kapat: Boolean(sifirlama && kapatKutusu.checked),
       istisnalar: Object.fromEntries([...this.istisnalar].filter(([id]) => hedefler.includes(id)).map(([id, k]) => [id, [...k]])) };
     const kayit = await isBaslat("/api/temizlik/uygula", govde);
@@ -8731,6 +9363,31 @@ const m2s2 = {
     });
     const btnKuruluKaldir = $("#m2s2-kurulu-kaldir");
     if (btnKuruluKaldir) btnKuruluKaldir.addEventListener("click", () => this.repoKaldir());
+
+    // Canlı Kurulum Terminali olayları
+    const btnTermTemizle = $("#m2s2-terminal-temizle");
+    if (btnTermTemizle) btnTermTemizle.addEventListener("click", () => this.terminalTemizle());
+    const btnTermKapat = $("#m2s2-terminal-kapat");
+    if (btnTermKapat) btnTermKapat.addEventListener("click", () => {
+      const kap = $("#m2s2-terminal-kap");
+      if (kap) kap.hidden = true;
+    });
+  },
+  terminalYaz(metin, tur = "bilgi") {
+    const kap = $("#m2s2-terminal-kap");
+    const pre = $("#m2s2-terminal-cikti");
+    if (!kap || !pre) return;
+    kap.hidden = false;
+    const zaman = new Date().toLocaleTimeString("tr-TR");
+    const satir = document.createElement("div");
+    satir.className = `terminal-satir terminal-satir-${tur}`;
+    satir.textContent = `[${zaman}] ${metin}`;
+    pre.append(satir);
+    pre.scrollTop = pre.scrollHeight;
+  },
+  terminalTemizle() {
+    const pre = $("#m2s2-terminal-cikti");
+    if (pre) pre.textContent = "";
   },
   sekmeAc(ad) {
     this.sekme = ad;
@@ -8944,16 +9601,39 @@ const m2s2 = {
       baslatMetni: "Depodan Kur",
     });
     if (!hedefler) return;
+    this.terminalTemizle();
+    this.terminalYaz(`🚀 Pardus Depodan Kurulum Başlatılıyor... Paketler: ${paketler.join(", ")}`, "bilgi");
+    this.terminalYaz(`Hedef Bilgisayarlar (${hedefler.length} adet): ${hedefler.map((id) => Veri.kimlikler.get(id) || id).join(", ")}`, "bilgi");
+    if (guncelle) this.terminalYaz("📦 APT depo listesi güncelleniyor (apt-get update)...", "bilgi");
+    this.terminalYaz("⚙️ Paket indirme ve kurulum süreci yürütülüyor (stdout bekleniyor)...", "bilgi");
+
     const kayit = await isBaslat("/api/paketler/repo/kur", {
       cihazlar: hedefler,
       paketler,
       guncelle,
       onay: true,
     });
-    if (!kayit) return;
-    for (const h of kayit.hedefler) {
-      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    if (!kayit) {
+      const sebep = isBaslat.sonHata ? `: ${isBaslat.sonHata}` : " veya iptal edildi.";
+      this.terminalYaz(`❌ Kurulum işlemi başlatılamadı${sebep}`, "hata");
+      return;
     }
+    for (const h of kayit.hedefler || []) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+      const pcAd = (h.veri && (h.veri.ad || h.veri.cihaz_id)) || h.ip;
+      const tur = h.durum === "basarili" ? "basari" : (h.durum === "basarisiz" ? "hata" : "bilgi");
+      this.terminalYaz(`[${pcAd}] ${h.durum.toUpperCase()}: ${h.mesaj || h.durum}`, tur);
+      if (h.veri && h.veri.sonuc) {
+        if (h.veri.sonuc.kayit) {
+          for (const k of h.veri.sonuc.kayit) this.terminalYaz(`  ↳ ${k}`, "bilgi");
+        }
+        if (h.veri.sonuc.kurulanlar) {
+          const kList = Object.entries(h.veri.sonuc.kurulanlar).map(([pk, sr]) => `${pk} (${sr})`).join(", ");
+          this.terminalYaz(`  ✓ Kurulu / Güncel: ${kList}`, "basari");
+        }
+      }
+    }
+    this.terminalYaz("🏁 Kurulum işlemi tamamlandı.", "basari");
     this.tablo.ciz();
   },
   async kuruluListele() {
@@ -9150,9 +9830,26 @@ const m2s2 = {
       yikici: true, onayMetni: "Paketin seçili bilgisayarlara kurulmasını onaylıyorum", baslatMetni: "Kur",
       hedefEk: planli ? { baslik: "Plan", hucre: (h) => { const v = this.planlar.get(h.id); return v ? PLAN_ROZETI[v.plan.durum][0] : "—"; } } : null });
     if (!hedefler) return;
+    this.terminalTemizle();
+    this.terminalYaz(`🚀 Yerel .deb Paketi Kurulumu Başlatılıyor... Paket: ${p.paket} ${p.surum} (${p.mimari})`, "bilgi");
+    this.terminalYaz(`Hedef Bilgisayarlar (${hedefler.length} adet): ${hedefler.map((id) => Veri.kimlikler.get(id) || id).join(", ")}`, "bilgi");
+    this.terminalYaz("⚙️ Paket transferi, SHA-256 doğrulama ve apt kurulumu yürütülüyor...", "bilgi");
+
     const kayit = await isBaslat(`/api/paketler/${p.sha256}/kur`, { cihazlar: hedefler, plan_is_id: planli ? this.planIsId : null, onay: true });
-    if (!kayit) return;
-    for (const h of kayit.hedefler) if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+    if (!kayit) {
+      this.terminalYaz("❌ Kurulum işlemi başlatılamadı veya iptal edildi.", "hata");
+      return;
+    }
+    for (const h of kayit.hedefler || []) {
+      if (h.veri && h.veri.cihaz_id) this.sonuclar.set(h.veri.cihaz_id, { ...h.veri, durum: h.durum, mesaj: h.mesaj });
+      const pcAd = (h.veri && (h.veri.ad || h.veri.cihaz_id)) || h.ip;
+      const tur = h.durum === "basarili" ? "basari" : (h.durum === "basarisiz" ? "hata" : "bilgi");
+      this.terminalYaz(`[${pcAd}] ${h.durum.toUpperCase()}: ${h.mesaj || h.durum}`, tur);
+      if (h.veri && h.veri.sonuc && h.veri.sonuc.kayit) {
+        for (const k of h.veri.sonuc.kayit) this.terminalYaz(`  ↳ ${k}`, "bilgi");
+      }
+    }
+    this.terminalYaz("🏁 Yerel .deb kurulum işlemi tamamlandı.", "basari");
     this.kartlar();
     this.tablo.ciz();
   },
@@ -9270,6 +9967,13 @@ const m2s3 = {
     $("#m2s3-uygula").addEventListener("click", () => this.calistir("uygula"));
   },
   async ac() {
+    const wz = $("#sayfa-M2-S3 .wizard-kap");
+    if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(4));
+    const nav = $("#sayfa-M2-S3 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(4));
+    if (typeof Kurulum !== "undefined" && Kurulum.aktif() && Kurulum.yeniler.size) {
+      for (const id of Kurulum.yeniler) Secim.kume.add(id);
+    }
     this.tablo.ciz(); Secim.bildir(); erisimTazele(300);
     await this.galeriYukle();
   },
@@ -9534,6 +10238,8 @@ const m2s6 = {
   aktifSekme: "katalog",
   kategoriFiltre: "",
   aramaMetni: "",
+  katalogSayfa: 1,
+  sayfaBoyutu: 9,
   sonuclar: new Map(),
   sonOzet: null,
 
@@ -9563,6 +10269,7 @@ const m2s6 = {
         for (const b of katButonlari) b.classList.remove("aktif");
         btn.classList.add("aktif");
         this.kategoriFiltre = btn.dataset.kategori || "";
+        this.katalogSayfa = 1;
         this.katalogCiz();
       });
     }
@@ -9572,6 +10279,7 @@ const m2s6 = {
     if (araGirdi) {
       araGirdi.addEventListener("input", () => {
         this.aramaMetni = araGirdi.value.trim().toLowerCase();
+        this.katalogSayfa = 1;
         this.katalogCiz();
       });
     }
@@ -9581,6 +10289,10 @@ const m2s6 = {
     if (btnAracCalistir) btnAracCalistir.addEventListener("click", () => this.seciliAraciCalistir());
     const btnAracSabitle = $("#m2s6-arac-sabitle");
     if (btnAracSabitle) btnAracSabitle.addEventListener("click", () => this.seciliAraciSabitleTersine());
+    const btnAracKlonla = $("#m2s6-arac-klonla-btn");
+    if (btnAracKlonla) btnAracKlonla.addEventListener("click", () => {
+      if (this.seciliArac) this.klonlaVeDuzenle(this.seciliArac);
+    });
     const btnKatalogDon = $("#m2s6-arac-katalog-don");
     if (btnKatalogDon) btnKatalogDon.addEventListener("click", () => this.sekmeSec("katalog"));
 
@@ -9597,25 +10309,85 @@ const m2s6 = {
     $("#m2s6-calistir").addEventListener("click", () => this.komutCalistir());
     $("#m2s6-hosts-ekle").addEventListener("click", () => this.hostsDagit());
 
+    // Canlı Çıktıları Temizle Düğmesi
+    const btnCiktiTemizle = $("#btn-m2s6-ciktilari-temizle");
+    if (btnCiktiTemizle) btnCiktiTemizle.addEventListener("click", () => this.ciktilariTemizle());
+
     // Mağaza Repo Güncelleme & Depo Ayarı Eylemleri
     const btnMagazaGuncelle = $("#btn-magaza-guncelle");
     if (btnMagazaGuncelle) {
       btnMagazaGuncelle.addEventListener("click", async () => {
         btnMagazaGuncelle.disabled = true;
         btnMagazaGuncelle.textContent = "⏳ Eşitleniyor...";
-        bildir("github.com/mukaddesalat/pardus_yonet_magaza reposundan güncel katalog sorgulanıyor...");
-        await new Promise((r) => setTimeout(r, 700));
+
+        const konsolKap = $("#m2s6-guncelleme-konsol-kap");
+        const konsolCikti = $("#m2s6-guncelleme-konsol-cikti");
+        if (konsolKap && konsolCikti) {
+          konsolCikti.textContent = "";
+          konsolKap.hidden = false;
+        }
+
+        const akisYaz = (metin, tur = "bilgi") => {
+          if (!konsolCikti) return;
+          const zaman = new Date().toLocaleTimeString("tr-TR");
+          const satir = document.createElement("div");
+          satir.className = `terminal-satir terminal-satir-${tur}`;
+          satir.textContent = `[${zaman}] ${metin}`;
+          konsolCikti.append(satir);
+          konsolCikti.scrollTop = konsolCikti.scrollHeight;
+        };
+
+        akisYaz("🌐 GitHub deposu ile bağlantı kuruluyor (mukaddesalat/pardus_yonet_magaza)...", "bilgi");
+
+        let yanit;
+        try {
+          yanit = await api("/api/magaza/guncelle", null, "POST");
+        } catch (hata) {
+          akisYaz(`❌ Depo bağlantı hatası: ${hata.message}`, "hata");
+          bildir(hata.message, true);
+          btnMagazaGuncelle.disabled = false;
+          btnMagazaGuncelle.textContent = "🔄 Kataloğu Güncelle";
+          return;
+        }
+
+        // Sunucudan gelen logları akan konsolda sırayla canlandır
+        if (yanit && Array.isArray(yanit.loglar)) {
+          for (const satir of yanit.loglar) {
+            await new Promise((r) => setTimeout(r, 160));
+            let tur = "bilgi";
+            if (satir.includes("✓")) tur = "basari";
+            else if (satir.includes("⚡") || satir.includes("🔄")) tur = "uyari";
+            else if (satir.includes("❌")) tur = "hata";
+            akisYaz(satir, tur);
+          }
+        }
+
         await this.katalogYukle();
         btnMagazaGuncelle.disabled = false;
         btnMagazaGuncelle.textContent = "🔄 Kataloğu Güncelle";
         const rozet = $("#m2s6-repo-durum");
         if (rozet) {
-          const sayi = Array.isArray(this.katalog) ? this.katalog.length : 8;
+          const sayi = Array.isArray(this.katalog) ? this.katalog.length : 11;
           rozet.textContent = `🟢 Eşitlendi (${sayi} Araç · Şimdi)`;
           rozet.style.background = "#ECFDF5";
           rozet.style.color = "#047857";
         }
-        bildir(`Katalog başarıyla güncellendi: ${Array.isArray(this.katalog) ? this.katalog.length : 8} araç kullanıma hazır.`);
+
+        const eklenenSayi = (yanit && yanit.eklenen_sayisi) || 0;
+        const guncellenenSayi = (yanit && yanit.guncellenen_sayisi) || 0;
+        let ozetBildirim = `Katalog eşitlendi (Toplam ${(yanit && yanit.arac_sayisi) || 11} araç)`;
+        if (eklenenSayi > 0 || guncellenenSayi > 0) {
+          ozetBildirim += ` · ${eklenenSayi} yeni, ${guncellenenSayi} güncellendi`;
+        }
+        bildir(ozetBildirim);
+      });
+    }
+
+    const btnKonsolKapat = $("#m2s6-guncelleme-konsol-kapat");
+    if (btnKonsolKapat) {
+      btnKonsolKapat.addEventListener("click", () => {
+        const k = $("#m2s6-guncelleme-konsol-kap");
+        if (k) k.hidden = true;
       });
     }
 
@@ -9725,6 +10497,18 @@ const m2s6 = {
     this.sabitlerCiz();
   },
 
+  ciktilariTemizle() {
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) rozetEl.hidden = true;
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = "Konsol temizlendi. Yeni komut bekleniyor.";
+    this.sayaclariCiz();
+    this.tablo.ciz();
+    bildir("Konsol canlı çıktıları temizlendi (İşlem geçmişi korunmaktadır).");
+  },
+
   katalogCiz() {
     const kap = $("#m2s6-katalog-izgara");
     if (!kap) return;
@@ -9740,16 +10524,26 @@ const m2s6 = {
       );
     }
 
-    if (!liste.length) {
+    const toplam = liste.length;
+    const sayfaSayisi = Math.max(1, Math.ceil(toplam / this.sayfaBoyutu));
+    if (this.katalogSayfa > sayfaSayisi) this.katalogSayfa = sayfaSayisi;
+    if (this.katalogSayfa < 1) this.katalogSayfa = 1;
+
+    if (!toplam) {
       kap.replaceChildren(
         el("div", { class: "kart tam-genislik bos-durum" },
           el("p", { class: "ipucu", metin: "Filtrelere uygun araç bulunamadı." })
         )
       );
+      this.sayfalamaCiz(0, 1);
       return;
     }
 
-    const kartlar = liste.map((arac) => {
+    const baslangic = (this.katalogSayfa - 1) * this.sayfaBoyutu;
+    const bitis = Math.min(toplam, baslangic + this.sayfaBoyutu);
+    const sayfaListesi = liste.slice(baslangic, bitis);
+
+    const kartlar = sayfaListesi.map((arac) => {
       const sabitMi = this.sabitler.includes(arac.id);
       const riskBilgi = RISK_ROZETLERI[arac.risk] || [arac.risk || "Bilgi", "notr"];
       const simge = KATEGORI_SIMGE[arac.kategori] || "⚡";
@@ -9766,7 +10560,8 @@ const m2s6 = {
         el("p", { class: "magaza-kart-ozet", metin: arac.ozet || "Sınıf bilgisayarları için yönetim aracı." }),
         el("div", { class: "magaza-kart-etiketler" },
           rozet(arac.kategori ? arac.kategori.toUpperCase() : "GENEL", "notr"),
-          rozet("Pardus 23 · 25", "mavi"),
+          rozet(`v${arac.surum || "1.0.0"}`, "mavi"),
+          rozet("Pardus 23 · 25", "notr"),
           arac.sudo ? rozet("sudo", "orta") : null
         ),
         el("div", { class: "magaza-kart-alt" },
@@ -9775,6 +10570,12 @@ const m2s6 = {
             class: "birincil kucuk",
             onclick: () => this.aracSec(arac),
           }, "⚡ Aracı Çalıştır"),
+          el("button", {
+            type: "button",
+            class: "ikincil kucuk",
+            title: "Orijinal aracı değiştirmeden klonlayıp düzenle",
+            onclick: () => this.klonlaVeDuzenle(arac),
+          }, "✏️ Klonla & Düzenle"),
           el("button", {
             type: "button",
             class: `ikincil kucuk${sabitMi ? " sabit-aktif" : ""}`,
@@ -9786,6 +10587,94 @@ const m2s6 = {
     });
 
     kap.replaceChildren(...kartlar);
+    this.sayfalamaCiz(toplam, sayfaSayisi);
+  },
+
+  sayfalamaCiz(toplam, sayfaSayisi) {
+    const kap = $("#m2s6-katalog-sayfalama");
+    if (!kap) return;
+    if (toplam <= this.sayfaBoyutu) {
+      kap.replaceChildren();
+      kap.hidden = true;
+      return;
+    }
+    kap.hidden = false;
+
+    const baslangic = (this.katalogSayfa - 1) * this.sayfaBoyutu + 1;
+    const bitis = Math.min(toplam, this.katalogSayfa * this.sayfaBoyutu);
+
+    const bilgi = el("div", { class: "sayfalama-bilgi", metin: `${toplam} araçtan ${baslangic}-${bitis} arası gösteriliyor (Sayfa ${this.katalogSayfa} / ${sayfaSayisi})` });
+    const butonlar = el("div", { class: "sayfalama-butonlar" });
+
+    const oncekiBtn = el("button", {
+      type: "button",
+      class: "sayfa-btn",
+      disabled: this.katalogSayfa <= 1,
+      onclick: () => {
+        if (this.katalogSayfa > 1) {
+          this.katalogSayfa--;
+          this.katalogCiz();
+          const grid = $("#m2s6-katalog-izgara");
+          if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }, "« Önceki");
+    butonlar.append(oncekiBtn);
+
+    for (let p = 1; p <= sayfaSayisi; p++) {
+      const sayfaBtn = el("button", {
+        type: "button",
+        class: `sayfa-btn${p === this.katalogSayfa ? " aktif" : ""}`,
+        onclick: () => {
+          if (this.katalogSayfa !== p) {
+            this.katalogSayfa = p;
+            this.katalogCiz();
+            const grid = $("#m2s6-katalog-izgara");
+            if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+      }, String(p));
+      butonlar.append(sayfaBtn);
+    }
+
+    const sonrakiBtn = el("button", {
+      type: "button",
+      class: "sayfa-btn",
+      disabled: this.katalogSayfa >= sayfaSayisi,
+      onclick: () => {
+        if (this.katalogSayfa < sayfaSayisi) {
+          this.katalogSayfa++;
+          this.katalogCiz();
+          const grid = $("#m2s6-katalog-izgara");
+          if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }, "Sonraki »");
+    butonlar.append(sonrakiBtn);
+
+    kap.replaceChildren(bilgi, butonlar);
+  },
+
+  klonlaVeDuzenle(arac) {
+    if (!arac) return;
+    let betikIcerik = arac.betik || "";
+    if (arac.parametreler && arac.parametreler.length > 0) {
+      const paramSatirlari = arac.parametreler
+        .map((p) => `# PSY_P_${p.ad}="${p.varsayilan != null ? p.varsayilan : ""}"  # ${p.etiket || p.ad}`)
+        .join("\n");
+      betikIcerik = `#!/usr/bin/env bash\n# ========================================================\n# [Klon] ${arac.ad}\n# Kaynak: Resmi Mağaza Kataloğu (${arac.id} v${arac.surum || "1.0.0"})\n# Parametreler (Gerektiğinde aşağıdaki değişkenleri düzenleyin):\n${paramSatirlari}\n# ========================================================\n\n${betikIcerik.replace(/^#!\/usr\/bin\/env bash\n?/, "")}`;
+    }
+    $("#m2s6-ad").value = `[Özel] ${arac.ad}`;
+    $("#m2s6-kategori").value = arac.kategori || "Genel";
+    $("#m2s6-komut").value = betikIcerik;
+    $("#m2s6-sudo").checked = Boolean(arac.sudo);
+    this.sekmeSec("serbest");
+    bildir(`“${arac.ad}” klonlandı ve Serbest Uçbirim düzenleyicisine aktarıldı. Orijinal mağaza aracı korunmuştur.`);
+    const editEl = $("#m2s6-komut");
+    if (editEl) {
+      editEl.focus();
+      editEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   },
 
   sabitlerCiz() {
@@ -9963,6 +10852,20 @@ const m2s6 = {
     });
     if (!onay) return;
 
+    // Önceki çıktıyı konsoldan sıfırla ve yeni komut durumunu göster
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) {
+      const zaman = new Date().toLocaleTimeString("tr-TR");
+      rozetEl.textContent = `⚡ Son Komut: ${arac.ad} · ${zaman}`;
+      rozetEl.hidden = false;
+    }
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = `⏳ “${arac.ad}” gönderildi, çıktılar bekleniyor...`;
+    this.sayaclariCiz();
+    this.tablo.ciz();
+
     try {
       const kayit = await isBaslat("/api/magaza/calistir", {
         arac_id: arac.id,
@@ -10071,33 +10974,69 @@ const m2s6 = {
   kutuphaneCiz() {
     const kap = $("#m2s6-kutuphane");
     if (!kap) return;
-    if (!this.komutlar.length) {
-      kap.replaceChildren(el("p", { class: "ipucu", metin: "Kayıtlı komut yok." }));
+
+    const ozelKomutlar = (this.komutlar || []).map((k) => ({
+      ...k,
+      kaynak: "ozel",
+    }));
+
+    const magazaAraclari = (this.katalog || []).map((a) => ({
+      id: a.id,
+      ad: a.ad,
+      komut: (a.betik || a.ozet || "").trim(),
+      kategori: a.kategori || "Genel",
+      sudo: Boolean(a.sudo),
+      kaynak: "magaza",
+      hamArac: a,
+    }));
+
+    const tumListe = [...magazaAraclari, ...ozelKomutlar];
+
+    if (!tumListe.length) {
+      kap.replaceChildren(el("p", { class: "ipucu", metin: "Kayıtlı özel komut veya mağaza aracı bulunamadı." }));
       return;
     }
+
     const tablo = el("table", {}, el("thead", {}, el("tr", {},
-      ...["Komut", "Kategori", "Sudo", ""].map((b) => el("th", { metin: b })))));
+      ...["Komut / Araç Adı", "Kaynak", "Kategori", "Yetki", "Eylemler"].map((b) => el("th", { metin: b })))));
     const govde = el("tbody");
-    for (const k of this.komutlar) {
-      const slug = kimlikSlug(k.id);
+
+    for (const k of tumListe) {
+      const magazaMi = k.kaynak === "magaza";
+      const slug = kimlikSlug(k.id || k.ad);
       const eylemler = el("div", { class: "dugme-grubu" },
-        dugme("Yükle", `M2-S6-B3-${slug}`, () => {
-          $("#m2s6-ad").value = k.ad;
-          $("#m2s6-kategori").value = k.kategori || "Genel";
-          $("#m2s6-komut").value = k.komut;
-          $("#m2s6-sudo").checked = Boolean(k.sudo);
-          this.sekmeSec("serbest");
-          bildir(`“${k.ad}” düzenleyiciye yüklendi.`);
+        dugme("✏️ Yükle / Düzenle", `M2-S6-B3-${slug}`, () => {
+          if (magazaMi) {
+            this.klonlaVeDuzenle(k.hamArac);
+          } else {
+            $("#m2s6-ad").value = k.ad;
+            $("#m2s6-kategori").value = k.kategori || "Genel";
+            $("#m2s6-komut").value = k.komut;
+            $("#m2s6-sudo").checked = Boolean(k.sudo);
+            this.sekmeSec("serbest");
+            bildir(`“${k.ad}” düzenleyiciye yüklendi. Değişiklik yapıp kaydedebilirsiniz.`);
+            const editEl = $("#m2s6-komut");
+            if (editEl) {
+              editEl.focus();
+              editEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
         }, "ikincil kucuk"),
-        !k.yerlesik ? dugme("Sil", `M2-S6-B4-${slug}`, () => this.komutSil(k), "tehlikeli kucuk") : null
+        !magazaMi && !k.yerlesik ? dugme("Sil", `M2-S6-B4-${slug}`, () => this.komutSil(k), "tehlikeli kucuk") : null
       );
+
       govde.append(el("tr", {},
-        el("td", {}, el("strong", { metin: k.ad }), el("span", { class: "alt mono", metin: k.komut.slice(0, 72) })),
+        el("td", {},
+          el("strong", { metin: k.ad }),
+          el("span", { class: "alt mono", metin: (k.komut || "").slice(0, 80) + ((k.komut || "").length > 80 ? "…" : "") })
+        ),
+        el("td", {}, magazaMi ? rozet("🏪 Mağaza", "mavi") : rozet("✏️ Özel Komut", "iyi")),
         el("td", {}, rozet(k.kategori || "Genel", "notr")),
-        el("td", {}, k.sudo ? rozet("sudo", "mavi") : rozet("kullanıcı", "notr")),
+        el("td", {}, k.sudo ? rozet("sudo", "orta") : rozet("kullanıcı", "notr")),
         el("td", {}, eylemler)
       ));
     }
+
     tablo.append(govde);
     kap.replaceChildren(tablo);
   },
@@ -10140,6 +11079,21 @@ const m2s6 = {
       baslatMetni: "Komutu Gönder",
     });
     if (!hedefler) return;
+
+    // Konsolu temizle ve yeni komutu bildir
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) {
+      const zaman = new Date().toLocaleTimeString("tr-TR");
+      rozetEl.textContent = `⚡ Son Komut: ${ad} · ${zaman}`;
+      rozetEl.hidden = false;
+    }
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = `⏳ “${ad}” gönderildi, çıktılar bekleniyor...`;
+    this.sayaclariCiz();
+    this.tablo.ciz();
+
     const kayit = await isBaslat("/api/komutlar/calistir", { cihazlar: hedefler, ad, komut, sudo });
     if (kayit) this.sonuclariIsle(kayit);
   },
@@ -10155,6 +11109,21 @@ const m2s6 = {
       baslatMetni: "Hosts Kaydını Dağıt",
     });
     if (!hedefler) return;
+
+    // Konsolu temizle ve yeni komutu bildir
+    this.sonuclar = new Map();
+    this.sonOzet = null;
+    const rozetEl = $("#m2s6-son-komut-rozet");
+    if (rozetEl) {
+      const zaman = new Date().toLocaleTimeString("tr-TR");
+      rozetEl.textContent = `⚡ Son Komut: /etc/hosts Dağıtımı (${alan_adi}) · ${zaman}`;
+      rozetEl.hidden = false;
+    }
+    const ozetEl = $("#m2s6-ozet-metin");
+    if (ozetEl) ozetEl.textContent = `⏳ Hosts kaydı dağıtılıyor...`;
+    this.sayaclariCiz();
+    this.tablo.ciz();
+
     const kayit = await isBaslat("/api/komutlar/hosts-ekle", { cihazlar: hedefler, ip, alan_adi });
     if (kayit) this.sonuclariIsle(kayit);
   },
@@ -10269,7 +11238,7 @@ const m2s4 = {
     $("#m2s4-yeniden").addEventListener("click", () => this.eylem("yeniden_baslat"));
     $("#m2s4-kapat").addEventListener("click", () => this.eylem("kapat"));
     if ($("#m2s4-zamanli-git")) {
-      $("#m2s4-zamanli-git").addEventListener("click", () => sayfaAc("M2-S5"));
+      $("#m2s4-zamanli-git").addEventListener("click", () => git("M2-S5"));
     }
     $("#m2s4-uyku-onizle").addEventListener("click", () => this.uyku("onizle"));
     $("#m2s4-uyku-uygula").addEventListener("click", () => this.uyku("uygula"));
@@ -11530,6 +12499,7 @@ const HAZIR_ARMALAR = {
 
 const m5s2 = {
   ogretmenler: [],
+  yonetimHesaplari: [],
   logoB64: "",
   kur() {
     $("#m5s2-logo-dosya").addEventListener("change", (o) => this.logoSec(o.target.files[0]));
@@ -11543,6 +12513,15 @@ const m5s2 = {
       $("#ogf-yetkiler-alan").hidden = $("#ogf-rol").value === "admin";
     });
     $("#ogf-kaydet").addEventListener("click", () => this.ogretmenKaydet());
+
+    const btnHesapEkle = $("#m5s2-hesap-ekle");
+    if (btnHesapEkle) btnHesapEkle.addEventListener("click", () => this.hesapEkle());
+    const btnHesapKaydet = $("#m5s2-hesap-kaydet");
+    if (btnHesapKaydet) btnHesapKaydet.addEventListener("click", () => this.hesaplariKaydet());
+    const btnHizliTest = $("#m5s2-btn-hizli-test");
+    if (btnHizliTest) btnHizliTest.addEventListener("click", () => this.hizliTestYap());
+    const btnParolaDegistir = $("#m5s2-btn-parola-degistir");
+    if (btnParolaDegistir) btnParolaDegistir.addEventListener("click", () => this.topluParolaDegistir());
   },
   hazirArmaSec(tip) {
     const veriUrl = HAZIR_ARMALAR[tip];
@@ -11553,7 +12532,220 @@ const m5s2 = {
     bildir("Hazır arma seçildi; kaydetmek için “Okul Bilgilerini Kaydet” düğmesine basın.");
   },
   async ac() {
-    await Promise.all([this.okulYukle(), this.ogretmenleriYukle()]);
+    await Promise.all([this.okulYukle(), this.ogretmenleriYukle(), this.yonetimHesaplariniYukle()]);
+  },
+  async yonetimHesaplariniYukle() {
+    try {
+      this.yonetimHesaplari = await api("/api/yonetim/hesaplar");
+    } catch (_) {
+      this.yonetimHesaplari = [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+    }
+    if (!Array.isArray(this.yonetimHesaplari) || !this.yonetimHesaplari.length) {
+      this.yonetimHesaplari = [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+    }
+    this.yonetimHesaplariniCiz();
+  },
+  yonetimHesaplariniCiz() {
+    const tbody = $("#m5s2-hesap-listesi");
+    if (!tbody) return;
+    tbody.replaceChildren();
+
+    const testHesapSel = $("#m5s2-test-hesap");
+    const topluHesapSel = $("#m5s2-toplu-hesap");
+    if (testHesapSel) testHesapSel.replaceChildren();
+    if (topluHesapSel) topluHesapSel.replaceChildren();
+
+    const testIpEl = $("#m5s2-test-ip");
+    if (testIpEl && !testIpEl.value && Veri.cihazlar && Veri.cihazlar.length) {
+      testIpEl.value = Veri.cihazlar[0].ip;
+    }
+
+    this.yonetimHesaplari.forEach((h, idx) => {
+      h.oncelik = idx + 1;
+      const opt1 = el("option", { value: h.kullanici, metin: `${idx + 1}. ${h.kullanici}` });
+      const opt2 = el("option", { value: h.kullanici, metin: `${idx + 1}. ${h.kullanici}` });
+      if (testHesapSel) testHesapSel.append(opt1);
+      if (topluHesapSel) topluHesapSel.append(opt2);
+
+      const tr = el("tr");
+      const tdSira = el("td", {},
+        el("span", { class: `sira-rozet${idx > 0 ? " ikincil-sira" : ""}`, metin: String(idx + 1) })
+      );
+
+      const inpAd = el("input", {
+        type: "text",
+        value: h.kullanici,
+        style: "width: 130px; font-weight: 600;",
+        onchange: (e) => { h.kullanici = e.target.value.trim().toLowerCase(); }
+      });
+      const tdAd = el("td", {}, inpAd);
+
+      const inpParola = el("input", {
+        type: "password",
+        value: h.parola || "",
+        placeholder: "Parola (opsiyonel)",
+        style: "width: 160px;",
+        onchange: (e) => { h.parola = e.target.value; }
+      });
+      const tdParola = el("td", {}, inpParola);
+
+      const btnYukari = el("button", {
+        type: "button",
+        class: "dugme ikincil sira-ok-dugme",
+        disabled: idx === 0,
+        title: "Yukarı taşı (Önceliği artır)",
+        onclick: () => {
+          const gecici = this.yonetimHesaplari[idx - 1];
+          this.yonetimHesaplari[idx - 1] = this.yonetimHesaplari[idx];
+          this.yonetimHesaplari[idx] = gecici;
+          this.yonetimHesaplariniCiz();
+        }
+      }, "▲");
+
+      const btnAsagi = el("button", {
+        type: "button",
+        class: "dugme ikincil sira-ok-dugme",
+        disabled: idx === this.yonetimHesaplari.length - 1,
+        title: "Aşağı taşı (Önceliği azalt)",
+        onclick: () => {
+          const gecici = this.yonetimHesaplari[idx + 1];
+          this.yonetimHesaplari[idx + 1] = this.yonetimHesaplari[idx];
+          this.yonetimHesaplari[idx] = gecici;
+          this.yonetimHesaplariniCiz();
+        }
+      }, "▼");
+
+      const tdSiralama = el("td", {}, el("div", { style: "display: flex; gap: 4px;" }, btnYukari, btnAsagi));
+
+      const btnSil = el("button", {
+        type: "button",
+        class: "dugme ikincil tehlikeli sira-ok-dugme",
+        disabled: this.yonetimHesaplari.length <= 1,
+        title: "Hesabı sil",
+        onclick: () => {
+          this.yonetimHesaplari.splice(idx, 1);
+          this.yonetimHesaplariniCiz();
+        }
+      }, "🗑️ Sil");
+
+      const tdIslem = el("td", {}, btnSil);
+
+      tr.append(tdSira, tdAd, tdParola, tdSiralama, tdIslem);
+      tbody.append(tr);
+    });
+  },
+  hesapEkle() {
+    const ad = prompt("Yeni yönetim hesabı kullanıcı adı (örn: hp, sistem, pardus):", "hp");
+    if (!ad || !ad.trim()) return;
+    const kullanici = ad.trim().toLowerCase();
+    if (this.yonetimHesaplari.some((h) => h.kullanici === kullanici)) {
+      bildir(`'${kullanici}' zaten listede mevcut.`, true);
+      return;
+    }
+    this.yonetimHesaplari.push({
+      kullanici,
+      parola: "",
+      oncelik: this.yonetimHesaplari.length + 1
+    });
+    this.yonetimHesaplariniCiz();
+    bildir(`'${kullanici}' hesabı listeye eklendi. Değişiklikleri kaydetmeyi unutmayın.`);
+  },
+  async hesaplariKaydet() {
+    try {
+      this.yonetimHesaplari = await api("/api/yonetim/hesaplar", { hesaplar: this.yonetimHesaplari });
+      this.yonetimHesaplariniCiz();
+      bildir("Yönetim hesapları ve öncelik sıralaması başarıyla kaydedildi.");
+    } catch (hata) {
+      bildir(hata.message, true);
+    }
+  },
+  async hizliTestYap() {
+    const ip = ($("#m5s2-test-ip").value || "").trim();
+    const kullanici = $("#m5s2-test-hesap").value;
+    const sonucEl = $("#m5s2-test-sonuc");
+    if (!ip) {
+      bildir("Lütfen test edilecek bir IP adresi girin.", true);
+      return;
+    }
+    const hedefHesap = this.yonetimHesaplari.find((h) => h.kullanici === kullanici);
+    const parola = hedefHesap ? (hedefHesap.parola || "") : "";
+    if (sonucEl) {
+      sonucEl.textContent = `⏳ ${ip} adresine (${kullanici}) bağlanılıyor...`;
+      sonucEl.style.color = "#2563EB";
+    }
+    try {
+      const yanit = await api("/api/yonetim/test_baglanti", { ip, kullanici, parola });
+      if (yanit.basarili) {
+        if (sonucEl) {
+          sonucEl.textContent = `✓ ${yanit.mesaj}`;
+          sonucEl.style.color = "#16A34A";
+        }
+        bildir(`Hızlı Test Başarılı: ${yanit.mesaj}`);
+      } else {
+        if (sonucEl) {
+          sonucEl.textContent = `✗ ${yanit.mesaj}`;
+          sonucEl.style.color = "#DC2626";
+        }
+        bildir(`Hızlı Test Başarısız: ${yanit.mesaj}`, true);
+      }
+    } catch (hata) {
+      if (sonucEl) {
+        sonucEl.textContent = `✗ Test hatası: ${hata.message}`;
+        sonucEl.style.color = "#DC2626";
+      }
+      bildir(hata.message, true);
+    }
+  },
+  async topluParolaDegistir() {
+    const hedefler = Secim.liste();
+    if (!hedefler.length) {
+      bildir("Lütfen önce parola değiştirilecek bilgisayarları tablodan (veya Sınıf Masası'ndan) seçin.", true);
+      return;
+    }
+    const kullanici = $("#m5s2-toplu-hesap").value;
+    const yeniParola = ($("#m5s2-toplu-yeni-parola").value || "").trim();
+    if (!yeniParola || yeniParola.length < 4) {
+      bildir("Yeni parola en az 4 karakter olmalıdır.", true);
+      return;
+    }
+    const onay = await onayIste({
+      islem: "parola_degistir",
+      cihazlar: hedefler,
+      baslik: `🔑 Sınıfta Toplu Parola Değiştir: ${kullanici}`,
+      aciklama: `Seçili ${hedefler.length} bilgisayarda yerel '${kullanici}' yönetici hesabı parolası değiştirilecektir.`,
+      uyarilar: [
+        "Bu işlem bilgisayarların yerel şifresini anında günceller.",
+        "Öğrencilerin eski şifreyi bilmesi durumunda erişimleri engellenmiş olur."
+      ],
+      yikici: false,
+      onayMetni: `${hedefler.length} bilgisayarda '${kullanici}' parolasını değiştirmeyi onaylıyorum`,
+      baslatMetni: "Parolaları Değiştir"
+    });
+    if (!onay) return;
+
+    const kayit = await isBaslat("/api/yonetim/parola_degistir", {
+      cihazlar: hedefler,
+      kullanici,
+      yeni_parola: yeniParola,
+      onay: true
+    });
+
+    if (kayit && kayit.durum === "tamamlandi") {
+      bildir(`Tüm seçili bilgisayarlarda '${kullanici}' parolası güncellendi.`);
+      const guncelle = confirm(
+        `Tüm sınıfta '${kullanici}' parolası başarıyla değiştirildi!\n\n` +
+        `Lab Kaptanı'nda kayıtlı olan '${kullanici}' yönetici parolasını da bu yeni şifre ile güncellemek ister misiniz?`
+      );
+      if (guncelle) {
+        const hedef = this.yonetimHesaplari.find((h) => h.kullanici === kullanici);
+        if (hedef) {
+          hedef.parola = yeniParola;
+          await this.hesaplariKaydet();
+          bildir(`Kayıtlı '${kullanici}' parolası da yeni şifre ile güncellendi.`);
+        }
+      }
+      $("#m5s2-toplu-yeni-parola").value = "";
+    }
   },
   async okulYukle() {
     try {
@@ -11792,6 +12984,8 @@ $("#kurulum-formu").addEventListener("submit", async (o) => {
       kullanici_adi: ($("#kurulum-kullanici") && $("#kurulum-kullanici").value) || "admin",
       ad_soyad: ($("#kurulum-ad") && $("#kurulum-ad").value) || "Sistem Yöneticisi",
       okul_adi: ($("#kurulum-okul") && $("#kurulum-okul").value) || "",
+      yonetim_kullanici: ($("#kurulum-yonetim-kullanici") && $("#kurulum-yonetim-kullanici").value) || "pardus",
+      yonetim_parola: ($("#kurulum-yonetim-parola") && $("#kurulum-yonetim-parola").value) || "",
     });
     Uyg.csrf = y.csrf;
     history.replaceState(null, "", "/");

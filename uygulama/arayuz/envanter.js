@@ -470,6 +470,8 @@ const m1s2 = {
   ac() {
     const wz = $("#sayfa-M1-S2 .wizard-kap");
     if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(2));
+    const nav = $("#sayfa-M1-S2 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(2));
     this.sayaclar();
     this.tablo.ciz();
     Secim.bildir();
@@ -491,12 +493,43 @@ const m1s2 = {
 async function hazirlikAkisi(cihazIdler) {
   if (!cihazIdler.length) { bildir("Önce bilgisayar seçin.", true); return; }
   const p = $("#parola-penceresi");
-  $("#pp-pardus").value = ""; $("#pp-hp").value = "";
+
+  // Dinamik yönetim hesaplarını yükle ve sıralı render et
+  let hesaplar = [{ kullanici: "pardus", parola: "", oncelik: 1 }];
+  try {
+    const sunucuHesaplar = await api("/api/yonetim/hesaplar");
+    if (Array.isArray(sunucuHesaplar) && sunucuHesaplar.length) hesaplar = sunucuHesaplar;
+  } catch (_) {}
+
+  const kap = $("#parola-alanlari-kap");
+  if (kap) {
+    kap.replaceChildren();
+    hesaplar.forEach((h, idx) => {
+      const label = el("label", { for: `pp-${h.kullanici}` },
+        `${idx + 1}. ${h.kullanici} parolası ${idx === 0 ? "★ (1. Öncelikli)" : ""}`
+      );
+      const input = el("input", {
+        id: `pp-${h.kullanici}`,
+        type: "password",
+        autocomplete: "off",
+        value: h.parola || "",
+        placeholder: h.parola ? "••••••••" : "Parola girin",
+      });
+      kap.append(label, input);
+    });
+  }
+
   p.returnValue = "";
   p.showModal();
   await new Promise((coz) => p.addEventListener("close", coz, { once: true }));
-  const parolalar = { pardus: $("#pp-pardus").value, hp: $("#pp-hp").value };
-  $("#pp-pardus").value = ""; $("#pp-hp").value = "";
+
+  const parolalar = {};
+  hesaplar.forEach((h) => {
+    const elInp = $(`#pp-${h.kullanici}`);
+    if (elInp && elInp.value) parolalar[h.kullanici] = elInp.value;
+    else if (h.parola) parolalar[h.kullanici] = h.parola;
+    if (elInp) elInp.value = "";
+  });
   if (p.returnValue !== "devam") return;
   const hedefler = await onayIste({
     islem: "hazirlik", cihazlar: cihazIdler, baslik: "SSH ve hesap hazırlığı",
@@ -537,6 +570,8 @@ const m1s3 = {
   async ac() {
     const wz = $("#sayfa-M1-S3 .wizard-kap");
     if (wz && typeof wizardCubuguCiz === "function") wz.replaceChildren(wizardCubuguCiz(1));
+    const nav = $("#sayfa-M1-S3 .wizard-nav-kap");
+    if (nav && typeof wizardNavigasyonCiz === "function") nav.replaceChildren(wizardNavigasyonCiz(1));
     try {
       this.oneri = await api("/api/kesif/ag");
       $("#m1s3-oneri-metin").textContent = this.oneri.ag
